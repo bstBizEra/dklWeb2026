@@ -133,6 +133,56 @@ Before committing or pushing implementation work, agents must:
 7. Verify browser-facing changes at `http://localhost:3000/` because Laragon/local development uses that origin.
 8. Update `C:\laragon\www\dklao\con_agents\CHANGELOG.md` for governance, implementation, asset, route, or release-impacting changes.
 
+## Ngrok Local Preview Tunnel
+
+Ngrok is approved only as a temporary public preview tunnel for the local DK LAO website. It is not the production deployment target.
+
+Rendered application origin:
+
+```txt
+http://localhost:3000/
+```
+
+Approved ngrok preview domain:
+
+```txt
+https://snare-snowsuit-obnoxious.ngrok-free.dev
+```
+
+Preferred direct tunnel to the Next.js / Node.js server:
+
+```powershell
+ngrok http 3000 --domain=snare-snowsuit-obnoxious.ngrok-free.dev
+```
+
+If the Node.js framework blocks the remote host or origin, rewrite the host header:
+
+```powershell
+ngrok http 3000 --domain=snare-snowsuit-obnoxious.ngrok-free.dev --host-header=localhost:3000
+```
+
+Agents must not point ngrok at the Laragon/Nginx project directory unless Nginx is explicitly configured as a reverse proxy to `http://localhost:3000`. If the public ngrok URL shows `Index of /` with project folders such as `con_agents/`, `src/`, `node_modules/`, or `public/`, the tunnel is serving the filesystem docroot instead of the rendered app.
+
+Optional Laragon/Nginx route for local `http://dklao.dev` access:
+
+```nginx
+location / {
+    proxy_pass http://localhost:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Laragon auto-generates `auto.dklao.dev.conf`. To keep proxy edits permanently, rename it to `dklao.dev.conf`, restart Nginx in Laragon, then tunnel through Nginx only if needed:
+
+```powershell
+ngrok http http://dklao.dev:8080 --host-header=dklao.dev
+```
+
+After starting ngrok, agents must verify that `https://snare-snowsuit-obnoxious.ngrok-free.dev/` renders the DK LAO app and not a directory index.
+
 ## Companion Rule Files
 
 After loading the master rule file, agents should load task-relevant companion controls from:

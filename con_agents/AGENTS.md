@@ -364,6 +364,62 @@ Before marking implementation work complete, agents must:
 10. Verify browser-facing changes at `http://localhost:3000/`.
 11. Check `git status -sb` before completion and report whether local and remote branches are synchronized.
 
+### 16.4 Ngrok Local Preview Tunnel
+
+Ngrok may be used only as a temporary public preview tunnel for local review. It must not be treated as the DK LAO production deployment target.
+
+The rendered local application origin is:
+
+```txt
+http://localhost:3000/
+```
+
+The approved preview domain is:
+
+```txt
+https://snare-snowsuit-obnoxious.ngrok-free.dev
+```
+
+Preferred command for DK LAO local previews:
+
+```powershell
+ngrok http 3000 --domain=snare-snowsuit-obnoxious.ngrok-free.dev
+```
+
+If the Node.js or Next.js runtime blocks the remote host/origin, use the host-header fallback:
+
+```powershell
+ngrok http 3000 --domain=snare-snowsuit-obnoxious.ngrok-free.dev --host-header=localhost:3000
+```
+
+Do not point ngrok at Laragon/Nginx port `8080` unless Nginx has been configured to reverse proxy to `http://localhost:3000`. If the public ngrok URL shows an `Index of /` page listing project files or folders such as `con_agents/`, `src/`, `node_modules/`, `public/`, `package.json`, or `AGENTS.md`, the tunnel is pointed at the static filesystem docroot instead of the rendered application. Stop and repoint ngrok directly to port `3000`, or configure Nginx as a proxy.
+
+Optional Nginx reverse-proxy block for `dklao.dev`:
+
+```nginx
+location / {
+    proxy_pass http://localhost:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Laragon auto-generates files with the `auto.` prefix. If proxy changes must persist, rename `auto.dklao.dev.conf` to `dklao.dev.conf`, restart Nginx in Laragon, then tunnel through Nginx only when required:
+
+```powershell
+ngrok http http://dklao.dev:8080 --host-header=dklao.dev
+```
+
+Ngrok verification requirement:
+
+1. Start the local Next.js server on `http://localhost:3000/`.
+2. Start ngrok using the direct port `3000` command first.
+3. Open `https://snare-snowsuit-obnoxious.ngrok-free.dev/`.
+4. Confirm the rendered DK LAO website appears.
+5. Fail the check if a directory index appears.
+
 ## 17. Completion Format
 
 When an agent finishes work, it must report:

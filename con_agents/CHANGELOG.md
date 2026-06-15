@@ -11,6 +11,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 - Removed the old anatomy callout columns, connector-line CSS, scroll-triggered callout animation hooks, and unused legacy hotspot styles from `globals.css`.
 - Added a conventional `public/favicon.ico` generated from the official DK LAO favicon PNG and updated metadata to prefer `/favicon.ico`.
 - Added canonical GitHub repository details and implementation workflow rules to root `AGENTS.md` and master `con_agents/AGENTS.md`, including the moved remote `bstBizEra/dklWeb2026`, `main` branch policy, fetch-before-push behavior, local `localhost:3000` verification, and required project gates.
+- Added ngrok local preview tunnel rules to root `AGENTS.md` and master `con_agents/AGENTS.md`, including the approved preview domain, direct port `3000` command, host-header fallback, optional Nginx reverse proxy route, and directory-index fail-safe.
 
 ### QA
 
