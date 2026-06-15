@@ -1,6 +1,3 @@
-Below is a **developer-ready `README.md`** for the **DK LAO Website 2026**. It is based on DK LAO’s company profile, semi-ecommerce strategy, and design system direction: DK LAO is positioned around sales, service, spare parts, rental, material handling equipment, warehouse solutions, and professional cleaning equipment in Laos.  The website strategy defines the site as a lead-generation and semi-ecommerce platform, not only a company profile.  The visual system is industrial-grade, B2B, motion-enabled, and conversion-focused. 
-
-````md
 # DK LAO Website 2026
 
 Premium industrial B2B website and semi-ecommerce platform for **DK LAO**, supporting forklift rental, new and used forklift sales, spare parts inquiry, maintenance service booking, warehouse solutions, and professional cleaning equipment across Laos.
