@@ -36,6 +36,30 @@ Agent control path:
 C:\laragon\www\dklao\con_agents
 ```
 
+GitHub repository:
+
+```txt
+https://github.com/bstBizEra/dklWeb2026
+```
+
+Git remote:
+
+```txt
+https://github.com/bstBizEra/dklWeb2026.git
+```
+
+Legacy moved repository URL:
+
+```txt
+https://github.com/BizEraERP/dklWeb2026
+```
+
+Default branch:
+
+```txt
+main
+```
+
 Logo and favicon path:
 
 ```txt
@@ -297,7 +321,50 @@ Agents must not:
 - Leave console logs, debug panels, or mock notices in production.
 - Use animation that harms performance or accessibility.
 
-## 16. Completion Format
+## 16. GitHub and Implementation Workflow
+
+### 16.1 Repository Source of Truth
+
+The canonical GitHub repository for the DK LAO 2026 website is:
+
+```txt
+bstBizEra/dklWeb2026
+```
+
+The canonical remote URL is:
+
+```txt
+https://github.com/bstBizEra/dklWeb2026.git
+```
+
+If a checkout still references the legacy moved URL `https://github.com/BizEraERP/dklWeb2026.git`, agents must update `origin` to the canonical remote before pushing.
+
+### 16.2 Branch and Commit Rules
+
+- `main` is the production-ready branch.
+- Feature work should use `feature/*` or a clear task branch unless the owner explicitly asks for a direct `main` update.
+- Commit messages must use task-prefixed wording, for example `[TASK-002] Fix conventional favicon route`.
+- Agents must run `git fetch origin` before pushing.
+- Agents must not force-push to `main` without explicit owner approval.
+- If remote `main` has changed, agents must inspect the incoming commits and merge or rebase in a way that preserves owner work.
+
+### 16.3 Local Implementation Checklist
+
+Before marking implementation work complete, agents must:
+
+1. Confirm the active path is `C:\laragon\www\dklao`.
+2. Load root `AGENTS.md`, master `con_agents/AGENTS.md`, `AGENT_BOOTSTRAP.md`, and task-relevant companion files.
+3. Keep browser-rendered code free of Windows-only paths.
+4. Keep secrets out of Git; never commit `.env`, API keys, database credentials, webhook secrets, or customer lead logs.
+5. Update `con_agents/CHANGELOG.md` for governance, implementation, asset, route, or release-impacting work.
+6. Run `pnpm test -- --run`.
+7. Run `pnpm lint`.
+8. Run `pnpm typecheck`.
+9. Run `pnpm build`.
+10. Verify browser-facing changes at `http://localhost:3000/`.
+11. Check `git status -sb` before completion and report whether local and remote branches are synchronized.
+
+## 17. Completion Format
 
 When an agent finishes work, it must report:
 

@@ -10,6 +10,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 - Simplified `AnatomyDiagram` from a client-side animated callout component into a static server component using the reference image.
 - Removed the old anatomy callout columns, connector-line CSS, scroll-triggered callout animation hooks, and unused legacy hotspot styles from `globals.css`.
 - Added a conventional `public/favicon.ico` generated from the official DK LAO favicon PNG and updated metadata to prefer `/favicon.ico`.
+- Added canonical GitHub repository details and implementation workflow rules to root `AGENTS.md` and master `con_agents/AGENTS.md`, including the moved remote `bstBizEra/dklWeb2026`, `main` branch policy, fetch-before-push behavior, local `localhost:3000` verification, and required project gates.
 
 ### QA
 

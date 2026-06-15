@@ -10,6 +10,34 @@ This root file exists so agents starting from the DK LAO project root can discov
 /dklao
 ```
 
+## GitHub Repository
+
+Canonical 2026 website repository:
+
+```txt
+https://github.com/bstBizEra/dklWeb2026
+```
+
+Git remote:
+
+```txt
+https://github.com/bstBizEra/dklWeb2026.git
+```
+
+Legacy moved URL:
+
+```txt
+https://github.com/BizEraERP/dklWeb2026
+```
+
+Default branch:
+
+```txt
+main
+```
+
+Agents must treat `bstBizEra/dklWeb2026` as the canonical GitHub repository. If a local checkout still points to `BizEraERP/dklWeb2026`, update `origin` to the canonical remote before pushing.
+
 ## Windows Development Path
 
 ```txt
@@ -86,9 +114,24 @@ For Windows PowerShell:
 $env:DKLAO_PROJECT_ROOT="/dklao"
 $env:DKLAO_AGENT_CONTROL_PATH="/dklao/con_agents"
 $env:DKLAO_WINDOWS_PROJECT_ROOT="C:\laragon\www\dklao"
+$env:DKLAO_GITHUB_REPOSITORY="bstBizEra/dklWeb2026"
+$env:DKLAO_GITHUB_REMOTE="https://github.com/bstBizEra/dklWeb2026.git"
 $env:DKLAO_LOGO_PATH="C:\laragon\www\dklao\images\logo & FAV_Icon"
 $env:DKLAO_SLOGAN_ICON_PATH="C:\laragon\www\dklao\Icons for slogan"
 ```
+
+## GitHub Implementation Rules
+
+Before committing or pushing implementation work, agents must:
+
+1. Confirm the active repository is `C:\laragon\www\dklao`.
+2. Confirm `origin` points to `https://github.com/bstBizEra/dklWeb2026.git`.
+3. Run `git fetch origin` before pushing and preserve remote changes through merge or rebase unless the owner explicitly approves another strategy.
+4. Never force-push to `main` without explicit owner approval.
+5. Use task-prefixed commit messages such as `[TASK-002] Fix conventional favicon route`.
+6. Run the project gates before completion: `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+7. Verify browser-facing changes at `http://localhost:3000/` because Laragon/local development uses that origin.
+8. Update `C:\laragon\www\dklao\con_agents\CHANGELOG.md` for governance, implementation, asset, route, or release-impacting changes.
 
 ## Companion Rule Files
 
