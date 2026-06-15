@@ -62,6 +62,7 @@ ENVIRONMENT.md                  Environment variables and separation
 INFRA.md                        Infrastructure and operations rules
 OBSERVABILITY.md                Logging, monitoring, metrics, alerts
 CHANGELOG.md                    Decision and version history
+VERSIONING.md                   Major, minor, and patch version tracking rules
 ```
 
 ## Required Agent Behavior

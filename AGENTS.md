@@ -132,6 +132,7 @@ Before committing or pushing implementation work, agents must:
 6. Run the project gates before completion: `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
 7. Verify browser-facing changes at `http://localhost:3000/` because Laragon/local development uses that origin.
 8. Update `C:\laragon\www\dklao\con_agents\CHANGELOG.md` for governance, implementation, asset, route, or release-impacting changes.
+9. For version-impacting changes, update `package.json`, `VERSION.json`, and `con_agents\CHANGELOG.md`, then run `pnpm version:status`.
 
 ## Ngrok Local Preview Tunnel
 
@@ -208,6 +209,7 @@ After loading the master rule file, agents should load task-relevant companion c
 /dklao/con_agents/ENVIRONMENT.md
 /dklao/con_agents/OBSERVABILITY.md
 /dklao/con_agents/CHANGELOG.md
+/dklao/con_agents/VERSIONING.md
 ```
 
 ## Fail-Safe Rule

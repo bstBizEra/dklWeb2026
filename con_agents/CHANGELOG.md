@@ -2,6 +2,20 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.4.0] - 2026-06-16
+
+### Minor Changed
+
+- Added project version tracking across `package.json`, `VERSION.json`, `con_agents/VERSIONING.md`, and `con_agents/CHANGELOG.md`.
+- Added `pnpm version:status` to verify that the package version, current-version manifest, and latest changelog entry remain aligned.
+- Documented major, minor, and patch change-level rules, including when to use `Major Changed`, `Minor Changed`, and `Patch Changed` changelog labels.
+- Updated root and master agent rules so version-impacting changes must update version records before completion.
+
+### QA
+
+- Version tracking must pass `pnpm version:status` before release or push preparation.
+- Ran `pnpm version:status`, `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` successfully.
+
 ## [0.3.1] - 2026-06-16
 
 ### Changed

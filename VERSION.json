@@ -1,0 +1,19 @@
+{
+  "project": "DK LAO Website 2026",
+  "version": "0.4.0",
+  "status": "local-preview",
+  "releaseDate": "2026-06-16",
+  "changeLevel": "minor",
+  "summary": "Added version tracking for major, minor, and patch change governance.",
+  "sourceOfTruth": {
+    "packageVersion": "package.json",
+    "currentVersion": "VERSION.json",
+    "versionPolicy": "con_agents/VERSIONING.md",
+    "releaseHistory": "con_agents/CHANGELOG.md"
+  },
+  "changeLevels": {
+    "majorChanged": "Breaking public, route, API, data, deployment, or brand-system changes that require migration planning.",
+    "minorChanged": "New pages, workflows, components, governance systems, integrations, or non-breaking platform capabilities.",
+    "patchChanged": "Bug fixes, copy edits, visual refinements, asset swaps, documentation clarifications, and non-breaking maintenance."
+  }
+}

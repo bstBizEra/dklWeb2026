@@ -112,6 +112,7 @@ Agents must treat the following files as source documents:
 - `ENVIRONMENT.md` for environment variables and environment separation.
 - `OBSERVABILITY.md` for logs, metrics, alerts, and lead visibility.
 - `CHANGELOG.md` for version history.
+- `VERSIONING.md` for major, minor, and patch version tracking rules.
 
 If a requested task conflicts with these documents, the agent must preserve the strategic direction unless the project owner explicitly approves a change.
 
@@ -362,7 +363,8 @@ Before marking implementation work complete, agents must:
 8. Run `pnpm typecheck`.
 9. Run `pnpm build`.
 10. Verify browser-facing changes at `http://localhost:3000/`.
-11. Check `git status -sb` before completion and report whether local and remote branches are synchronized.
+11. For version-impacting changes, update `package.json`, `VERSION.json`, and `con_agents/CHANGELOG.md`, then run `pnpm version:status`.
+12. Check `git status -sb` before completion and report whether local and remote branches are synchronized.
 
 ### 16.4 Ngrok Local Preview Tunnel
 
