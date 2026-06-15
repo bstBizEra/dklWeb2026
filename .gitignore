@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+dist
+coverage
+.codex
+.env
+.env.*
+!.env.example
+data/leads-local.jsonl
+*.tsbuildinfo
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
