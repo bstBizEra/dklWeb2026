@@ -9,6 +9,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 - Replaced the homepage "Equipment matching" anatomy visual with the owner-provided static forklift anatomy reference image at `public/images/anatomy/forklift-equipment-matching-reference.png`.
 - Simplified `AnatomyDiagram` from a client-side animated callout component into a static server component using the reference image.
 - Removed the old anatomy callout columns, connector-line CSS, scroll-triggered callout animation hooks, and unused legacy hotspot styles from `globals.css`.
+- Added a conventional `public/favicon.ico` generated from the official DK LAO favicon PNG and updated metadata to prefer `/favicon.ico`.
 
 ### QA
 

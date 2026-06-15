@@ -37,8 +37,11 @@ export const metadata: Metadata = {
     address: false,
   },
   icons: {
-    icon: "/images/fav-icon/FAV-Icon.png",
-    shortcut: "/images/fav-icon/FAV-Icon.png",
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/images/fav-icon/FAV-Icon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/images/fav-icon/FAV-Icon.png",
   },
   openGraph: {
