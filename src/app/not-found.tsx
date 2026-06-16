@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 const quickLinks = [
+  { label: "About DK LAO", href: "/about" },
   { label: "Forklift Rental", href: "/forklift-rental" },
   { label: "New & Used Forklifts", href: "/forklift-sales" },
   { label: "Spare Parts", href: "/spare-parts" },

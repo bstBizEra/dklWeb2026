@@ -2,6 +2,24 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.5.0] - 2026-06-16
+
+### Minor Changed
+
+- Added the public `/about` route for the About DK LAO page using the owner-provided Phase 1 design and content direction.
+- Added route-specific About page sections: `AboutHero`, `CompanySnapshot`, `AboutStory`, `VisionCommitment`, `AboutWhatWeDo`, `WhyChooseDKLAO`, `IndustriesServed`, `ServicePromise`, and `AboutFinalCTA`.
+- Added About page content data and tests covering DK LAO business scope, conversion actions, and claim safety.
+- Added `About DK LAO` to the header, footer, route map, sitemap, content SEO title rules, root `AGENTS.md`, and master `con_agents/AGENTS.md`.
+- Updated the header quote CTA to point to `/#quote-request` so it works from the About page and other routes.
+- Extended `CTASection` to support a third action so the About final CTA includes `Contact DK LAO`.
+- Updated version records from `0.4.2` to `0.5.0` as a minor route/content expansion.
+
+### QA
+
+- Ran `pnpm version:status`, `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` successfully.
+- Browser-checked `/about` on desktop and 390px mobile: required sections render, final CTA includes `Contact DK LAO`, footer shows `v0.5.0`, and there are no console errors or horizontal overflow.
+- Smoke-checked `http://localhost:3000/`: header includes `About DK LAO`, quote CTA targets `/#quote-request`, the `#solutions` anchor exists, footer shows `v0.5.0`, and there are no console errors or horizontal overflow.
+
 ## [0.4.2] - 2026-06-16
 
 ### Patch Changed

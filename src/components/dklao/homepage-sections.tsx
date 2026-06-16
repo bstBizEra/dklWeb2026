@@ -24,7 +24,7 @@ import { ServiceCard } from "./service-card";
 
 export function SolutionOverview() {
   return (
-    <section className="dk-section">
+    <section className="dk-section" id="solutions">
       <div className="dk-container">
         <div className="dk-section-header">
           <p className="dk-eyebrow">Semi-ecommerce discovery</p>

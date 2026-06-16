@@ -4,6 +4,7 @@ import Link from "next/link";
 import { siteFooterMetadata } from "@/lib/site-metadata";
 
 const footerLinks = [
+  { label: "About DK LAO", href: "/about" },
   { label: "Forklift Rental", href: "/forklift-rental" },
   { label: "New Forklifts", href: "/forklift-sales/new" },
   { label: "Used Forklifts", href: "/forklift-sales/used" },

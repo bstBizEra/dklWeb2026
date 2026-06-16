@@ -8,6 +8,8 @@ type CTASectionProps = {
   primaryHref: string;
   secondaryLabel?: string;
   secondaryHref?: string;
+  tertiaryLabel?: string;
+  tertiaryHref?: string;
 };
 
 export function CTASection({
@@ -17,6 +19,8 @@ export function CTASection({
   primaryHref,
   secondaryLabel,
   secondaryHref,
+  tertiaryLabel,
+  tertiaryHref,
 }: CTASectionProps) {
   return (
     <section className="cta-section">
@@ -36,6 +40,11 @@ export function CTASection({
           {secondaryLabel && secondaryHref ? (
             <Link href={secondaryHref} className="dk-button dk-button-secondary">
               {secondaryLabel}
+            </Link>
+          ) : null}
+          {tertiaryLabel && tertiaryHref ? (
+            <Link href={tertiaryHref} className="dk-button dk-button-light">
+              {tertiaryLabel}
             </Link>
           ) : null}
         </div>

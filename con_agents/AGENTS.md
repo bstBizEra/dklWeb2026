@@ -189,19 +189,20 @@ Agents must not introduce a new framework without justification.
 Agents must preserve the following page groups:
 
 1. Home
-2. Forklift Rental
-3. New Forklifts
-4. Used Forklifts
-5. Material Handling
-6. Warehouse Equipment
-7. Racking & Shelving
-8. Spare Parts & Accessories
-9. Batteries & Chargers
-10. Cleaning Equipment
-11. Maintenance Service
-12. Industries
-13. Knowledge Center
-14. Contact / Request Quote
+2. About DK LAO
+3. Forklift Rental
+4. New Forklifts
+5. Used Forklifts
+6. Material Handling
+7. Warehouse Equipment
+8. Racking & Shelving
+9. Spare Parts & Accessories
+10. Batteries & Chargers
+11. Cleaning Equipment
+12. Maintenance Service
+13. Industries
+14. Knowledge Center
+15. Contact / Request Quote
 
 ## 8. Required Conversion Actions
 
@@ -253,12 +254,45 @@ Agents must create reusable components for:
 - IndustrialFooter
 - FloatingContactActions
 - QuickQuoteBar
+- AboutHero
+- CompanySnapshot
+- VisionCommitment
+- ServicePromise
 - IndustrySolutionCard
 - KnowledgeArticleCard
 
 Do not duplicate component logic across pages.
 
-### 10.1 Footer Ownership and Version Contract
+### 10.1 About DK LAO Page Contract
+
+The `/about` route must present DK LAO as a trustworthy, established, service-driven industrial equipment partner in Laos.
+
+Required About DK LAO sections:
+
+```txt
+AboutHero
+CompanySnapshot
+AboutStory
+VisionCommitment
+AboutWhatWeDo
+WhyChooseDKLAO
+IndustriesServed
+ServicePromise
+AboutFinalCTA
+```
+
+Required About page CTAs:
+
+```txt
+Request a Quote
+View Our Solutions
+Contact DK LAO
+Book Maintenance Service
+```
+
+About page content must support forklift rental, new and used forklift sales, spare parts, maintenance services, warehouse and material handling solutions, and professional cleaning equipment. It must not introduce fake pricing, fake stock, unsupported distributor claims, or unsupported technical specifications.
+
+### 10.2 Footer Ownership and Version Contract
 
 `IndustrialFooter` must display:
 

@@ -8,6 +8,7 @@ This file controls public routes, page ownership, required CTAs, SEO targets, an
 
 ```txt
 /                           Home
+/about                      About DK LAO
 /forklift-rental            Forklift rental landing page
 /forklift-rental/short-term Short-term rental page
 /forklift-rental/long-term  Long-term rental page
@@ -33,6 +34,7 @@ Every route must have at least one conversion action.
 
 ```txt
 Home -> Request a Quote, View Rental Fleet, Book Maintenance Service
+About -> Request a Quote, View Our Solutions, Contact DK LAO
 Forklift Rental -> Ask for Rental Price, View Rental Fleet
 Forklift Sales -> Request a Quote, Ask for Recommendation
 Used Forklifts -> Request Inspection, Ask for Used Forklift Stock

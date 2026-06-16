@@ -190,6 +190,42 @@ https://www.bizera.la/
 
 Agents must keep the visible footer version synchronized with `VERSION.json`, update the current year from runtime/build context, and must not hardcode a stale version string in footer UI.
 
+## About DK LAO Page Rules
+
+The public About DK LAO route is:
+
+```txt
+/about
+```
+
+Navigation label:
+
+```txt
+About DK LAO
+```
+
+SEO title:
+
+```txt
+About DK LAO - Material Handling, Forklift Rental, Services & Warehouse Solutions in Laos
+```
+
+Required sections:
+
+```txt
+AboutHero
+CompanySnapshot
+AboutStory
+VisionCommitment
+AboutWhatWeDo
+WhyChooseDKLAO
+IndustriesServed
+ServicePromise
+AboutFinalCTA
+```
+
+The About page must position DK LAO as a trustworthy, established, service-driven industrial equipment partner in Laos for forklift rental, new and used forklift sales, spare parts, maintenance services, warehouse solutions, material handling equipment, and professional cleaning equipment. It must include visible lead actions and must not include fake pricing, fake stock, unsupported distributor claims, or unsupported technical specifications.
+
 ## Ngrok Local Preview Tunnel
 
 Ngrok is approved only as a temporary public preview tunnel for the local DK LAO website. It is not the production deployment target.

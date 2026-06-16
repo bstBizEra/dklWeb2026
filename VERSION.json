@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "status": "local-preview",
   "releaseDate": "2026-06-16",
-  "changeLevel": "patch",
-  "summary": "Added DK LAO Website 2026 design branch and main branch governance.",
+  "changeLevel": "minor",
+  "summary": "Added the About DK LAO public page with approved Phase 1 content and route governance.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

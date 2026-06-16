@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Menu } from "lucide-react";
 
 const navItems = [
+  { label: "About DK LAO", href: "/about" },
   { label: "Rental", href: "/forklift-rental" },
   { label: "Forklifts", href: "/forklift-sales" },
   { label: "Parts", href: "/spare-parts" },
@@ -33,7 +34,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link className="dk-button dk-button-primary site-header__cta" href="#quote-request">
+        <Link className="dk-button dk-button-primary site-header__cta" href="/#quote-request">
           Request a Quote
           <ArrowRight size={18} aria-hidden="true" />
         </Link>
@@ -48,7 +49,7 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link className="dk-button dk-button-primary" href="#quote-request">
+            <Link className="dk-button dk-button-primary" href="/#quote-request">
               Request a Quote
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
