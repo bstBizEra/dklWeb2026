@@ -360,11 +360,49 @@ If a checkout still references the legacy moved URL `https://github.com/BizEraER
 ### 16.2 Branch and Commit Rules
 
 - `main` is the production-ready branch.
+- `design/dklao-website-2026` is the standard owner-review branch for DK LAO Website 2026 design, UI, UX, content placement, motion, and asset-direction exploration.
 - Feature work should use `feature/*` or a clear task branch unless the owner explicitly asks for a direct `main` update.
+- Fixes should use `fix/*`; urgent production-ready fixes should use `hotfix/*`.
 - Commit messages must use task-prefixed wording, for example `[TASK-002] Fix conventional favicon route`.
 - Agents must run `git fetch origin` before pushing.
 - Agents must not force-push to `main` without explicit owner approval.
 - If remote `main` has changed, agents must inspect the incoming commits and merge or rebase in a way that preserves owner work.
+
+### 16.2.1 DK LAO Website 2026 Design Branch and Main Rules
+
+Branch roles:
+
+```txt
+main                         Production-ready verified branch
+design/dklao-website-2026    Owner-review design and UI/UX exploration branch
+feature/*                    Scoped implementation work
+fix/*                        Scoped bug fixes
+hotfix/*                     Urgent production-ready fixes
+```
+
+`main` is the stable source for verified DK LAO Website 2026 work. It must contain only owner-approved, tested, changelogged changes. Direct work on `main` is allowed only when the owner asks for it or approves it in the current task. Agents must never force-push `main` without explicit owner approval.
+
+`design/dklao-website-2026` is for:
+
+- Visual design exploration.
+- Layout revisions.
+- UI/UX polish.
+- Motion studies.
+- Content placement.
+- Asset direction.
+- Owner preview and review.
+
+The design branch must follow `DESIGNS.md`, `TOKEN.md`, `ASSETS.md`, `COMPONENTS.md`, and `CONTENT.md`. It must not contain secrets, customer lead data, production deployment credentials, destructive migrations, or unrelated backend architecture changes.
+
+Before promoting design branch work into `main`, agents must:
+
+1. Get owner approval for the selected design direction.
+2. Promote only selected final changes, not abandoned experiments.
+3. Update `con_agents/CHANGELOG.md`.
+4. Update version records when the change is version-impacting.
+5. Run `pnpm version:status` when version records changed.
+6. Run `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+7. Browser-check `http://localhost:3000/` for visible page or component changes.
 
 ### 16.3 Local Implementation Checklist
 

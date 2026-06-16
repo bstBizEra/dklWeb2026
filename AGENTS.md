@@ -134,6 +134,45 @@ Before committing or pushing implementation work, agents must:
 8. Update `C:\laragon\www\dklao\con_agents\CHANGELOG.md` for governance, implementation, asset, route, or release-impacting changes.
 9. For version-impacting changes, update `package.json`, `VERSION.json`, and `con_agents\CHANGELOG.md`, then run `pnpm version:status`.
 
+## DK LAO Website 2026 Branch Rules
+
+Branch governance for the DK LAO Website 2026 repository:
+
+```txt
+main                         Production-ready verified branch
+design/dklao-website-2026    Owner-review design and UI/UX exploration branch
+feature/*                    Scoped implementation work
+fix/*                        Scoped bug fixes
+hotfix/*                     Urgent production-ready fixes
+```
+
+`main` rules:
+
+1. `main` is the stable branch for verified DK LAO Website 2026 work.
+2. `main` must contain only owner-approved, tested, changelogged work.
+3. Direct commits to `main` are allowed only when the owner asks for direct main work or approves it in the current task.
+4. Agents must run `git fetch origin` before committing or pushing to `main`.
+5. Agents must not force-push to `main` without explicit owner approval.
+6. Before pushing to `main`, agents must run the required project gates and version check when applicable.
+
+Design branch rules:
+
+1. Use `design/dklao-website-2026` for visual design exploration, layout revisions, UI polish, motion studies, content placement, and asset direction.
+2. Keep design work aligned with `DESIGNS.md`, `TOKEN.md`, `ASSETS.md`, `COMPONENTS.md`, and `CONTENT.md`.
+3. Do not use the design branch for secrets, customer lead data, production deployment credentials, destructive migrations, or unrelated backend architecture changes.
+4. Keep the design branch current with `main` before major design work and before promotion back to `main`.
+5. The design branch may be pushed for owner review or preview, but it must not be treated as the production source unless the owner explicitly approves it.
+
+Promotion from design branch to `main` requires:
+
+1. Owner approval of the selected design direction.
+2. Only selected final design changes promoted; abandoned experiments must not be carried into `main`.
+3. `con_agents/CHANGELOG.md` updated.
+4. Version records updated when the change is version-impacting.
+5. `pnpm version:status` when version records changed.
+6. `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+7. Browser QA at `http://localhost:3000/` for any visible page or component change.
+
 ## Footer Ownership and Version Rules
 
 Every public DK LAO footer must display:

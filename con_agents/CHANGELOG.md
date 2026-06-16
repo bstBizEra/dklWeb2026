@@ -2,6 +2,21 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.4.2] - 2026-06-16
+
+### Patch Changed
+
+- Added DK LAO Website 2026 branch governance to root `AGENTS.md` and master `con_agents/AGENTS.md`.
+- Defined `main` as the production-ready verified branch for owner-approved, tested, changelogged work.
+- Defined `design/dklao-website-2026` as the owner-review branch for design, UI/UX, content placement, motion, and asset-direction exploration.
+- Added promotion rules for moving selected design work into `main`, including owner approval, changelog updates, version checks when applicable, project gates, and browser QA for visible changes.
+- Updated version records from `0.4.1` to `0.4.2` as a patch governance change.
+
+### QA
+
+- Version tracking must pass `pnpm version:status` before push preparation.
+- Ran `pnpm version:status`, `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` successfully.
+
 ## [0.4.1] - 2026-06-16
 
 ### Patch Changed
