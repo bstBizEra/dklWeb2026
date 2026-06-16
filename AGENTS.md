@@ -134,6 +134,23 @@ Before committing or pushing implementation work, agents must:
 8. Update `C:\laragon\www\dklao\con_agents\CHANGELOG.md` for governance, implementation, asset, route, or release-impacting changes.
 9. For version-impacting changes, update `package.json`, `VERSION.json`, and `con_agents\CHANGELOG.md`, then run `pnpm version:status`.
 
+## Footer Ownership and Version Rules
+
+Every public DK LAO footer must display:
+
+```txt
+Left: Copyright © DK LAO Since 2019-current year, v{VERSION.json version}
+Right: Develop by: BizEra (www.bizera.la)
+```
+
+The BizEra credit must link to:
+
+```txt
+https://www.bizera.la/
+```
+
+Agents must keep the visible footer version synchronized with `VERSION.json`, update the current year from runtime/build context, and must not hardcode a stale version string in footer UI.
+
 ## Ngrok Local Preview Tunnel
 
 Ngrok is approved only as a temporary public preview tunnel for the local DK LAO website. It is not the production deployment target.

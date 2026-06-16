@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "status": "local-preview",
   "releaseDate": "2026-06-16",
-  "changeLevel": "minor",
-  "summary": "Added version tracking for major, minor, and patch change governance.",
+  "changeLevel": "patch",
+  "summary": "Added footer version, copyright, and BizEra developer credit display.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

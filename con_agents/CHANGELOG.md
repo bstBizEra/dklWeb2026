@@ -2,6 +2,20 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.4.1] - 2026-06-16
+
+### Patch Changed
+
+- Added footer ownership metadata: left-side `Copyright © DK LAO Since 2019-2026, v0.4.1` and right-side BizEra developer credit linking to `https://www.bizera.la/`, with the visible website version sourced from `VERSION.json`.
+- Added footer ownership and version rules to root `AGENTS.md` and master `con_agents/AGENTS.md`.
+- Updated version records from `0.4.0` to `0.4.1` as a patch change.
+
+### QA
+
+- Added `siteFooterMetadata` coverage to keep footer ownership and version metadata aligned with `VERSION.json`.
+- Ran `pnpm version:status`, `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build` successfully.
+- Browser-checked the footer at `http://localhost:3000/` on desktop and 390px mobile: left text renders as `Copyright © DK LAO Since 2019-2026, v0.4.1`, right text renders as `Develop by: BizEra (www.bizera.la)`, the BizEra link targets `https://www.bizera.la/`, and there are no console errors or horizontal overflow.
+
 ## [0.4.0] - 2026-06-16
 
 ### Minor Changed

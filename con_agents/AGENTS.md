@@ -258,6 +258,23 @@ Agents must create reusable components for:
 
 Do not duplicate component logic across pages.
 
+### 10.1 Footer Ownership and Version Contract
+
+`IndustrialFooter` must display:
+
+```txt
+Left: Copyright © DK LAO Since 2019-current year, v{VERSION.json version}
+Right: Develop by: BizEra (www.bizera.la)
+```
+
+The BizEra credit must link to:
+
+```txt
+https://www.bizera.la/
+```
+
+Agents must source the visible website version from the project version tracking system, update the current year from runtime/build context, and avoid hardcoded stale footer version strings.
+
 ## 11. Motion Rules
 
 Motion must support business meaning, not decoration.

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { siteFooterMetadata } from "@/lib/site-metadata";
+
 const footerLinks = [
   { label: "Forklift Rental", href: "/forklift-rental" },
   { label: "New Forklifts", href: "/forklift-sales/new" },
@@ -44,6 +46,23 @@ export function IndustrialFooter() {
             <Link href="/contact">Talk to DK LAO Advisor</Link>
           </nav>
         </div>
+      </div>
+      <div className="dk-container industrial-footer__meta">
+        <p className="industrial-footer__copyright">
+          {siteFooterMetadata.copyrightPrefix} Since{" "}
+          {siteFooterMetadata.foundedYear}-{siteFooterMetadata.currentYear}, v
+          {siteFooterMetadata.version}
+        </p>
+        <p className="industrial-footer__credit">
+          {siteFooterMetadata.developerLabel}{" "}
+          <a
+            href={siteFooterMetadata.developerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {`${siteFooterMetadata.developerName} (${siteFooterMetadata.developerDisplayUrl})`}
+          </a>
+        </p>
       </div>
     </footer>
   );
