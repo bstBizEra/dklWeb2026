@@ -2,6 +2,18 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.7.0] - 2026-10-09
+
+### Minor Changed
+
+- Added DK Buddy, an animated public site guide with quick questions, typed guidance and links to the relevant inquiry pages.
+- Kept responses grounded in published service categories. Price, stock, delivery and warranty questions go to a DK LAO advisor for confirmation.
+- Kept guide messages in browser memory only; no model or external chat service is connected in this preview.
+
+### QA and release boundary
+
+- Local tests, lint, typecheck and browser interaction checks passed. Model-generated answers, approved Lao content and production hosting remain pending.
+
 ## [0.6.0] - 2026-10-09
 
 ### Minor Changed

@@ -41,3 +41,7 @@ Branch `feature/DKLA-production-build` remains a local preview at version `0.6.0
 | Pull request verification workflow | PASS on draft PR #1, runs 37825559226 and 37825778637: frozen install, tests, lint, typecheck, build, version and production audit | The second run used pinned current action revisions; live service checks are still separate |
 
 Production blockers: the owner selected the BizEra Supabase organization, but the connected account lists no project and its required cost-check tool is unavailable; Vercel lists no matching project. Staff roster and quotation approver, approved bilingual source files, data-use and retention decisions, staging restore, and live monitoring are pending. Do not activate production intake or staff access from these local results alone.
+
+## DK Buddy local preview — 2026-10-09
+
+Version 0.7.0 adds a public, pet-like site guide on the website. It answers immediately from a small set of published service paths, links visitors to the corresponding inquiry page, and declines to confirm live price, stock, delivery or warranty terms. The conversation stays in browser memory; there is no model call or customer-message storage. Browser checks covered quick rental guidance, a typed price/stock question, Escape closing with focus return, a 320px viewport without horizontal overflow and no console errors. This does not satisfy the planned model-backed bilingual assistant release gate.

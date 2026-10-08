@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { SiteCompanion } from "@/components/dklao/site-companion";
 
 const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
 
@@ -99,6 +100,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         {children}
+        <SiteCompanion />
       </body>
     </html>
   );
