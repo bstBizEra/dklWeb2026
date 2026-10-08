@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "status": "local-preview",
-  "releaseDate": "2026-06-16",
+  "releaseDate": "2026-10-09",
   "changeLevel": "minor",
-  "summary": "Added the About DK LAO public page with approved Phase 1 content and route governance.",
+  "summary": "Local preview of public solution routes, staff identity, durable-intake migration and verified knowledge search; production activation remains gated.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

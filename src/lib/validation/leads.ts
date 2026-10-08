@@ -49,6 +49,12 @@ export const quoteRequestSchema = z.object({
   status: leadStatusSchema.default("NEW"),
 });
 
+// Public callers may send legacy status/time fields, but the server never uses them.
+export const publicQuoteRequestSchema = quoteRequestSchema.omit({
+  status: true,
+  submissionTimestamp: true,
+});
+
 export type QuoteRequestInput = z.input<typeof quoteRequestSchema>;
 export type QuoteRequest = z.output<typeof quoteRequestSchema>;
 

@@ -2,6 +2,20 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.6.0] - 2026-10-09
+
+### Minor Changed
+
+- Added public solution inquiry routes for every linked service category without claiming live stock or pricing.
+- Added staff sign-in, scoped lead detail and verified knowledge reads, guarded lead changes, and migration files for identity, intake, audit and knowledge.
+- Upgraded Next.js to 16.4.0 and pinned patched transitive browser data packages after a production dependency audit.
+- Kept customer-facing intake response shape and server-assigned lead status/time; added bounded request parsing and retry-safe database ingestion design.
+
+### QA and release boundary
+
+- Local tests, lint, typecheck, build, isolated Postgres policy/intake checks and browser route checks passed. See `docs/dkl-agent/10-Verification-Record.md` for exact scope.
+- Supabase and Vercel projects, real staff memberships, approved knowledge, Lao review, backup/restore and production deployment remain unverified. No customer-data processing or AI model is enabled by this version.
+
 ## [0.5.0] - 2026-06-16
 
 ### Minor Changed
@@ -138,3 +152,6 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 - Initial DK LAO root bridge `AGENTS.md`.
 - Initial master control file under `/dklao/con_agents/AGENTS.md`.
 - Initial companion control package for design, content, architecture, routes, components, data model, API contracts, forms, QA, security, deployment, and infrastructure.
+
+## [DKLA-001] Business-agent lifecycle suite - 2026-10-08
+Added specification documents and agent-team controls under docs/dkl-agent. Existing website preserved; agent runtime and CRM are planned. Local path override is the owner's requested dklAgent directory.

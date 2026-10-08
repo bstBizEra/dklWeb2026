@@ -1,0 +1,6 @@
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
+overrides:
+  browserslist: 4.29.3
+  baseline-browser-mapping: 2.11.27

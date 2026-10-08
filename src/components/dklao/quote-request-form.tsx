@@ -22,9 +22,19 @@ const categoryOptions = [
   "Maintenance service",
   "Warehouse solutions",
   "Cleaning equipment",
+  "Material handling",
+  "Batteries and chargers",
+  "General inquiry",
 ];
 
-export function QuoteRequestForm() {
+export function QuoteRequestForm({
+  initialCategory = "Forklift rental",
+  leadType = "QUOTE_REQUEST",
+}: {
+  initialCategory?: string;
+  leadType?: QuoteRequestInput["leadType"];
+}) {
+  const [retryKey, setRetryKey] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -36,12 +46,12 @@ export function QuoteRequestForm() {
   } = useForm<QuoteRequestInput>({
     resolver: zodResolver(quoteRequestSchema),
     defaultValues: {
-      leadType: "QUOTE_REQUEST",
+      leadType,
       companyName: "",
       contactPerson: "",
       phone: "",
       email: "",
-      equipmentOrServiceCategory: "Forklift rental",
+      equipmentOrServiceCategory: initialCategory,
       message: "",
       sourcePage: "/",
     },
@@ -56,31 +66,28 @@ export function QuoteRequestForm() {
       sourcePage: window.location.pathname || "/",
     };
 
-    const response = await fetch("/api/leads/quote", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-    const result = (await response.json()) as QuoteResponse;
-
-    if (!result.ok) {
-      setErrorMessage(result.error.message);
-      return;
+    const key = retryKey ?? crypto.randomUUID();
+    setRetryKey(key);
+    try {
+      const response = await fetch("/api/leads/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": key },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json()) as QuoteResponse;
+      if (!result.ok) {
+        setErrorMessage(result.error.message);
+        return;
+      }
+      setSuccessMessage(result.message);
+      setRetryKey(null);
+      reset({
+        leadType, companyName: "", contactPerson: "", phone: "", email: "",
+        equipmentOrServiceCategory: initialCategory, message: "", sourcePage: window.location.pathname || "/",
+      });
+    } catch {
+      setErrorMessage("Your request could not be confirmed. Please retry or contact DK LAO directly.");
     }
-
-    setSuccessMessage(result.message);
-    reset({
-      leadType: "QUOTE_REQUEST",
-      companyName: "",
-      contactPerson: "",
-      phone: "",
-      email: "",
-      equipmentOrServiceCategory: "Forklift rental",
-      message: "",
-      sourcePage: window.location.pathname || "/",
-    });
   }
 
   return (
@@ -94,7 +101,7 @@ export function QuoteRequestForm() {
         </p>
       </div>
 
-      <input type="hidden" value="QUOTE_REQUEST" {...register("leadType")} />
+      <input type="hidden" value={leadType} {...register("leadType")} />
       <input type="hidden" value="/" {...register("sourcePage")} />
 
       <div className="quote-form__grid">

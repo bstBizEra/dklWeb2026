@@ -1884,6 +1884,43 @@ img {
 }
 
 /* === Equipment matching: text left, forklift diagram right === */
+.staff-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background: var(--dk-color-surface);
+}
+
+.staff-card { width: min(100%, 480px); padding: 32px; }
+.staff-card h1 { margin: 8px 0; }
+.staff-card p { line-height: 1.6; }
+.staff-form { display: grid; gap: 12px; margin: 24px 0; }
+.staff-form input {
+  min-height: 44px;
+  border: 1px solid var(--dk-color-slate-300);
+  border-radius: var(--dk-radius-sm);
+  padding: 10px 12px;
+}
+.staff-error { color: var(--dk-color-danger); }
+.staff-shell--wide { display: block; }
+.staff-card--wide { width: min(100%, 1100px); margin: 0 auto; }
+.staff-table-wrap { overflow-x: auto; }
+.staff-table { width: 100%; border-collapse: collapse; text-align: left; }
+.staff-table th, .staff-table td { padding: 12px; border-bottom: 1px solid var(--dk-color-slate-300); }
+.staff-source-list { display: grid; gap: 16px; padding: 0; list-style: none; }
+.staff-source-list li { border-top: 1px solid var(--dk-color-slate-300); }
+.staff-source-list blockquote { margin: 0; padding: 16px; background: var(--dk-color-slate-100); white-space: pre-wrap; }
+.staff-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 24px; }
+.staff-details dt { font-weight: 700; }
+.staff-details dd { margin: 0; overflow-wrap: anywhere; }
+.staff-request { white-space: pre-wrap; }
+.staff-form select { width: 100%; padding: 12px; border: 1px solid var(--dk-color-slate-300); border-radius: 8px; }
+.topic-page__grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 48px; align-items: start; }
+.topic-page h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.1; }
+.topic-page li { margin: 12px 0; }
+@media (max-width: 900px) { .topic-page__grid { grid-template-columns: 1fr; } }
+
 .anatomy-section__layout {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
