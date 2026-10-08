@@ -9,6 +9,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 - Added public solution inquiry routes for every linked service category without claiming live stock or pricing.
 - Added staff sign-in, scoped lead detail and verified knowledge reads, guarded lead changes, and migration files for identity, intake, audit and knowledge.
 - Upgraded Next.js to 16.4.0 and pinned patched transitive browser data packages after a production dependency audit.
+- Added a pull request verification workflow for install, tests, lint, types, build, version alignment and dependency audit.
 - Kept customer-facing intake response shape and server-assigned lead status/time; added bounded request parsing and retry-safe database ingestion design.
 
 ### QA and release boundary
