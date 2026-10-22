@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.6.1",
+  "version": "0.8.1",
   "status": "local-preview",
   "releaseDate": "2026-10-22",
   "changeLevel": "patch",
-  "summary": "Corrected the footer founding year to 2010 on owner confirmation.",
+  "summary": "Phase 3 prep, local only: GitHub Actions CI workflow, env example, deploy checklist, Supabase lockdown migration. Nothing pushed or deployed.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

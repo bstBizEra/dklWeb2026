@@ -1,0 +1,78 @@
+# CI for DK LAO Website 2026. It only checks the code: it deploys nothing and holds no secrets.
+# Vercel builds and deploys on its own once the repository is connected (see docs/deploy-checklist.md).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, "design/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: Test, lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Not a secret: a throwaway value so the build can start. No database is configured here,
+      # so the site builds from its built-in content.
+      PAYLOAD_SECRET: ci-build-only-not-a-secret-0000000000000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Version records agree
+        run: pnpm version:status
+      - name: Test
+        run: pnpm test -- --run
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build
+
+  migrations:
+    name: Migrations apply to an empty database
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-not-a-secret
+          POSTGRES_DB: dklao_cms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d dklao_cms"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci-only-not-a-secret@127.0.0.1:5432/dklao_cms
+      PAYLOAD_SECRET: ci-build-only-not-a-secret-0000000000000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        run: pnpm cms:migrate

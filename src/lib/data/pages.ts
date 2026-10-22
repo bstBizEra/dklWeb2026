@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { getRoute, isPublishedRoute, quoteHref } from "@/lib/data/routes";
+import { hasConfirmMarker } from "@/lib/data/confirm";
 import { siteFacts, type FactKey, type SiteFacts } from "@/lib/data/site-facts";
 
 export type PageItem = {
@@ -54,6 +55,11 @@ export function visibleSections(
           return [];
         }
 
+        // Defence in depth: planning markers such as [CONFIRM] never render, whatever the source.
+        if (hasConfirmMarker(item.title) || hasConfirmMarker(description)) {
+          return [];
+        }
+
         const route = item.routeId ? getRoute(item.routeId) : undefined;
 
         return [
@@ -65,7 +71,7 @@ export function visibleSections(
         ];
       }),
     }))
-    .filter((section) => section.items.length > 0);
+    .filter((section) => section.items.length > 0 && !hasConfirmMarker(section.title));
 }
 
 export function buildMetadata(page: PageContent): Metadata {
@@ -117,7 +123,7 @@ export const requestQuotePage: PageContent = {
       title: "Before you send",
       items: [
         { title: "Do I need exact specifications?", description: "No. Describe the job and the site, and we recommend options." },
-        { title: "How is pricing decided?", description: "Pricing is by quotation, based on the equipment or service, the period and the site." },
+        { title: "How is pricing decided?", description: "Pricing is by quotation. It depends on the equipment specification or service, the period and the site." },
         { title: "How fast will you reply?", fact: "quoteReplyTime" },
       ],
     },
@@ -140,6 +146,7 @@ export const contactPage: PageContent = {
       items: [
         { title: "Phone", fact: "phone" },
         { title: "WhatsApp", fact: "whatsapp" },
+        { title: "Facebook", fact: "facebook" },
         { title: "Email", fact: "email" },
         { title: "Address", fact: "address" },
         { title: "Opening hours", fact: "hours" },
@@ -214,8 +221,9 @@ export const forkliftRentalPage: PageContent = {
       kind: "faq",
       title: "Rental questions",
       items: [
-        { title: "How is rental priced?", description: "Rental is quotation-based. Price depends on the unit, the period and the site." },
+        { title: "How is rental priced?", description: "Rental is quotation-based. Price depends on the equipment specification, the rental period and the site." },
         { title: "What should I send?", description: "Load, lift height, site, dates and the delivery address." },
+        { title: "Which forklift brands do you supply?", fact: "brands" },
         { title: "Do you deliver?", fact: "deliveryCoverage" },
         { title: "Who maintains the forklift during rental?", fact: "maintenanceTerms" },
         { title: "Can I buy the forklift after renting?", fact: "rentToBuyTerms" },

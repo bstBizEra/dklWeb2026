@@ -17,6 +17,9 @@ import { QuickQuoteBar } from "@/components/dklao/quick-quote-bar";
 import { SiteHeader } from "@/components/dklao/site-header";
 import { homepageCtas, productCategories, quickQuoteActions } from "@/lib/data/homepage";
 
+// The footer reads site facts from the CMS, so refresh the page at most once a minute.
+export const revalidate = 60;
+
 export default function Home() {
   return (
     <main className="dk-page" id="main-content">

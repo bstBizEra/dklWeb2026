@@ -2,13 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { publishedRoutes, quoteHref } from "@/lib/data/routes";
+import { getSiteFacts } from "@/lib/cms/site-facts";
+import { contactChannels } from "@/lib/data/site-facts";
 import { siteFooterMetadata } from "@/lib/site-metadata";
 
 const footerLinks = publishedRoutes().filter(
   (route) => route.group !== "conversion" && route.id !== "home",
 );
+export async function IndustrialFooter() {
+  const channels = contactChannels(await getSiteFacts());
 
-export function IndustrialFooter() {
   return (
     <footer className="industrial-footer">
       <div className="dk-container industrial-footer__grid">
@@ -41,6 +44,22 @@ export function IndustrialFooter() {
             <Link href={quoteHref("warehouse")}>Schedule Site Survey</Link>
             <Link href="/contact">Talk to DK LAO Advisor</Link>
           </nav>
+          {channels.length > 0 ? (
+            <>
+              <h2 style={{ marginTop: 24 }}>Reach us</h2>
+              <nav aria-label="Footer contact channels">
+                {channels.map((channel) => (
+                  <a
+                    key={channel.label}
+                    href={channel.href}
+                    {...(channel.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  >
+                    {channel.label}: {channel.text}
+                  </a>
+                ))}
+              </nav>
+            </>
+          ) : null}
         </div>
       </div>
       <div className="dk-container industrial-footer__meta">

@@ -7,9 +7,12 @@ import {
 } from "@/lib/leads/intents";
 
 import { contactPage, forkliftRentalPage, requestQuotePage, visibleSections } from "./pages";
-import { siteFacts, type SiteFacts } from "./site-facts";
+import { contactChannels, siteFacts, type SiteFacts } from "./site-facts";
 
 const allPages = [requestQuotePage, contactPage, forkliftRentalPage];
+
+// Every fact unset, so these tests do not change when the owner confirms more facts.
+const noFacts = Object.fromEntries(Object.keys(siteFacts).map((key) => [key, null])) as SiteFacts;
 
 function titles(sections: ReturnType<typeof visibleSections>) {
   return sections.flatMap((section) => section.items.map((item) => item.title));
@@ -21,34 +24,71 @@ describe("content pages", () => {
 
     expect(text).not.toMatch(/\[\[?confirm/i);
     expect(text).not.toMatch(
-      /cheapest|guaranteed lowest|always available|official distributor|best in laos/i,
+      /cheapest|guaranteed lowest|always available|official distributor|authorised dealer|authorized dealer|best in laos/i,
     );
   });
 
-  it("hides every item bound to an unconfirmed fact", () => {
-    expect(Object.values(siteFacts).every((value) => value === null)).toBe(true);
+  it("only holds real values in site facts, never masked or bracketed placeholders", () => {
+    for (const [key, value] of Object.entries(siteFacts)) {
+      if (value) {
+        expect(value, key).not.toMatch(/x{3,}|\[|\]|confirm|todo/i);
+      }
+    }
+  });
 
-    expect(visibleSections(contactPage).map((section) => section.title)).not.toContain(
+  it("hides every item bound to an unset fact", () => {
+    expect(visibleSections(contactPage, noFacts).map((section) => section.title)).not.toContain(
       "Reach us directly",
     );
-    expect(titles(visibleSections(forkliftRentalPage))).not.toContain("Do you deliver?");
-    expect(titles(visibleSections(requestQuotePage))).not.toContain("How fast will you reply?");
+    expect(titles(visibleSections(forkliftRentalPage, noFacts))).not.toContain("Do you deliver?");
+    expect(titles(visibleSections(forkliftRentalPage, noFacts))).not.toContain(
+      "Which forklift brands do you supply?",
+    );
+    expect(titles(visibleSections(requestQuotePage, noFacts))).not.toContain("How fast will you reply?");
   });
 
   it("shows fact-bound items once the owner confirms the fact", () => {
-    const facts: SiteFacts = { ...siteFacts, phone: "+856 00 000 000", deliveryCoverage: "Test" };
+    const facts: SiteFacts = { ...noFacts, phone: "+856 20 000 0000", deliveryCoverage: "Test" };
     const contact = visibleSections(contactPage, facts).find(
       (section) => section.title === "Reach us directly",
     );
 
-    expect(contact?.items).toEqual([{ title: "Phone", description: "+856 00 000 000", href: undefined }]);
+    expect(contact?.items).toEqual([
+      { title: "Phone", description: "+856 20 000 0000", href: undefined },
+    ]);
     expect(titles(visibleSections(forkliftRentalPage, facts))).toContain("Do you deliver?");
+  });
+
+  it("shows the confirmed Facebook page and brand answer today", () => {
+    expect(titles(visibleSections(contactPage))).toContain("Facebook");
+    expect(titles(visibleSections(forkliftRentalPage))).toContain("Which forklift brands do you supply?");
   });
 
   it("links to a planned route only after it is published", () => {
     const cards = visibleSections(forkliftRentalPage).find((section) => section.kind === "cards");
 
     expect(cards?.items.every((item) => item.href === undefined)).toBe(true);
+  });
+});
+
+describe("contact channels", () => {
+  it("lists phone, WhatsApp and Facebook together when all are set", () => {
+    const channels = contactChannels({
+      ...noFacts,
+      phone: "+856 20 000 0000",
+      whatsapp: "+856 20 111 1111",
+      facebook: "https://www.facebook.com/DKLAOonline",
+    });
+
+    expect(channels.map((channel) => channel.label)).toEqual(["Phone", "WhatsApp", "Facebook"]);
+    expect(channels[0].href).toBe("tel:+856200000000");
+    expect(channels[1].href).toBe("https://wa.me/856201111111");
+    expect(channels[2].text).toBe("facebook.com/DKLAOonline");
+  });
+
+  it("returns only confirmed channels", () => {
+    expect(contactChannels(noFacts)).toEqual([]);
+    expect(contactChannels().map((channel) => channel.label)).toContain("Facebook");
   });
 });
 

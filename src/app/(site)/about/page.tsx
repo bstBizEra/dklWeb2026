@@ -15,6 +15,9 @@ import { FloatingContactActions } from "@/components/dklao/floating-contact-acti
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
 
+// The footer reads site facts from the CMS, so refresh the page at most once a minute.
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title:
     "About DK LAO - Material Handling, Forklift Rental, Services & Warehouse Solutions in Laos",

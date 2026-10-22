@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { storeLocalLead } from "@/lib/leads/local-store";
+import { storeLead } from "@/lib/leads/store";
 import { quoteRequestSchema, type ApiError, type ApiSuccess } from "@/lib/validation/leads";
 
 export const runtime = "nodejs";
@@ -37,7 +37,7 @@ export async function POST(request: Request): Promise<NextResponse<QuoteLeadResp
   }
 
   try {
-    const storedLead = await storeLocalLead(parsed.data);
+    const storedLead = await storeLead(parsed.data);
 
     return NextResponse.json({
       ok: true,

@@ -7,6 +7,7 @@ import { FloatingContactActions } from "@/components/dklao/floating-contact-acti
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
 import { visibleSections, type PageContent, type ResolvedSection } from "@/lib/data/pages";
+import { getSiteFacts } from "@/lib/cms/site-facts";
 import { relatedRoutes } from "@/lib/data/routes";
 
 type ContentPageProps = {
@@ -58,7 +59,15 @@ function SectionBody({ section }: { section: ResolvedSection }) {
         {section.items.map((item) => (
           <div key={item.title}>
             <dt>{item.title}</dt>
-            <dd>{item.description}</dd>
+            <dd>
+              {item.description?.startsWith("https://") ? (
+                <a href={item.description} target="_blank" rel="noopener noreferrer">
+                  {item.description}
+                </a>
+              ) : (
+                item.description
+              )}
+            </dd>
           </div>
         ))}
       </dl>
@@ -77,8 +86,8 @@ function SectionBody({ section }: { section: ResolvedSection }) {
   );
 }
 
-export function ContentPage({ page, children }: ContentPageProps) {
-  const sections = visibleSections(page);
+export async function ContentPage({ page, children }: ContentPageProps) {
+  const sections = visibleSections(page, await getSiteFacts());
   const related = relatedRoutes(page.id);
 
   return (

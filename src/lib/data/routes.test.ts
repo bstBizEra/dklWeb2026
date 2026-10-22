@@ -24,11 +24,11 @@ describe("route registry", () => {
     }
   });
 
-  it("publishes a route only when its page exists under src/app", () => {
+  it("publishes a route only when its page exists under src/app/(site)", () => {
     for (const route of publishedRoutes()) {
       const folder = route.href === "/" ? "" : route.href;
 
-      expect(existsSync(join(process.cwd(), "src", "app", folder, "page.tsx")), route.href).toBe(
+      expect(existsSync(join(process.cwd(), "src", "app", "(site)", folder, "page.tsx")), route.href).toBe(
         true,
       );
     }

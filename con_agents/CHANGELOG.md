@@ -2,6 +2,69 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.8.1] - 2026-10-22
+
+### Patch Changed
+
+- Phase 3 preparation, local only. Added `.github/workflows/ci.yml`: one job runs the version check, tests, lint, typecheck and build with no database; a second job applies the migrations to an empty Postgres 17. It deploys nothing and holds no secrets.
+- Added `.env.example` (git-ignore exempt) documenting `APP_URL`, `DATABASE_URL`, `DATABASE_POOL_MAX` and `PAYLOAD_SECRET`. Deployment tokens are explicitly not app variables.
+- Added `docs/deploy-checklist.md`: owner decisions, push readiness, Supabase and Vercel setup, first-owner registration, preview checks, go-live, rollback.
+- Added migration `20261022_150000_supabase_lockdown`: where Supabase's `anon` and `authenticated` roles exist, it revokes their table privileges and enables row level security on every table; elsewhere it does nothing. Tested on a scratch database with simulated roles, then removed.
+- Set `packageManager` to `pnpm@10.29.3` and `pnpm.onlyBuiltDependencies` (esbuild, sharp, unrs-resolver) so a frozen install exits cleanly in CI. Added `DATABASE_POOL_MAX` to the database pool.
+
+### Not changed
+
+- Nothing was pushed, committed, deployed or created on GitHub, Vercel or Supabase, and no token was read. CI action versions are tags, not commit SHAs; pinning is listed in the checklist.
+
+## [0.8.0] - 2026-10-22
+
+### Minor Changed
+
+- Phase 2 of `docs/cms-backend-decision.md`, local only. The site now reads owner-confirmed facts from the CMS `site-facts` global (`src/lib/cms/site-facts.ts`) in the footer and on every content page. Clearing a fact in the admin hides its items on the site. Masked numbers (`+85620xxxxxxxx`), empty values and `[CONFIRM]` text become "not confirmed".
+- Added the `pages` collection, shaped like the built-in `PageContent` (sections, fact-bound items, closing call to action), with drafts and versions. `/request-quote`, `/contact` and `/forklift-rental` use the published CMS row when one exists and the built-in page otherwise (`src/lib/cms/pages.ts`).
+- Added the `articles` collection (title, slug, category, excerpt, body, related solution pages, SEO fields, drafts). Public article pages are not built yet.
+- Visitors and advisors read published rows only. Owners and editors also see drafts. Only owners and editors write; only the owner deletes.
+- Hidden `[CONFIRM]` content: the admin refuses to save text containing planning markers, and `visibleSections` also drops any item or section carrying one. Items bound to a fact stay hidden until the fact is filled in.
+- Second migration `pages_articles`. `pnpm cms:seed` now also creates published rows for the three built-in pages, and never overwrites an existing row.
+- Home, About, Contact and Rental refresh at most once a minute; Request a Quote is rendered on demand.
+
+### Not changed
+
+- Home and About copy still come from `src/lib/data/homepage.ts` and `about.ts`, not the CMS. The five unbuilt routes in the registry are still unpublished.
+- Nothing is deployed, pushed or committed, and no remote service was called.
+- The live `dklao.com` numbers (phone 021 480 248 and three WhatsApp numbers) were seen on the public coming-soon page but are not in the facts until the owner confirms them.
+
+## [0.7.0] - 2026-10-22
+
+### Minor Changed
+
+- Added Payload CMS 3.80.0 as the backend, local only (Phase 1 of `docs/cms-backend-decision.md`). Admin is at `/admin`, REST at `/api/*`. GraphQL is disabled.
+- Three roles: `owner` (everything), `editor` (website content, no customer data), `advisor` (leads, no users or content). The first account registered at `/admin` becomes the owner.
+- Added the `site-facts` global (public read, owner write) and the `leads` collection (staff read, owner delete, no public write). `/api/leads/quote` saves to the `leads` collection when `DATABASE_URL` is set, and to the local JSONL file otherwise.
+- Database: a dedicated local PostgreSQL 17 cluster on 127.0.0.1:5433. The schema is applied by the reviewed migration in `src/payload/migrations` (`push` is off). `pnpm cms:seed` copies the confirmed facts and creates no users or passwords.
+- Moved the public pages into the `src/app/(site)` route group so the admin can have its own root layout. URLs are unchanged. Set `"type": "module"` in `package.json` so the Payload CLI can load the config.
+- Added tests for the role rules and the lead store fallback. Setup notes are in `docs/cms-local-setup.md`.
+
+### Not changed
+
+- Nothing is deployed, pushed or committed. No Supabase or Vercel call was made and no token was read. Site pages still read `src/lib/data/site-facts.ts`, not the CMS.
+- Payload has no official MySQL adapter (Postgres, SQLite and MongoDB only), so the plan stays on Postgres.
+
+## [0.6.2] - 2026-10-22
+
+### Patch Changed
+
+- Recorded owner-confirmed business facts in `src/lib/data/site-facts.ts` (22 October 2026): Facebook page `https://www.facebook.com/DKLAOonline`; opening hours and reply time as "24/7, AI agents and human advisors working together"; service area as based in Vientiane plus online channels; brand answer "we supply the brand that meets your requirement"; pricing depends on the equipment specification.
+- `phone` and `whatsapp` stay unset. The owner sent masked numbers (`+85620xxxxxxxx`), which must not be published. A test now rejects masked or bracketed values in site facts.
+- Added the `facebook` and `brands` fact keys and a `contactChannels()` helper. The footer shows a "Reach us" block with every confirmed channel (phone, WhatsApp and Facebook together once the numbers are set). Today it shows Facebook only.
+- Contact page now shows Facebook, hours, service areas, and reply time. Rental page shows the brand answer. Rental and quote FAQs now say price depends on the equipment specification.
+- Brand stance recorded as brand-neutral. The 2013 "sole authorised Mitsubishi dealer" claim is not used on the site, and tests reject "authorised dealer" wording.
+
+### Not changed
+
+- Still unconfirmed and hidden: phone and WhatsApp numbers, email, address, delivery coverage, maintenance terms, rent-to-buy terms, and the rental capacity range and power types.
+- Whether human advisors are on duty 24/7 or only AI agents are is not stated precisely; the published wording follows the owner's phrase and should be confirmed.
+
 ## [0.6.1] - 2026-10-22
 
 ### Patch Changed
