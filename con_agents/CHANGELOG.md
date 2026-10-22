@@ -2,6 +2,34 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.6.1] - 2026-10-22
+
+### Patch Changed
+
+- Corrected the footer founding year from 2019 to 2010 on the owner's confirmation (22 October 2026). The footer now reads `Copyright © DK LAO Since 2010-<current year>, v0.6.1`, matching the About page, which already said 2010.
+- Updated `foundedYear` in `src/lib/site-metadata.ts` and its test, and the footer contract in root `AGENTS.md` and `con_agents/AGENTS.md`.
+- Resolves the founding year conflict recorded as open under 0.6.0 "Not changed". Earlier entries that mention 2019 (0.4.1) are history and are left as written.
+- Updated version records from `0.6.0` to `0.6.1` as a patch content correction.
+
+## [0.6.0] - 2026-10-22
+
+### Minor Changed
+
+- Added the route registry `src/lib/data/routes.ts` as the single source for the header, footer, 404 links, sitemap, and "Related solutions". Planned routes are listed with `published: false` and are never rendered or advertised until their page exists.
+- Added the public routes `/forklift-rental`, `/contact`, and `/request-quote`, built on a shared `ContentPage` component and typed page content in `src/lib/data/pages.ts`.
+- Added `src/lib/data/site-facts.ts`. Any page item bound to an unconfirmed fact (phone, WhatsApp, email, address, hours, service areas, reply time, delivery, maintenance terms, rent-to-buy terms) is hidden until the owner supplies the value.
+- `/request-quote` now reads `?category=` to preselect the form and `?from=` (same-site paths only) to record the originating page. Lead type is derived from the selected category (`src/lib/leads/intents.ts`), so rental inquiries are stored as `RENTAL_INQUIRY`, service as `SERVICE_BOOKING`, and so on.
+- Header, footer, 404 page, and the floating quote button now link to `/request-quote` instead of a bare `#quote-request` anchor that only worked on the homepage.
+- Header, footer, and 404 links now list only published routes, which removes links to pages that returned 404.
+- `sitemap.xml` is generated from the registry. Each new page sets its own canonical URL.
+- Updated version records from `0.5.0` to `0.6.0` as a minor route expansion.
+
+### Not changed
+
+- Homepage cards, the knowledge preview, and About CTAs still link to pages that are not built yet (`/forklift-sales`, `/spare-parts`, `/maintenance-service`, `/cleaning-equipment`, `/warehouse-equipment`, `/material-handling`, `/batteries-chargers`, `/knowledge-center`). They are replaced as each page ships.
+- The root layout still sets `alternates.canonical` to `/`; pages that do not set their own canonical inherit it.
+- The founding year conflict (About says 2010, footer says 2019) is unresolved and awaits owner confirmation.
+
 ## [0.5.0] - 2026-06-16
 
 ### Minor Changed

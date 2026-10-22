@@ -297,7 +297,7 @@ About page content must support forklift rental, new and used forklift sales, sp
 `IndustrialFooter` must display:
 
 ```txt
-Left: Copyright © DK LAO Since 2019-current year, v{VERSION.json version}
+Left: Copyright © DK LAO Since 2010-current year, v{VERSION.json version}
 Right: Develop by: BizEra (www.bizera.la)
 ```
 

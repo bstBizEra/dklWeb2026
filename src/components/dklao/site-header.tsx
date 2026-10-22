@@ -2,15 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Menu } from "lucide-react";
 
-const navItems = [
-  { label: "About DK LAO", href: "/about" },
-  { label: "Rental", href: "/forklift-rental" },
-  { label: "Forklifts", href: "/forklift-sales" },
-  { label: "Parts", href: "/spare-parts" },
-  { label: "Service", href: "/maintenance-service" },
-  { label: "Cleaning", href: "/cleaning-equipment" },
-  { label: "Contact", href: "/contact" },
-];
+import { navRoutes, quoteHref } from "@/lib/data/routes";
+
+const navItems = navRoutes().map((route) => ({ label: route.navLabel, href: route.href }));
 
 export function SiteHeader() {
   return (
@@ -34,7 +28,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link className="dk-button dk-button-primary site-header__cta" href="/#quote-request">
+        <Link className="dk-button dk-button-primary site-header__cta" href={quoteHref()}>
           Request a Quote
           <ArrowRight size={18} aria-hidden="true" />
         </Link>
@@ -49,7 +43,7 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link className="dk-button dk-button-primary" href="/#quote-request">
+            <Link className="dk-button dk-button-primary" href={quoteHref()}>
               Request a Quote
               <ArrowRight size={18} aria-hidden="true" />
             </Link>

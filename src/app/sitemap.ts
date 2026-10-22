@@ -1,22 +1,16 @@
 import type { MetadataRoute } from "next";
 
+import { publishedRoutes } from "@/lib/data/routes";
+
 const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
 
-// Only published routes are listed. Add inner routes here as each page ships
-// so the sitemap never advertises unbuilt (404) pages.
+// Built from the route registry, so only published routes are advertised and a
+// planned (404) page can never appear here.
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: `${siteUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${siteUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-  ];
+  return publishedRoutes().map((route) => ({
+    url: `${siteUrl}${route.href}`,
+    lastModified: new Date(),
+    changeFrequency: route.id === "home" ? "weekly" : "monthly",
+    priority: route.id === "home" ? 1 : 0.8,
+  }));
 }

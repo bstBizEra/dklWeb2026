@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { useForm } from "react-hook-form";
 
+import { categoryOptions, leadTypeForCategory } from "@/lib/leads/intents";
 import {
   quoteRequestSchema,
   type ApiError,
@@ -14,17 +15,31 @@ import {
 
 type QuoteResponse = ApiSuccess<{ leadId: string; status: string }> | ApiError;
 
-const categoryOptions = [
-  "Forklift rental",
-  "New forklift sales",
-  "Used forklift inquiry",
-  "Spare parts",
-  "Maintenance service",
-  "Warehouse solutions",
-  "Cleaning equipment",
-];
+type QuoteRequestFormProps = {
+  defaultCategory?: string;
+  // Page the visitor came from. Falls back to the current path.
+  sourcePage?: string;
+  showHeader?: boolean;
+};
 
-export function QuoteRequestForm() {
+function emptyValues(category: string): QuoteRequestInput {
+  return {
+    leadType: leadTypeForCategory(category),
+    companyName: "",
+    contactPerson: "",
+    phone: "",
+    email: "",
+    equipmentOrServiceCategory: category,
+    message: "",
+    sourcePage: "/",
+  };
+}
+
+export function QuoteRequestForm({
+  defaultCategory = categoryOptions[0],
+  sourcePage,
+  showHeader = true,
+}: QuoteRequestFormProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -35,16 +50,7 @@ export function QuoteRequestForm() {
     formState: { errors, isSubmitting },
   } = useForm<QuoteRequestInput>({
     resolver: zodResolver(quoteRequestSchema),
-    defaultValues: {
-      leadType: "QUOTE_REQUEST",
-      companyName: "",
-      contactPerson: "",
-      phone: "",
-      email: "",
-      equipmentOrServiceCategory: "Forklift rental",
-      message: "",
-      sourcePage: "/",
-    },
+    defaultValues: emptyValues(defaultCategory),
   });
 
   async function onSubmit(values: QuoteRequestInput) {
@@ -53,7 +59,8 @@ export function QuoteRequestForm() {
 
     const payload = {
       ...values,
-      sourcePage: window.location.pathname || "/",
+      leadType: leadTypeForCategory(values.equipmentOrServiceCategory),
+      sourcePage: sourcePage ?? (window.location.pathname || "/"),
     };
 
     const response = await fetch("/api/leads/quote", {
@@ -71,28 +78,21 @@ export function QuoteRequestForm() {
     }
 
     setSuccessMessage(result.message);
-    reset({
-      leadType: "QUOTE_REQUEST",
-      companyName: "",
-      contactPerson: "",
-      phone: "",
-      email: "",
-      equipmentOrServiceCategory: "Forklift rental",
-      message: "",
-      sourcePage: window.location.pathname || "/",
-    });
+    reset(emptyValues(defaultCategory));
   }
 
   return (
     <form className="quote-form dk-card" onSubmit={handleSubmit(onSubmit)} id="quote-request">
-      <div className="quote-form__header">
-        <p className="dk-eyebrow">Central quote request</p>
-        <h2>Tell DK LAO what your operation needs</h2>
-        <p>
-          Share the equipment or service category, site context, and contact details
-          so the right advisor can review your request.
-        </p>
-      </div>
+      {showHeader ? (
+        <div className="quote-form__header">
+          <p className="dk-eyebrow">Central quote request</p>
+          <h2>Tell DK LAO what your operation needs</h2>
+          <p>
+            Share the equipment or service category, site context, and contact details
+            so the right advisor can review your request.
+          </p>
+        </div>
+      ) : null}
 
       <input type="hidden" value="QUOTE_REQUEST" {...register("leadType")} />
       <input type="hidden" value="/" {...register("sourcePage")} />

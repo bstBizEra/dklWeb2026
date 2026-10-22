@@ -2,7 +2,7 @@ import versionInfo from "../../VERSION.json";
 
 export const siteFooterMetadata = {
   copyrightPrefix: "Copyright © DK LAO",
-  foundedYear: 2019,
+  foundedYear: 2010,
   currentYear: new Date().getFullYear(),
   developerLabel: "Develop by:",
   developerName: "BizEra",

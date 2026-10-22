@@ -4,6 +4,7 @@ import { ArrowRight, Compass } from "lucide-react";
 
 import { SiteHeader } from "@/components/dklao/site-header";
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
+import { publishedRoutes, quoteHref } from "@/lib/data/routes";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -15,15 +16,7 @@ export const metadata: Metadata = {
   },
 };
 
-const quickLinks = [
-  { label: "About DK LAO", href: "/about" },
-  { label: "Forklift Rental", href: "/forklift-rental" },
-  { label: "New & Used Forklifts", href: "/forklift-sales" },
-  { label: "Spare Parts", href: "/spare-parts" },
-  { label: "Maintenance Service", href: "/maintenance-service" },
-  { label: "Cleaning Equipment", href: "/cleaning-equipment" },
-  { label: "Contact DK LAO", href: "/contact" },
-];
+const quickLinks = publishedRoutes().filter((route) => route.id !== "home");
 
 export default function NotFound() {
   return (
@@ -46,13 +39,13 @@ export default function NotFound() {
               Back to Home
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
-            <Link className="dk-button dk-button-light" href="/#quote-request">
+            <Link className="dk-button dk-button-light" href={quoteHref()}>
               Request a Quote
             </Link>
           </div>
           <nav className="not-found__links" aria-label="Popular destinations">
             {quickLinks.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.id} href={item.href}>
                 {item.label}
                 <ArrowRight size={15} aria-hidden="true" />
               </Link>

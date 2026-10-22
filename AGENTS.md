@@ -178,7 +178,7 @@ Promotion from design branch to `main` requires:
 Every public DK LAO footer must display:
 
 ```txt
-Left: Copyright © DK LAO Since 2019-current year, v{VERSION.json version}
+Left: Copyright © DK LAO Since 2010-current year, v{VERSION.json version}
 Right: Develop by: BizEra (www.bizera.la)
 ```
 

@@ -1,17 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { publishedRoutes, quoteHref } from "@/lib/data/routes";
 import { siteFooterMetadata } from "@/lib/site-metadata";
 
-const footerLinks = [
-  { label: "About DK LAO", href: "/about" },
-  { label: "Forklift Rental", href: "/forklift-rental" },
-  { label: "New Forklifts", href: "/forklift-sales/new" },
-  { label: "Used Forklifts", href: "/forklift-sales/used" },
-  { label: "Spare Parts", href: "/spare-parts" },
-  { label: "Maintenance Service", href: "/maintenance-service" },
-  { label: "Cleaning Equipment", href: "/cleaning-equipment" },
-];
+const footerLinks = publishedRoutes().filter(
+  (route) => route.group !== "conversion" && route.id !== "home",
+);
 
 export function IndustrialFooter() {
   return (
@@ -33,7 +28,7 @@ export function IndustrialFooter() {
           <h2>Solutions</h2>
           <nav aria-label="Footer solutions">
             {footerLinks.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.id} href={item.href}>
                 {item.label}
               </Link>
             ))}
@@ -42,8 +37,8 @@ export function IndustrialFooter() {
         <div>
           <h2>Lead actions</h2>
           <nav aria-label="Footer lead actions">
-            <Link href="#quote-request">Request a Quote</Link>
-            <Link href="/request-quote">Schedule Site Survey</Link>
+            <Link href={quoteHref()}>Request a Quote</Link>
+            <Link href={quoteHref("warehouse")}>Schedule Site Survey</Link>
             <Link href="/contact">Talk to DK LAO Advisor</Link>
           </nav>
         </div>
