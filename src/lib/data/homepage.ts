@@ -7,7 +7,6 @@ import {
   Forklift,
   HardHat,
   PackageCheck,
-  ShieldCheck,
   ShoppingCart,
   Sparkles,
   Truck,
@@ -37,6 +36,7 @@ export type ProductCategory = FeatureCard & {
 export type IndustrySolution = {
   title: string;
   description: string;
+  href: string;
   ctaLabel: string;
   icon: LucideIcon;
 };
@@ -93,28 +93,28 @@ export const quickQuoteActions: FeatureCard[] = [
 export const solutionCards: FeatureCard[] = [
   {
     title: "Forklift rental",
-    description: "Flexible short-term and long-term rental support for warehouse, factory, and logistics operations.",
+    description: "Short-term for projects and peaks, long-term for steady operations.",
     href: "/forklift-rental",
     ctaLabel: "View Rental Fleet",
     icon: Forklift,
   },
   {
     title: "New and used forklift sales",
-    description: "Quotation-based equipment recommendations for teams comparing lift capacity, power type, and use case.",
+    description: "New and used forklifts matched to your load, lift height and site.",
     href: "/forklift-sales",
     ctaLabel: "Browse Forklifts",
     icon: ShoppingCart,
   },
   {
     title: "Maintenance and repair",
-    description: "Professional service workflows for preventive maintenance, diagnostics, repair, and follow-up support.",
+    description: "Preventive service, breakdown repair and inspections that keep trucks working.",
     href: "/maintenance-service",
     ctaLabel: "Book Maintenance Service",
     icon: Wrench,
   },
   {
     title: "Spare parts and accessories",
-    description: "Spare parts inquiries prepared for model matching, serial number review, and quotation handoff.",
+    description: "Send the model and serial number and we match the right part.",
     href: "/spare-parts",
     ctaLabel: "Request Spare Parts",
     icon: PackageCheck,
@@ -125,7 +125,7 @@ export const productCategories: ProductCategory[] = [
   {
     eyebrow: "Material handling",
     title: "Forklifts and pallet movement",
-    description: "Electric, diesel, LPG, manual, and warehouse movement equipment selected by application.",
+    description: "Forklifts, pallet jacks and stackers chosen for what you move.",
     href: "/material-handling",
     ctaLabel: "Explore Equipment",
     icon: Truck,
@@ -133,7 +133,7 @@ export const productCategories: ProductCategory[] = [
   {
     eyebrow: "Warehouse",
     title: "Racking and storage systems",
-    description: "Warehouse equipment, shelving, racking, and site survey support for safer material flow.",
+    description: "Racking and shelving planned around your goods and building.",
     href: "/warehouse-equipment",
     ctaLabel: "Explore Warehouse Solutions",
     icon: Warehouse,
@@ -141,63 +141,49 @@ export const productCategories: ProductCategory[] = [
   {
     eyebrow: "Power",
     title: "Batteries and chargers",
-    description: "Battery and charger inquiries aligned to equipment type, usage hours, and working environment.",
+    description: "Batteries and chargers matched to your trucks and shift hours.",
     href: "/batteries-chargers",
-    ctaLabel: "Ask for Recommendation",
+    ctaLabel: "Get a Recommendation",
     icon: BatteryCharging,
   },
   {
     eyebrow: "Cleaning",
     title: "Cleaning equipment",
-    description: "Cleaning equipment recommendations for factories, warehouses, logistics centers, and commercial sites.",
+    description: "Nilfisk scrubber dryers, sweepers and vacuums for warehouses, factories and shops.",
     href: "/cleaning-equipment",
-    ctaLabel: "Get Cleaning Equipment Recommendation",
+    ctaLabel: "Get a Recommendation",
     icon: Sparkles,
   },
 ];
 
 export const industrySolutions: IndustrySolution[] = [
   {
-    title: "Warehouses and logistics",
-    description: "Rental, movement, storage, and service workflows for daily warehouse operations.",
-    ctaLabel: "Talk to DK LAO Advisor",
+    title: "Logistics and warehousing",
+    description: "Peaks, docks and storage that keep goods moving.",
+    href: "/industries/logistics-warehousing",
+    ctaLabel: "Explore Industry",
     icon: Boxes,
   },
   {
-    title: "Factories and production",
-    description: "Equipment support for loading zones, production flow, maintenance, and cleaning routines.",
-    ctaLabel: "Schedule Site Survey",
+    title: "Manufacturing",
+    description: "Steady flow between stores, lines and dispatch.",
+    href: "/industries/manufacturing",
+    ctaLabel: "Explore Industry",
     icon: Factory,
   },
   {
-    title: "Construction and infrastructure",
-    description: "Material movement support for demanding sites with quotation-based equipment matching.",
-    ctaLabel: "Request a Quote",
+    title: "Construction",
+    description: "Heavy loads on rough ground, for the length of a project.",
+    href: "/industries/construction",
+    ctaLabel: "Explore Industry",
     icon: HardHat,
   },
   {
-    title: "Commercial facilities",
-    description: "Cleaning equipment and compact handling solutions for facility teams and service operators.",
-    ctaLabel: "Get Recommendation",
+    title: "Food, retail and hotels",
+    description: "Clean floors, fast deliveries and tidy stores.",
+    href: "/industries",
+    ctaLabel: "Explore Industry",
     icon: Building2,
-  },
-];
-
-export const trustSignals = [
-  {
-    title: "Operational inquiry flow",
-    description: "Every request captures lead type, source page, contact details, and equipment category for follow-up.",
-    icon: ClipboardCheck,
-  },
-  {
-    title: "Safety-first positioning",
-    description: "Content avoids fake stock, fake pricing, and unsupported technical claims.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Ready for future CRM",
-    description: "Homepage data and forms are structured for catalog, rental, service, and CRM expansion.",
-    icon: Warehouse,
   },
 ];
 
@@ -205,7 +191,7 @@ export const knowledgeArticles = [
   {
     title: "How to prepare a forklift rental request",
     category: "Rental guide",
-    href: "/knowledge-center",
+    href: "/knowledge-center/forklift-rental-request-checklist",
   },
   {
     title: "What serial numbers help spare-parts matching",

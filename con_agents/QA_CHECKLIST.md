@@ -67,6 +67,7 @@ Before production:
 lint passes
 typecheck passes
 build passes
+links:check passes
 forms tested
 404 checked
 mobile checked
@@ -75,3 +76,35 @@ analytics checked if enabled
 no placeholder content remains
 CHANGELOG updated
 ```
+
+## 8. Link Check
+
+> Added 2026-10-25 by Claude (Motor Agent) at owner request, after a link audit found one dead link
+> (the app's "Company profile" pointed at the old live site). Extend-only addition.
+
+`pnpm links:check` (`scripts/check-links.mjs`) crawls every page reachable from `/` and `/app` on a running
+site and checks every link it finds. Run it before each release and after any change to routes,
+navigation, cards, footers or contact facts.
+
+```powershell
+pnpm build
+pnpm start                                  # in its own terminal, serves http://127.0.0.1:3000
+pnpm links:check                            # checks http://127.0.0.1:3000
+pnpm links:check https://snare-snowsuit-obnoxious.ngrok-free.dev   # another running copy
+pnpm links:check --skip-external            # offline: internal links and anchors only
+```
+
+It fails (exit code 1) and lists each problem when:
+
+- an internal page answers 4xx or 5xx, or redirects,
+- a `#anchor` link has no matching `id` on its target page,
+- a `tel:` or `mailto:` link is malformed,
+- an external URL answers 400 or above, or cannot be reached.
+
+Known limits:
+
+- External sites are judged by status code only. Facebook and X can answer 200 with a login page, so
+  open those by hand when a social link changes.
+- `/admin` and `/api` are not crawled.
+- Links that only appear after a click or in client-side state are not seen; the crawl reads the HTML each
+  page serves.

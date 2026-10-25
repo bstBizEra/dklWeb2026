@@ -207,7 +207,7 @@ About DK LAO
 SEO title:
 
 ```txt
-About DK LAO - Material Handling, Forklift Rental, Services & Warehouse Solutions in Laos
+About Us: Forklift & Warehouse Partner in Laos
 ```
 
 Required sections:

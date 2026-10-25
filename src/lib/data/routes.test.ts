@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 
 import { navRoutes, publishedRoutes, quoteHref, relatedRoutes, routes } from "./routes";
+import { sitemapPages } from "./sitemap-pages";
 
 describe("route registry", () => {
   it("has unique ids and hrefs", () => {
@@ -24,13 +25,12 @@ describe("route registry", () => {
     }
   });
 
-  it("publishes a route only when its page exists under src/app/(site)", () => {
+  it("publishes a route only when its page exists: a file under src/app/(site) or built-in sitemap page data", () => {
     for (const route of publishedRoutes()) {
       const folder = route.href === "/" ? "" : route.href;
+      const hasFile = existsSync(join(process.cwd(), "src", "app", "(site)", folder, "page.tsx"));
 
-      expect(existsSync(join(process.cwd(), "src", "app", "(site)", folder, "page.tsx")), route.href).toBe(
-        true,
-      );
+      expect(hasFile || route.id in sitemapPages, route.href).toBe(true);
     }
   });
 

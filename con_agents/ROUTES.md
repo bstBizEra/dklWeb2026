@@ -51,6 +51,26 @@ Contact -> Submit Inquiry
 - Avoid deeply nested paths unless necessary.
 - Keep pages understandable for customers and search engines.
 
+## 4a. iPhone Web App Routes
+
+A separate iOS-style web app with its own root layout (`src/app/(app)/`), not indexed by search engines (`noindex`). Saved to the Home Screen it opens full screen.
+
+```txt
+/app                          Home: company, Request a Quote, Book a Service, one-tap contacts, About, Trusted by
+/app/services                 Every Solutions service, grouped like the website menu; a tap opens the request
+/app/request                  Quote form; ?category=<intent> preselects the category
+/app/request?type=service     Service booking: problem, machine, site address or pin
+/app/location                 Office address, Maps directions, contacts, hours, "Send my site location"
+/app/info                     App info: version, copyright, website, developer (BizEra), privacy, clear saved details
+/app/offline                  Shown by the service worker when there is no connection
+/app/manifest.webmanifest     Web app manifest (scope /app)
+/app/icon/180|192|512         Home-screen icons (official favicon on a white square)
+/app/icon/maskable-192|512    Android icons with the mark inside the safe zone for round crops
+/app-sw.js                    Service worker, scope /app
+```
+
+Only `/app` may ask for the visitor's location (`Permissions-Policy: geolocation=(self)`); the website keeps `geolocation=()`.
+
 ## 5. Future Route Expansion
 
 ```txt

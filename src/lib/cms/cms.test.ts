@@ -52,12 +52,16 @@ describe("site facts from the CMS", () => {
       whatsapp: "   ",
       email: "[CONFIRM]",
       facebook: " https://www.facebook.com/DKLAOonline ",
+      youtube: "[CONFIRM]",
+      twitter: " https://twitter.com/DKLaoTrading ",
       hours: "Open 24/7",
     });
     expect(facts.phone).toBeNull();
     expect(facts.whatsapp).toBeNull();
     expect(facts.email).toBeNull();
     expect(facts.facebook).toBe("https://www.facebook.com/DKLAOonline");
+    expect(facts.youtube).toBeNull();
+    expect(facts.twitter).toBe("https://twitter.com/DKLaoTrading");
     expect(facts.hours).toBe("Open 24/7");
     expect(facts.address).toBeNull();
   });
@@ -114,6 +118,23 @@ describe("pages from the CMS", () => {
     expect(page.sections[0].items.map((i) => i.title)).toEqual(["Brands?", "Unknown fact"]);
     expect(page.sections[0].items[0].fact).toBe("brands");
     expect(page.sections[0].items[1].fact).toBeUndefined();
+  });
+
+  it("carries text sections, hidden sections and unconfirmed items through from the admin", () => {
+    const page = pageFromDoc({
+      ...row,
+      sections: [
+        { kind: "text", title: "Why", body: "A paragraph.", items: [{ title: "Included", description: "Maintenance", needsConfirmation: true }] },
+        { kind: "list", title: "Draft section", needsConfirmation: true, items: [{ title: "x" }] },
+        { kind: "carousel", title: "Unknown kind", items: [] },
+      ],
+    })!;
+    expect(page.sections.map((s) => s.kind)).toEqual(["text", "list"]);
+    expect(page.sections[0].body).toBe("A paragraph.");
+    const shown = visibleSections(page, sanitizeFacts({}));
+    expect(shown).toHaveLength(1);
+    expect(shown[0].body).toBe("A paragraph.");
+    expect(shown[0].items).toHaveLength(0);
   });
 
   it("refuses rows without a route id or headline", () => {

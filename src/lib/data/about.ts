@@ -1,13 +1,13 @@
 import {
-  BatteryCharging,
   Boxes,
   Building2,
+  CupSoda,
   ClipboardCheck,
   Factory,
   Forklift,
   HardHat,
+  Hotel,
   PackageCheck,
-  Recycle,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
@@ -37,17 +37,10 @@ export type SnapshotMetric = {
   detail: string;
 };
 
+// One primary and one secondary action. The founding year is in the Company snapshot, not in the hero.
 export const aboutHeroCtas: AboutCta[] = [
   { label: "Request a Quote", href: "/request-quote", variant: "primary" },
-  { label: "View Our Solutions", href: "/#solutions", variant: "secondary" },
-  { label: "Contact DK LAO", href: "/contact", variant: "light" },
-];
-
-export const aboutHeroBadges = [
-  "Established 2010",
-  "Rental & Service",
-  "Warehouse Solutions",
-  "Spare Parts Support",
+  { label: "Talk to a DK LAO Advisor", href: "/contact", variant: "secondary" },
 ];
 
 export const companySnapshot: SnapshotMetric[] = [
@@ -69,7 +62,7 @@ export const companySnapshot: SnapshotMetric[] = [
   {
     label: "Coverage",
     value: "Across Laos",
-    detail: "Support structured for business sites and operations.",
+    detail: "Based in Vientiane, with customers served online across Laos.",
   },
   {
     label: "Service Model",
@@ -127,24 +120,24 @@ export const aboutSolutions: AboutCard[] = [
   {
     title: "Professional Cleaning Equipment",
     description:
-      "Vacuum cleaners, wet and dry vacuum machines, scrubber dryers, sweepers, and heavy-duty cleaning machines for commercial and industrial facilities.",
+      "Nilfisk scrubber dryers, sweepers, industrial and commercial vacuums, and pressure washers for commercial and industrial facilities.",
     href: "/cleaning-equipment",
-    ctaLabel: "Get Recommendation",
+    ctaLabel: "Get a Recommendation",
     icon: Sparkles,
   },
 ];
 
 export const aboutTrustPoints: AboutCard[] = [
   {
-    title: "One-stop industrial equipment partner",
+    title: "Forklift and warehouse equipment partner",
     description:
-      "Sales, rental, service, parts, warehouse, and cleaning workflows connected through one DK LAO team.",
+      "Sales, rental, service, parts, warehouse and cleaning from one DK LAO team.",
     icon: Boxes,
   },
   {
     title: "Flexible rental options",
     description:
-      "Rental conversations can match operating period, site conditions, capacity needs, and delivery requirements.",
+      "Rental matched to your period, site, loads and delivery.",
     icon: Truck,
   },
   {
@@ -156,13 +149,13 @@ export const aboutTrustPoints: AboutCard[] = [
   {
     title: "Spare parts supply",
     description:
-      "Parts inquiries can include brand, model, serial number, urgency, and future attachment support.",
+      "Send the brand, model and serial number and we match the part.",
     icon: PackageCheck,
   },
   {
     title: "Warehouse productivity solutions",
     description:
-      "Recommendations can connect equipment, racking, storage, and workflow improvements.",
+      "Equipment, racking and storage planned together so goods move faster.",
     icon: Warehouse,
   },
   {
@@ -185,51 +178,45 @@ export const aboutTrustPoints: AboutCard[] = [
   },
 ];
 
-export const servedIndustries: AboutCard[] = [
+// One card per industry page. The old nine cards were merged where no page exists: transport and warehousing
+// share the logistics page, industrial facilities sit with manufacturing, and government and institutional
+// buildings sit with hospitality and facilities (the Ministry of Public Health is a confirmed client).
+export const servedIndustries: (AboutCard & { href: string })[] = [
   {
-    title: "Logistics & Transportation",
-    description: "Fleet, loading, unloading, and movement support.",
+    title: "Logistics & Warehousing",
+    description: "Loading, storage, picking and dispatch for transport and distribution.",
     icon: Truck,
+    href: "/industries/logistics-warehousing",
   },
   {
-    title: "Warehousing & Distribution",
-    description: "Storage, handling, picking, and daily equipment flow.",
-    icon: Warehouse,
-  },
-  {
-    title: "Manufacturing",
-    description: "Factory movement, maintenance, cleaning, and production support.",
+    title: "Manufacturing & Industrial",
+    description: "Material flow, maintenance and cleaning for factories and plants.",
     icon: Factory,
-  },
-  {
-    title: "Retail & Wholesale",
-    description: "Stock movement, back-of-house logistics, and facility support.",
-    icon: Building2,
+    href: "/industries/manufacturing",
   },
   {
     title: "Construction",
-    description: "Site movement and project-based equipment access.",
+    description: "Heavy loads on site, with equipment for the length of a project.",
     icon: HardHat,
+    href: "/industries/construction",
   },
   {
     title: "Food & Beverage",
-    description: "Warehouse handling and facility cleaning for controlled operations.",
-    icon: BatteryCharging,
+    description: "High-volume pallets, clean floors and fast loading for distribution.",
+    icon: CupSoda,
+    href: "/industries/food-beverage",
   },
   {
-    title: "Hospitality",
-    description: "Cleaning, storage, and operations support for facility teams.",
-    icon: Sparkles,
+    title: "Retail & Wholesale",
+    description: "Stock movement, back rooms and clean shop floors.",
+    icon: Building2,
+    href: "/industries/retail-wholesale",
   },
   {
-    title: "Industrial Facilities",
-    description: "Durable equipment support for demanding environments.",
-    icon: Recycle,
-  },
-  {
-    title: "Government & Institutional Operations",
-    description: "Quotation-based equipment and service support.",
-    icon: ClipboardCheck,
+    title: "Hospitality, Facilities & Institutions",
+    description: "Hotels, malls, offices and public buildings kept clean and supplied.",
+    icon: Hotel,
+    href: "/industries/hospitality-facilities",
   },
 ];
 

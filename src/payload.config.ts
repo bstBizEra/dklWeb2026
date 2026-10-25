@@ -9,6 +9,7 @@ import { Articles } from "./payload/collections/articles";
 import { Leads } from "./payload/collections/leads";
 import { Pages } from "./payload/collections/pages";
 import { Users } from "./payload/collections/users";
+import { Navigation } from "./payload/globals/navigation";
 import { SiteFacts } from "./payload/globals/site-facts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,7 +21,7 @@ export default buildConfig({
     meta: { titleSuffix: " | DK LAO CMS" },
   },
   collections: [Users, Pages, Articles, Leads],
-  globals: [SiteFacts],
+  globals: [SiteFacts, Navigation],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   graphQL: { disable: true },

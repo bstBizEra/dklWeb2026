@@ -1,92 +1,151 @@
-# Deploy checklist: GitHub, Supabase, Vercel
+# Deploy checklist: dklao.com cPanel server
 
-Phase 3 of `docs/cms-backend-decision.md`. This is a checklist for a human or an approved agent. Nothing in it has been run: no push, no project created, no service called.
-Each step that touches a remote service needs the owner's go-ahead on that day.
+The site, its admin and its database run on DK LAO's own cPanel server. This replaces the earlier
+Vercel and Supabase plan (owner decision, 2026-10-25); the old version is in git history.
+
+This is a checklist for a human or an approved agent. Each step that changes the server or DNS needs the
+owner's go-ahead on that day. Values for passwords and secrets are typed by the owner and never committed.
+
+## The server
+
+| Item | Value (checked 2026-10-25) |
+|---|---|
+| Server | `host.bizera.la`, 50.6.224.71, AlmaLinux 9.8, cPanel & WHM 11.138, Apache 2.4 |
+| Shared with | 11 other cPanel accounts (including `laogencms`). 4 CPUs, 7.6 GB memory, about 3.4 GB free |
+| cPanel account | `dklao`, home `/home/dklao`, 22 GB of 30 GB disk free, AutoSSL certificate for dklao.com |
+| Database | PostgreSQL 16.15, local connections only. Database `dklao_dklApp`, user `dklao_app` (member of role `dklao_dklApp`, can create tables) |
+| Mail | `mail.dklao.com` on the same server, SMTP 465. Lead email sends from `website@dklao.com` to `info@dklao.com` |
+| Node.js | 22.23 (`ea-nodejs22`, since 2026-10-25) with Phusion Passenger 6.2.1 for cPanel's Application Manager |
+| DNS | Cloudflare in front of dklao.com; SSH and mail use `mail.dklao.com` |
+| SSH | `ssh dklao-cpanel` (account, key `winbizeraSSH`) or `ssh bizera-root` (root, key only) |
 
 ## 0. Decide before starting
 
 | Question | Why it matters | Answer |
 |---|---|---|
-| Who owns and pays for the Supabase and Vercel accounts? | Production needs Supabase Pro (USD 25 a month) and Vercel Pro. Free plans pause the database after a week and Vercel Hobby is non-commercial only | |
 | Which email owns the first CMS account? | The first person to register at `/admin` becomes the owner | |
-| When may `dklao.com` move off the current host? | It now shows a "coming soon" page from a cPanel server behind Cloudflare | |
+| When may dklao.com switch from the "coming soon" page? | The switch replaces what visitors see | |
 | Are the live-page phone and WhatsApp numbers confirmed? | Facts stay hidden until confirmed | |
+| Is a nightly cPanel backup of the `dklao` account turned on, and where is it stored? | It is the only copy of leads and content | |
 
-Vendor prices and limits were read on 2026-10-22. Check them again before buying.
+## 1. One-time server setup (root, needs the owner's approval)
 
-## 1. Before any push
+These change the whole server, not only the dklao account.
 
-- [ ] Review the uncommitted work in this folder, then commit it on a task branch (format `[TASK-XXX] Description`, branch `<agent>/<feature>/<description>`). Do not commit `.env.local`, `data/` or `lao-review-sheet.csv`.
-- [ ] Confirm `origin` is `https://github.com/bstBizEra/dklWeb2026.git`.
-- [ ] Run the gates once more: `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm version:status`.
-- [ ] `git fetch origin`, then merge or rebase. Never force-push `main`.
-- [ ] Open a pull request into `main`. The CI workflow (`.github/workflows/ci.yml`) must pass: it runs the gates and applies the migrations to an empty Postgres.
-- [ ] Optional hardening: replace the `@v4` action tags in `ci.yml` with full commit SHAs, so a moved tag cannot change what runs.
-- [ ] Branch protection on `main`: require the CI checks and one review.
+- [x] EasyApache 4: `ea-apache24-mod-passenger` 6.2.1 (Phusion Passenger) and `ea-nodejs22` 22.23.4 installed
+      2026-10-25, without weak dependencies, replacing `ea-nodejs20` (only one EasyApache Node.js can be
+      installed; nothing on the host used Node 20). Passenger also brought AlmaLinux's Ruby 3.0 and Node.js 16
+      (`/usr/bin/node`); `/usr/local/bin/node`, `npm` and `npx` point to Node 22 and come first on the PATH.
+      Apache restarted gracefully. Logs: `/root/ea4-passenger-20261025.log`, site checks
+      `/root/ea4-passenger-20261025-before.txt` and `-after.txt`.
+      Rollback: remove `ea-apache24-mod-passenger ea-passenger-runtime`, install `ea-nodejs20`, point the three
+      links back to `/opt/cpanel/ea-nodejs20/bin/`, `/scripts/restartsrv_httpd --graceful`.
+- [x] Application Manager ("passengerapps") is on in the `default` feature list; UAPI `PassengerApps` answers for `dklao`.
+- [ ] WHM, Backup Configuration: nightly account backups on, including databases. cPanel account backups
+      include PostgreSQL databases.
+- [ ] Rotate the passwords that were pasted into chat (cPanel `dklao`, SSH user `admin`, key passphrase).
 
-## 2. Supabase (database)
+## 2. Database (done 2026-10-25)
 
-- [ ] Create one project, region **Singapore** (closest to Laos), plan **Pro**.
-- [ ] Set a long database password and keep it in the password manager only.
-- [ ] Copy two connection strings from the project's Connect panel: the pooled one (for the running site) and the direct or session one (for migrations).
-- [ ] Do **not** create tables by hand. Do not use the Data API keys in the site: the CMS connects with the database string only.
-- [ ] Run the migrations once, from a trusted machine, with the direct string:
-  `DATABASE_URL=<direct string> PAYLOAD_SECRET=<any 32+ characters> pnpm cms:migrate`
-- [ ] Check the lockdown migration worked. In the SQL editor, both of these must return no rows:
-  `select tablename from pg_tables where schemaname='public' and not rowsecurity;`
-  `select table_name from information_schema.role_table_grants where grantee in ('anon','authenticated') and table_schema='public';`
-- [ ] Turn on daily backups (Pro includes them) and note the restore steps in `docs/DR_Plan.md`.
-- [ ] Media storage is not wired yet. When uploads are added, use a private bucket and the S3 storage adapter, not the database.
+- [x] PostgreSQL 16 installed with cPanel's `installpostgres` (log `/root/installpostgres-20261025.log`).
+- [x] Database `dklao_dklApp` (created by the owner in cPanel) and user `dklao_app`, all privileges granted;
+      `dklao_app` can create tables in `public`. Note the capital A: the name is case-sensitive everywhere.
+- [x] Owner set the `dklao_app` password in cPanel. It was pasted into chat on 2026-10-25, so change it
+      once more before go-live and keep the new one in the password manager only.
+- [x] The unused, empty `dklao_site` database (and its role) was deleted through cPanel on 2026-10-25 at the
+      owner's request. `dklao_dklApp` is the only dklao PostgreSQL database.
+- [ ] The password contains characters such as `= ] ? ) {`. In `DATABASE_URL` it must be percent-encoded:
+      run `node -e "console.log(encodeURIComponent(process.argv[1]))" 'the-password'` on the server and use
+      the output. Do not paste the plain password into the URL.
+- [ ] Do not open port 5432 in the firewall. The site connects from the same server.
 
-## 3. Vercel (site and admin)
+## 3. Put the code on the server
 
-- [ ] Create a **Pro** team and import the GitHub repository. Framework preset: Next.js. Package manager is read from `package.json` (`pnpm@10.29.3`).
-- [ ] Set the function region to Singapore (`sin1`) so it sits next to the database.
-- [ ] Add environment variables for **Production** and **Preview** (values are never committed):
+- [ ] Commit and push the release branch, then on the server as the `dklao` user:
+      `git clone https://github.com/bstBizEra/dklWeb2026.git ~/dklao-app` (later releases: `git pull`).
+      Use a read-only deploy key on GitHub if the repository is private.
+- [x] Startup file for the Application Manager: `server.mjs` in the repository root (added 2026-10-25,
+      tested by `server.test.ts`). Passenger starts it and hands it the port; it serves the built app and
+      stops cleanly on SIGTERM. Local check after a build: `node server.mjs` (http://127.0.0.1:3000).
+- [ ] Install and build on the server, so native packages such as `sharp` get Linux binaries:
+      `cd ~/dklao-app && corepack enable && pnpm install --frozen-lockfile && pnpm build`
+      Build outside busy hours: the build uses about 2 GB of memory on a shared server. If it runs out,
+      set `NODE_OPTIONS=--max-old-space-size=2048` or switch Next.js to `output: "standalone"`.
+- [ ] Never copy `.env.local` from a developer machine. Settings go in the Application Manager (section 4).
 
-| Variable | Production | Preview |
-|---|---|---|
-| `DATABASE_URL` | Supabase pooled string | A separate Supabase project or branch, never production data |
-| `DATABASE_POOL_MAX` | `3` | `3` |
-| `PAYLOAD_SECRET` | New random 32 bytes (see `.env.example`) | A different random value |
-| `APP_URL` | `https://www.dklao.com` | Leave unset |
+## 4. Register the app (cPanel, dklao account)
 
-- [ ] Do not add `SUPABASE_ACCESS_TOKEN` or `VERCEL_TOKEN` to the project. The site does not read them.
-- [ ] Turn on **Deployment Protection** for previews, so only the team can open them.
-- [ ] Deploy a preview first. Do not attach the real domain yet.
+- [ ] cPanel, Application Manager, Register Application: name `dklao-site`, path `dklao-app`, domain
+      `dklao.com`, base URL `/`, deployment environment `production`, startup file `server.mjs`.
+- [ ] Environment variables (typed in the Application Manager, never committed):
 
-## 4. First start (do this before anything is public)
+| Variable | Value |
+|---|---|
+| `NODE_ENV` | `production` |
+| `APP_URL` | `https://www.dklao.com` |
+| `DATABASE_URL` | `postgres://dklao_app:<percent-encoded password>@127.0.0.1:5432/dklao_dklApp` |
+| `DATABASE_POOL_MAX` | `5` |
+| `PAYLOAD_SECRET` | New random 32 bytes (see `.env.example`), different from any developer machine |
+| `SMTP_HOST`, `SMTP_PORT` | `mail.dklao.com`, `465` |
+| `SMTP_USER`, `SMTP_PASS` | `website@dklao.com` and its mailbox password |
+| `LEAD_NOTIFY_EMAIL` | `info@dklao.com` |
+| `LEAD_RATE_LIMIT`, `LEAD_RATE_WINDOW_SECONDS` | Optional. Defaults 5 requests per 600 seconds per address |
+| `LEAD_NOTIFY_WEBHOOK_URL` and its secret | Optional, only if a WhatsApp or chat automation is added |
 
-- [ ] On the protected preview, open `/admin`. The first account registered there becomes the **owner**, so the owner registers it personally, right away.
+- [ ] Run the migrations once, as the `dklao` user, with the same values:
+      `cd ~/dklao-app && DATABASE_URL=... PAYLOAD_SECRET=... pnpm cms:migrate`
+      The Supabase lockdown migration does nothing on this server (it only acts when Supabase's roles exist).
+- [ ] Before each later migration: `pg_dump -U dklao_app -h 127.0.0.1 dklao_dklApp > ~/backups/dklao_dklApp-<date>.sql`.
+- [ ] Restart the app from the Application Manager after every build or settings change.
+
+## 5. First start (before anything is public)
+
+Test on a temporary address first, for example a `preview.dklao.com` subdomain in the dklao account
+pointed at the same app, protected with cPanel Directory Privacy.
+
+- [ ] Open `/admin`. The first account registered becomes the **owner**, so the owner registers it personally, right away.
 - [ ] Create the editor and advisor accounts from the admin.
-- [ ] Run `pnpm cms:seed` against the new database (with the direct string). It copies the confirmed facts and the three pages, and never overwrites existing rows.
-- [ ] Fill in the facts the owner has confirmed (phone, WhatsApp, address). Leave the others empty: empty facts stay hidden.
-- [ ] Send a test quote from the preview. Check it appears under Leads, then delete it.
+- [ ] Run `pnpm cms:seed` on the server with the same settings. It copies the confirmed facts and the built-in
+      pages, and never overwrites rows an editor has changed.
+- [ ] Fill in the facts the owner has confirmed. Leave the others empty: empty facts stay hidden.
+- [ ] Send a test quote. Check that it appears under Leads and arrives at info@dklao.com, then delete it.
+- [ ] Check spam protection: the sixth quote from one address within ten minutes gets "too many requests".
+      The limit is counted per app process; if the Application Manager runs several processes, also use
+      Cloudflare's rate limiting or bot protection.
+- [ ] Check what visitors' addresses look like behind Cloudflare: the rate limit must see the visitor, not Cloudflare.
 
-## 5. Verify the preview
+## 6. Verify
 
-- [ ] `/`, `/about`, `/contact`, `/forklift-rental`, `/request-quote` all load.
+- [ ] `pnpm links:check https://preview.dklao.com` passes (see `con_agents/QA_CHECKLIST.md`).
+- [ ] `/`, `/about`, `/contact`, `/forklift-rental`, `/request-quote`, `/app` all load.
 - [ ] A fact cleared in the admin disappears from the pages within a minute.
 - [ ] No page text contains `[CONFIRM]`, `[[` or `xxxx`.
 - [ ] Logged out, `GET /api/leads` and `GET /api/users` return 403, and `POST /api/leads` returns 403.
 - [ ] An editor account cannot open Leads. An advisor account cannot open Pages or Users.
-- [ ] The browser shows no Supabase keys or connection strings (View source, Network tab).
+- [ ] View source and the Network tab show no database string, SMTP details or secrets.
 
-## 6. Go live (needs the owner's approval)
+## 7. Go live (needs the owner's approval)
 
-- [ ] Lower the DNS TTL a day before. Add `dklao.com` and `www.dklao.com` in Vercel, then change the records in Cloudflare. Keep the old cPanel files until the new site has run for a week.
-- [ ] Re-check section 5 on the real domain, plus the sitemap and `robots.txt`.
-- [ ] Rotate the tokens that were pasted into chat (Supabase access token, Vercel token, SSH password) and store the new ones in the password manager.
+- [ ] Keep a copy of the current `public_html` ("coming soon" page): `cp -a ~/public_html ~/public_html.before-site`.
+- [ ] Point the Application Manager app at `dklao.com` (and `www.dklao.com`) instead of the preview address.
+- [ ] Cloudflare: SSL mode **Full (strict)** (the server has an AutoSSL certificate), and a page rule or
+      redirect so `dklao.com` and `www.dklao.com` end up on one address that matches `APP_URL`.
+- [ ] Re-check section 6 on the real domain, plus `/sitemap.xml` and `/robots.txt`.
+- [ ] Keep the ngrok preview off once the site is live.
 
-## 7. Rollback
+## 8. Rollback
 
-- Site: in Vercel, promote the previous deployment. Nothing else changes.
-- DNS: put the old records back (kept for a week above).
-- Database: Supabase restore to a point in time. Migrations are forward-only; do not edit a migration that has run.
+- Site: unregister or stop the app in the Application Manager and restore `~/public_html.before-site`.
+  For a bad release: `git checkout <previous tag>`, `pnpm install --frozen-lockfile && pnpm build`, restart.
+- Database: restore the `pg_dump` taken before the migration
+  (`psql -U dklao_app -h 127.0.0.1 dklao_dklApp < ~/backups/dklao_dklApp-<date>.sql`) or the nightly cPanel
+  backup. Migrations are forward-only; do not edit a migration that has run.
+- Leads that arrived while the database was down are in `~/dklao-app/data/leads-local.jsonl` and in the
+  info@dklao.com inbox.
 
-## 8. Not covered yet
+## 9. Not covered yet
 
-- Media uploads and the storage adapter.
+- Media uploads and where uploaded files are stored (the app folder is replaced on each release).
+- Monitoring and alerts: an uptime check on `https://www.dklao.com/` and on the admin.
 - Home and About copy still live in `src/lib/data/`, not the CMS.
 - Lao content, article pages and redirects (Phase 4).
-- Monitoring and alerts.

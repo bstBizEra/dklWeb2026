@@ -64,10 +64,17 @@ describe("content pages", () => {
     expect(titles(visibleSections(forkliftRentalPage))).toContain("Which forklift brands do you supply?");
   });
 
-  it("links to a planned route only after it is published", () => {
+  it("links to a route only while that route is published", () => {
     const cards = visibleSections(forkliftRentalPage).find((section) => section.kind === "cards");
+    const rentalShort = cards?.items.find((item) => item.title === "Short-term rental");
 
-    expect(cards?.items.every((item) => item.href === undefined)).toBe(true);
+    expect(rentalShort?.href).toBe("/forklift-rental/short-term");
+
+    const unpublished = {
+      ...forkliftRentalPage,
+      sections: [{ kind: "cards" as const, title: "x", items: [{ title: "Ghost", description: "d", routeId: "no-such-route" }] }],
+    };
+    expect(visibleSections(unpublished)[0].items[0].href).toBeUndefined();
   });
 });
 
@@ -84,6 +91,71 @@ describe("contact channels", () => {
     expect(channels[0].href).toBe("tel:+856200000000");
     expect(channels[1].href).toBe("https://wa.me/856201111111");
     expect(channels[2].text).toBe("facebook.com/DKLAOonline");
+  });
+
+  it("gives each value of a multi-value fact its own link", () => {
+    const channels = contactChannels({
+      ...noFacts,
+      whatsapp: "+85620 2802 3355, +85620 2323 1922",
+      email: "info@dklao.com, salescenter@dklao.com",
+    });
+
+    expect(channels.map((c) => c.href)).toEqual([
+      "https://wa.me/8562028023355",
+      "https://wa.me/8562023231922",
+      "mailto:info@dklao.com",
+      "mailto:salescenter@dklao.com",
+    ]);
+  });
+
+  it("publishes the contact details the owner supplied on 23 October 2026", () => {
+    const hrefs = contactChannels().map((c) => c.href);
+
+    expect(hrefs).toEqual(
+      expect.arrayContaining([
+        "tel:+85621480248",
+        "https://wa.me/8562028023355",
+        "https://wa.me/8562023231922",
+        "https://wa.me/8562023231911",
+        "mailto:info@dklao.com",
+        "mailto:salescenter@dklao.com",
+        "https://www.facebook.com/DKLAOonline",
+      ]),
+    );
+    expect(siteFacts.address).toContain("Kamphaengmeuang");
+  });
+
+  it("labels WhatsApp numbers by team when the value says Sales or Aftersales", () => {
+    const whatsapp = contactChannels().filter((c) => c.href.startsWith("https://wa.me/"));
+
+    expect(whatsapp.map((c) => [c.label, c.href])).toEqual([
+      ["WhatsApp Sales", "https://wa.me/8562028023355"],
+      ["WhatsApp Aftersales", "https://wa.me/8562023231922"],
+      ["WhatsApp Aftersales", "https://wa.me/8562023231911"],
+    ]);
+    expect(contactChannels({ ...noFacts, whatsapp: "+85620 1 2345" })[0].label).toBe("WhatsApp");
+  });
+
+  it("adds YouTube and X links after Facebook, and hides them when unset", () => {
+    const withSocial = contactChannels({
+      ...noFacts,
+      facebook: "https://www.facebook.com/DKLAOonline",
+      youtube: "https://www.youtube.com/channel/UCONgeO8Upbiwk1ba681-Erg",
+      twitter: "https://twitter.com/DKLaoTrading",
+    });
+
+    expect(withSocial.map((c) => c.label)).toEqual(["Facebook", "YouTube", "X"]);
+    expect(withSocial[1].text).toBe("youtube.com/channel/UCONgeO8Upbiwk1ba681-Erg");
+    expect(withSocial[2]).toMatchObject({ href: "https://twitter.com/DKLaoTrading", text: "twitter.com/DKLaoTrading", external: true });
+    expect(contactChannels({ ...noFacts, youtube: "https://www.youtube.com/channel/x" }).map((c) => c.label)).toEqual(["YouTube"]);
+    expect(contactChannels(noFacts).some((c) => c.label === "X" || c.label === "YouTube")).toBe(false);
+  });
+
+  it("shows the supplied YouTube and X links on the Contact page rows", () => {
+    const titles = visibleSections(contactPage).flatMap((s) => s.items.map((i) => i.title));
+
+    expect(titles).toEqual(expect.arrayContaining(["Facebook", "YouTube", "X (Twitter)"]));
+    expect(visibleSections(contactPage, noFacts).flatMap((s) => s.items.map((i) => i.title))).not.toContain("YouTube");
   });
 
   it("returns only confirmed channels", () => {

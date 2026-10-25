@@ -9,5 +9,5 @@ export async function generateMetadata() {
 }
 
 export default async function ForkliftRentalPage() {
-  return <ContentPage page={await getPageContent(forkliftRentalPage)} />;
+  return <ContentPage page={await getPageContent(forkliftRentalPage)} showClients />;
 }

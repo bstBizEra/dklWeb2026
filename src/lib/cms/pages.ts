@@ -1,6 +1,8 @@
 import { cache } from "react";
 
-import type { PageContent, PageSection } from "@/lib/data/pages";
+import { sectionKinds, type PageContent, type PageSection } from "@/lib/data/pages";
+
+import { fromDetailsRow, type DetailsRow } from "./details-backfill";
 import { factKeys, type FactKey } from "@/lib/data/site-facts";
 import { hasConfirmMarker } from "@/lib/data/confirm";
 
@@ -25,23 +27,36 @@ export function pageFromDoc(doc: Doc): PageContent | null {
   const sections = list(doc.sections).flatMap((raw): PageSection[] => {
     const title = str(raw.title);
     const kind = str(raw.kind) as PageSection["kind"] | undefined;
-    if (!title || !kind || hasConfirmMarker(title)) return [];
+    if (!title || !kind || !(sectionKinds as readonly string[]).includes(kind) || hasConfirmMarker(title)) return [];
 
     const items = list(raw.items).flatMap((item) => {
       const itemTitle = str(item.title);
       const fact = str(item.fact);
       if (!itemTitle) return [];
+      // Optional card section; kept only when it has an opening paragraph and two complete topics.
+      const details = fromDetailsRow(item.details as DetailsRow | undefined);
       return [
         {
           title: itemTitle,
           description: str(item.description),
+          details,
           routeId: str(item.routeId),
           fact: fact && (factKeys as string[]).includes(fact) ? (fact as FactKey) : undefined,
+          needsConfirmation: item.needsConfirmation === true ? true : undefined,
         },
       ];
     });
 
-    return [{ kind, title, intro: str(raw.intro), items }];
+    return [
+      {
+        kind,
+        title,
+        intro: str(raw.intro),
+        body: str(raw.body),
+        items,
+        needsConfirmation: raw.needsConfirmation === true ? true : undefined,
+      },
+    ];
   });
 
   const closing = (doc.closing ?? {}) as Doc;

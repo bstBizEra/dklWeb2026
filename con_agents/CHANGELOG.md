@@ -2,6 +2,469 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.19.0] - 2026-10-25
+
+### Minor Changed
+
+- **iPhone web app at `/app`.** A second front end for customers on iPhone that looks and behaves like an iOS app instead of the website: system font, large titles, inset grouped lists, a translucent tab bar (Home, Services, Request, Location), iOS system colours with DK LAO blue and red as accents, light and dark mode, safe areas around the notch and home indicator. Its own root layout (`src/app/(app)/`), so the website header, footer, motion and stylesheet never load there; `noindex`, so search still shows the website. Routes in `ROUTES.md` section 4a.
+  - **Home:** what DK LAO does, Request a Quote and Book a Service, one-tap Call, WhatsApp Sales, WhatsApp Service and Messenger, About (since 2010, Vientiane, open 24/7) and Trusted by.
+  - **Services:** the seven Solutions services in the same two groups as the website menu (shared `groupMenuLinks`); a tap opens the request with that service chosen.
+  - **Request:** one form, Quote or Service (iOS segmented control), sent to the existing `/api/leads/quote` and checked against the same schema. Service bookings record the problem, machine, site address and an optional site pin from "Use my current location", written into the lead message as a map link, lead type `SERVICE_BOOKING`. Contact details are remembered on the phone after a successful send, and the form is kept as a draft while typing, so a locked phone or lost connection loses nothing.
+  - **Location:** office address with Apple Maps and Google Maps directions (the maps app searches the confirmed address; no pin is guessed), all contacts with their brand marks, hours, and "Send my site location", which opens the iPhone share sheet (or WhatsApp to the service team) with a map link.
+  - **Works like an installed app:** web app manifest (`/app/manifest.webmanifest`, scope `/app`), home-screen icons built from the official favicon on a white square (no new artwork), standalone display, a one-time "Add to Home Screen" hint in Safari (iOS has no install prompt), and a service worker (`public/app-sw.js`) that serves the last visited screens or an offline page with the phone number when there is no connection. Lead requests are never cached.
+  - **Location permission:** only `/app` may ask for location (`Permissions-Policy: geolocation=(self)`), and only when the customer taps a location button; the website keeps `geolocation=()`. Camera, microphone and payment stay off everywhere.
+  - **Chosen from research:** in Laos, Messenger reaches about 60% of adults and WhatsApp leads for calls (DataReportal, Digital 2026 Laos), so both sit one tap away; iOS home-screen web apps support location, the share sheet and offline caching (WebKit). Left out on purpose because there is no backend for them yet: request tracking, push notifications, photo upload (the lead API takes no files), accounts, prices and stock.
+  - **Contrast:** iOS's standard grey (0.6 alpha) is under 4.5:1 at the small sizes used, so secondary text uses 0.78 alpha; filled buttons keep DK LAO red and blue in dark mode so white text stays readable.
+  - **Android gets its own look (Material 3).** A small script in the `/app` layout marks Android phones before the first paint (`<html data-platform="android">`), and an `android:` Tailwind variant switches every screen to Material 3: Roboto, regular-weight large titles, primary-blue list subheaders, list cards without separators or chevrons, round leading icons, a navigation bar with the pill indicator behind the current tab, outlined text fields with the label on top (blue when focused, red when invalid), a segmented button with a check mark, pill-shaped buttons and press state layers. Colour roles are generated from DK LAO blue (`--md-*` in `app.css`), light and dark; the Android status bar takes the Material surface colour. iPhone and other devices keep the iOS look.
+  - **Installs as an app on Android.** Chrome's install prompt is caught early and shown as an "Install app" button on Home (iPhone keeps the Share > Add to Home Screen steps). The manifest adds maskable icons (`/app/icon/maskable-192|512`, the favicon kept inside the 80% safe zone so Android's round and squircle crops never cut it), long-press shortcuts on the app icon (Request a Quote, Book a Service, Send site location), `launch_handler: focus-existing`, `lang` and `categories`. Manifest content moved to `appManifest` in `src/lib/data/mobile-app.ts`, with a test of the install requirements.
+  - **Native-feel checklist, both platforms:** Back works like an app (tab to tab replaces history, so Back from any tab goes to Home and Back from Home leaves the app); no text selection or long-press menu on interface text (form fields, the address and phone numbers stay selectable); no double-tap zoom delay, pull-to-refresh or overscroll bounce; images cannot be dragged; no scrollbar when installed; 17px (iPhone) and 16px (Android) inputs so the phone never zooms into a field.
+  - New tests: `src/lib/data/mobile-app.test.ts` (contacts and maps only from confirmed facts, a service request passes the lead schema, every service opens the right request) and a `/app` location rule in `src/lib/security-headers.test.ts`.
+  - Checked on the production build at 390x844 (iPhone 15 size) in light and dark: all four screens, empty-form errors with focus on the first problem, a service request with a site pin (the real API accepted the fields and failed only on the local database, which is off; the success screen was checked with the API simulated), the manifest, icons, offline page, service worker control, and the location policy on `/app` versus the website. Not checked on a real iPhone: Add to Home Screen, the location prompt, the share sheet and opening WhatsApp, Messenger and Maps from full-screen mode.
+  - Android checked at 412x915 with an Android Chrome user agent, light and dark: Material look on all screens, status bar colour, Back (three tab switches added one history step; Back returned Home), the Install card and button (Chrome's prompt simulated), and the public manifest and maskable icons through the ngrok preview. The iPhone look was rechecked on the same pages. Not checked on a real Android phone: the real install prompt, the installed window, icon shortcuts and the maskable crop.
+  - **Install fix found on a Samsung S24 (Edge): "This app cannot be installed".** Browsers fetch the web app manifest without cookies by default. Behind the free ngrok preview, a request without ngrok's "Visit Site" cookie gets ngrok's warning page instead of the file, so the phone received HTML, not a manifest, and showed a blank "N" icon. The `/app` layout now writes the manifest link itself with `crossorigin="use-credentials"` (Next's `metadata.manifest` cannot). Checked through the preview: without cookies the manifest URL returns ngrok's HTML, with cookies it returns the manifest, and the page's link now sends them. The app icons have the same limit behind ngrok (HTML without cookies, PNG with them); if the phone fetches icons without cookies the preview may still install with a plain icon or not at all. On the real domain there is no warning page, so neither applies.
+  - **App info screen (`/app/info`), iPhone and Android.** A native-style About page, opened from Home > About > App info, with a back button that pops history (iPhone "‹ Home", Android arrow). It carries the lines every DK LAO footer must show: app icon, version and release date (from `VERSION.json`), "Copyright © DK LAO Since 2010-current year", website and Facebook, and "Develop by: BizEra" linking to https://www.bizera.la/. A Privacy & data group says when location is read, that the app has no login, tracking or advertising (no analytics code exists in the project), and offers "Clear saved details", which removes everything the app keeps on the phone (`appStorageKeys`: contact details, unsent draft, install card closed). The short footer stays at the bottom of Home.
+  - **Owner review on a Samsung S24, round 2.** (1) The copyright and "Develop by" footer is removed from the app's Home (`app-footer.tsx` deleted); those lines live on App info only. (2) Every screen has a top bar with the DK LAO primary logo (`Logo-H_Text.svg`; on Home it replaces the large "DK LAO" title, which stays for screen readers). At the top of a screen the bar is fully transparent; once the screen scrolls it turns into see-through glass (24px blur, 80% surface colour, hairline edge) and shows the screen title in the middle, like iOS navigation bars and Material center-aligned top app bars. Screens opened from another one (App info) show the back button there instead of the logo. (3) **New app icon**, designed at the owner's request: the official oval DK emblem cropped out of the primary logo file (only the SVG viewBox is narrowed to the emblem, nothing redrawn), large on a full-bleed DK LAO navy square with the brand-blue glow, plus the blue-red-orange brand stripe along the bottom; the Android maskable version keeps the emblem inside the 80% safe circle and leaves the stripe out. Android's launch screen background is now the same navy. Checked at 512, 192, 180, 60 and 40 px, as a rounded square and as a circle. Fix after owner review: the first crop (x 0-124) cut the oval's right edge; measured in the file the emblem ends at x 129.1 and the lettering starts at 142.2, so the crop is now 0-131 and the whole oval shows.
+  - Known: in dark mode the primary logo's blue "DK LAO" lettering is dim on black (the same file the website uses on its navy header). A light-on-dark logo version from the owner would fix it.
+  - A Play Store app (Trusted Web Activity) is not part of this: it needs the production domain, a `/.well-known/assetlinks.json` file, a signing key and a Google Play developer account.
+
+### Not changed
+
+- The website and its lead form. Nothing was committed, pushed or deployed.
+
+## [0.18.0] - 2026-10-25
+
+### Minor Changed
+
+- **UI system: shadcn/ui and Tailwind CSS v4.** Every page and shared component now uses Tailwind utilities and the shadcn-style primitives in `src/components/ui/` (Button, Card, Badge, Accordion, Sheet, Input, Label, and the Container / Section / Eyebrow / SectionTitle / SectionHeader / IconBadge layout set). DK LAO colours, radii, shadows and easing are Tailwind theme tokens, so a class like `bg-navy-950` or `shadow-card` always means the brand value.
+- **Legacy stylesheet retired.** `src/app/(site)/globals.css` went from 1,596 to 256 lines: only the theme tokens, keyframes, base resets, the keyboard focus ring and the reduced-motion guard remain. Old class names that the scroll motion or tests use (for example `service-card`, `about-snapshot__card`, `industrial-footer__links`) stay in the markup as hooks with no CSS behind them.
+- **Accessibility kept or improved on the way:** the phone menu is a focus-trapped sheet that returns focus to its button; the FAQ is a keyboard-operable accordion; quote-form errors are linked to their fields (`aria-describedby`, `aria-invalid`) and announced; the send result is a polite live region; reduced motion turns off the hero reveal and image settle.
+- **Social share images.** Each published page has its own 1200x630 image at `/og/<page id>` (navy grid, logo, the page's eyebrow and heading, the Toyota forklift, brand stripe), built once at build time with `next/og`. Open Graph and X (Twitter) metadata point at it; an unknown page falls back to the Home image.
+- Share images set their text in **Inter Bold** (Latin subset, 67 KB, `src/assets/fonts/Inter-Bold.ttf`, from Fontsource, Inter 5.2.5, SIL Open Font License) so headlines match the site's heavy type. Titles over 30 characters set at 58px so Home reads in two lines ("Forklift Rental, Sales & / Service in Laos").
+- Matched Contact, Request a Quote and Forklift Rental to their pre-migration look at 1440 and 375 pixels: form fields back to 14px corners, 13px padding and 0.9rem labels; FAQ rows back to 18 x 22px padding (8px more per side on phones); a 12px gap under each "Step" label; card, breadcrumb and contact-table links 40px tall on phones only, as before, instead of at every width.
+- About fixes found while rechecking: the vision and commitment headings and the card titles had lost their bold (Tailwind's reset removed the browser default); they are 850 and 750 again. The "Our vision" and "Our commitment" labels were red on red and blue cards and almost unreadable; they are now white at 85%.
+- **Footer on phones (reported in Edge):** with Windows "Animation effects" off, most of the footer stayed invisible after scrolling down; with animation on, the contact chips stayed 90px to the side and were cut off at the screen edge. Cause: the GSAP `from()` tweens read their end state off the page, and the page re-measure after images load (`ScrollTrigger.refresh()`) could land mid-tween and record a half-hidden state as the end. The footer now uses `fromTo()` with an explicit end (`x: 0, opacity: 1`), and the contact chips no longer also transition their transform in CSS. Checked at 320, 375 and 430 pixels with motion on and off, scrolling step by step, jumping to the bottom, and scrolling up and back down: all 21 footer items visible and inside the screen every time. A test fails if `from()` or the chip transform transition comes back.
+- **Keyboard and screen-reader check (Home, Contact, Request a Quote).** Passed as found: tab order follows the page, every stop shows a focus ring, the phone menu traps focus, closes with Escape and returns focus, the FAQ works with Enter, Space and arrow keys, and form errors move focus to the first problem and are read out. Fixed:
+  - The header and footer were inside `<main>`, so screen readers had no banner or footer landmark and "Skip to main content" landed back on the header. They now sit outside `<main>`, which takes focus from the skip link.
+  - Tabbing to content that had not yet faded in gave focus to something barely visible (as low as 30%). Focused content, including footer layers, is now shown at once.
+  - "Solutions" and the card, breadcrumb and table links were 23px tall; now at least 24px (WCAG 2.5.8).
+  - Quote form: required fields are announced as required before sending, Email is labelled "(optional)", and the send button stays focusable while sending (it was disabled, which dropped focus to the page).
+  - New test: `src/lib/data/a11y.test.ts`.
+- Removed the unused `@radix-ui/react-navigation-menu` and `@radix-ui/react-separator` packages. The navigation menu now comes from `radix-ui` 1.8.1 (pinned), through the shadcn `navigation-menu` component.
+- **Solutions mega menu (desktop header).** "Solutions" opens a two-column panel: Equipment (Forklift Rental, Forklifts for Sale, Warehouse Equipment, Cleaning Equipment) and Service & parts (Maintenance Service, Spare Parts, Batteries & Chargers). Each link has an icon and a one-line description; a side card with a warehouse photo, "Not sure which solution fits?" and a Request a Quote button keeps the lead action inside the menu. Built from shadcn/studio `navigation-menu-06` (`src/components/shadcn-studio/navigation-menu/navigation-menu-06.tsx`), with DK LAO copy and `asChild` links. It replaces the hand-built dropdown; the phone menu is unchanged and still lists all seven links.
+  - Keyboard focus: the shadcn component hid outlines (`outline-none`, and `outline-hidden` sets the same `--tw-outline-style: none` in Tailwind 4.3), so the menu links and the quote button showed no focus ring at all. Those classes are removed from `src/components/ui/navigation-menu.tsx`, so the site's own `:focus-visible` ring applies.
+  - Checked at `http://localhost:3000/` on the production build: opens by click and by Enter; Tab goes through the seven links then Request a Quote; Escape closes and returns focus to "Solutions"; Left/Right move along the top bar; every stop shows a focus ring. At 1121px the panel sits at 346 to 1068px with no sideways scroll; at 1440px it fits beside the logo. At 375px the desktop menu is hidden, the phone menu opens as a focus-trapped dialog with all seven links, and Escape returns focus to its button. All eight menu links return 200; no console errors.
+  - **Reworked into a DK LAO component.** The menu now lives in `src/components/dklao/mega-menu.tsx` as `MegaMenu` (one header item: label, groups, optional promo card) and `MainNavigation` (the desktop menu), keeping the navigation-menu-06 layout in DK LAO dress: blue-to-red-to-orange brand stripe on top, red eyebrow group titles, `IconBadge` icons that turn solid blue on hover with a red arrow sliding in, the navy-grid quote card used by the feature service card and closing call to action, and the orange underline under "Solutions" while it is open. The `src/components/shadcn-studio/` copy is deleted. Groups, icons and the quote card copy moved to `src/lib/data/navigation.ts` (`groupMenuLinks`, `solutionsPromo`); the phone menu now uses the same groups (Equipment, Service & parts) instead of one "Solutions" list. New test `src/lib/data/navigation.test.ts`; contract in `COMPONENTS.md` section 4a. Rechecked at 1440, 1121 (panel 356 to 1078px) and 375px, by mouse and keyboard, with the same results as above.
+  - Fix after owner review: on Maintenance Service, "Preventive maintenance" and "Breakdown repair" showed the same photo (the library has one maintenance photo and both titles matched it). Breakdown repair keeps `maintenance` (machinery repair). Preventive maintenance first used `sales-used`, then, with owner approval, a new library photo `preventive.webp`: a technician checking a forklift's switch panel with a torch (U.S. Navy photo on Wikimedia Commons, public domain; original 3872x2592 JPG, 1,190,498 bytes, size checked against Wikimedia; cropped to 16:10 at x 672-3872, y 0-2000 to leave out the engine-cover brand lettering; 1600x1000 WebP, 126 KB). Registered in `public/images/library/LICENCES.md`, which now also allows public-domain Wikimedia Commons photos (with the no-endorsement condition; the register test accepts them). Rule in `src/lib/data/library.ts`, tests in `library.test.ts`. The four "What we service" cards all differ, and the new photo appears once on the page.
+  - **Replaced the same day with DK LAO's own photo.** The owner shared the DK LAO photo and marketing archive and asked for a Lao technician. The Navy photo's face was not edited (it is a real, named person; changing his likeness would make a fabricated image); instead `preventive.webp` is now `P09.jpg` from `2020_MARKETING ARTWORK\01.Used Forklift\Old Photo`: a technician checking a forklift's battery and engine bay in a workshop. The original is only 640x480, so it is cropped to 640x400 (16:10) without upscaling: sharp enough for the 280x175 card, not for a full-width hero (comment in `library.ts`). Forklift brand lettering on a counterweight behind him is soft-blurred. `LICENCES.md` now lists "DK LAO" (owner's own photos, preferred over stock) as a source; the register test accepts `DK LAO archive:` rows. The archive does not record who the technician is (his shirt badge is not DK LAO's), so the site must not present him as DK LAO staff. Next's optimised-image cache (`.next/cache/images`) had to be cleared locally to show the replacement; replacing a library file under the same name on a deployed site needs the same cache clear or a new file name.
+  - **More stock photos replaced with DK LAO's own** (owner-supplied archive, 2026-10-25), each 1600x1000 WebP, centre crop, no other edits: `contact` = DK LAO head office and Customer Relations entrance; `about` = DK LAO team photo (sales in red, technicians in blue; used on the Industries hero and About sections); `rental` = DK LAO rental forklifts with fleet numbers outside the office (also the Solutions menu card and the phone app's Home); `rental-long` = DK LAO fleet in the yard; `sales-used` = hall of used forklifts from the 2022 used-stock sourcing; `warehouse` = DK LAO team handling racking parts in the workshop. `LICENCES.md` rows updated; the Solutions menu card's alt text now describes the new photo. Not replaced: racking (the LPI catalogue photos in the archive are 900x600, too small for a 1600px hero, and are supplier photos), and the topics with no matching own photo (short-term rental, new sales, breakdown repair, parts, tyres, batteries, material handling, cleaning, the six industries, knowledge). Not done on request: generating new faces or adding DK LAO branding inside stock photos, because it would present stock scenes as DK LAO's own staff and fleet.
+  - **DK LAO illustration treatment for stock photos** (owner request). `ownPhotoTopics` / `isOwnPhoto()` in `src/lib/data/library.ts` list the DK LAO-owned photos; a test keeps that list equal to the "DK LAO" rows in `LICENCES.md`. On cards and page heroes (`content-page.tsx`), every other (stock) photo is shown as a navy duotone (luminosity blend over navy-800, slight contrast lift) and cards get the blue-red-orange brand stripe along the photo's bottom edge (heroes already have it), so stock scenes read as illustrations and never pass for DK LAO's own staff or fleet. DK LAO's own photos keep natural colour. CSS only; image files are unchanged. Checked on Maintenance Service (own and stock side by side), Forklift Rental (own hero stays natural) and Spare Parts at 375px.
+  - **Solutions card content and card detail sections** (owner request: explain each service, Why / When / What / Who / Where). Research by a helper agent gathered sourced industry facts (service intervals of about 200-250 hours or 90 days, OSHA daily pre-use checks, UK LOLER 12/6-month thorough examination, ISO 5057 10% fork heel wear, lead-acid watering and equalising, short- vs long-term rental use cases, tyre types, attachments, racking load notices); thinly sourced topics (filters, hydraulic seals, safety lights, LPG) are worded generally with no figures. LOLER and ISO figures are presented as international benchmarks, since Laos has no equivalent law.
+    - Cards can now carry `details` (`what`, `why`, `when`, `who`, `where`; type `ItemDetails` in `pages.ts`). A card with complete details gets a "Read more" link and its own full-width section after the cards (`CardDetail` in `content-page.tsx`, anchor `detail-<title>`, clear of the sticky header): photo, title, summary and Request a Quote on the left; the five answers with icons on the right; alternating bands; one column on phones. Hidden (unconfirmed) cards and incomplete details never render. `pageFromDoc` reads `details` from a CMS page row too.
+    - **Editable in the admin.** The Payload `pages` collection has a "Card details (What, Why, When, Who, Where)" group on section items (five text areas, shown only inside card sections; all five filled = a detail section, all empty = none). Migration `20261025_093358_card_details` (generated by `payload migrate:create`, with its schema snapshot) only adds five nullable columns to `pages_sections_items` and `_pages_v_version_sections_items`; down drops them. `payload-types.ts` regenerated. `pnpm cms:seed` writes details into new page rows, and for pages that already exist fills details only on card items whose details are still completely empty (matched by section and card title; `fillMissingDetails` in `src/lib/cms/details-backfill.ts`, tested), and skips a page with an unpublished draft. Not run here: the local Postgres (port 5433) is not running, so the migration, seed and admin form were not tried against a database; CI applies all migrations on a fresh database.
+    - Detail sections written for Maintenance (Preventive maintenance, Breakdown repair, Inspection) and Spare Parts (Filters and fluids, Tyres and wheels, Forks and attachments, Hydraulic parts, Lights and safety devices). The other cards on all 13 Solutions pages link to their own page and got one-sentence summaries instead of two- or three-word labels or none (33 cards). No unconfirmed service is promised: onsite and workshop service, warranty and the inspection offer stay hidden and are not mentioned. New test `src/lib/data/card-details.test.ts`. Checked at 1440px (Maintenance: links, anchors, jump to Inspection) and 375px (Spare Parts).
+    - **Superseded the same day: editorial card sections** (owner request: good-quality content per service, not bare What / Why / When / Who / Where labels). `ItemDetails` is now `lead` (opening paragraph), optional `facts` (up to 3 key figures, e.g. 200–250 h, 12 months, 10%), `topics` (two or more, each with its own heading written for the service, e.g. "Setting the right interval", "Why a small leak matters") and an optional `checklist` (heading and points). `CardDetail` shows photo, title, lead, figure tiles and Request a Quote on the left (sticky on desktop), the topics with an orange rule and the checklist card on the right. Content rewritten for the same 8 services; sources unchanged. The admin group is now "Card section (Read more)" with lead, facts, topics, checklist heading and checklist arrays. Migration `20261025_093358_card_details` was never applied anywhere and was deleted; it is replaced by `20261025_094137_card_sections` (6 array tables plus 2 columns on the live and version item tables, ends with `lockdownPublicSchema(db)`). New `src/payload/migrations.test.ts` fails if a migration that creates tables skips the lockdown call or is not registered in `index.ts`. `card-details.test.ts` rewritten (no generic headings, sizes, unique anchors, row round-trip, backfill). Checked: typecheck, lint, 203 tests and build pass; browser at 1440 px (`/maintenance-service`) and 375 px (`/spare-parts`), figure tiles on one line, no horizontal overflow. Still not run against a database.
+    - **Card sections for five more Solutions pages** (owner request, same editorial model, no What / Why / When / Who / Where labels). Batteries & Chargers: the "What decides the right battery and charger" list became 4 cards with sections (Choosing battery and charger; Planning charging for your shifts, with the 8-8-8 lead-acid pattern; A safe charging area, 4% hydrogen ignition limit; Battery care in hot conditions). Forklift Rental: new "Planning your rental" cards (Short or long term?; Matching the truck to the job, 500 mm load centre; Operator safety on site, check every shift). Forklift Sales: new "Before you choose" cards (Capacity and load centre; Mast and lift height, 2.28 m standard container door; New or used?). Warehouse: the "Problems we help solve" list became 4 cards with sections (Unsafe racking and stacking, EN 15635 12-month expert inspection; Slow picking and loading; Aisles too narrow or blocked, typical counterbalance and reach-truck aisle widths; Dusty or slippery floors). Cleaning: new "Planning floor cleaning" cards (Sizing the machine to the area; Sweep, scrub or both; Daily machine care). The copy stays general guidance and claims nothing unconfirmed: no specific battery types, cleaning machine models, warranty, training or maintenance terms. A test now requires at least 3 card sections on each of these pages. CMS rows that already exist keep their old sections: a list that became cards, or a new section, is not added by the seed backfill; use `SEED_REFRESH_PAGES=batteries,rental,sales,warehouse,cleaning` before launch to replace them. Known gap: the library has one battery and one cleaning photo, so those cards and sections repeat the same photo. Checked: typecheck, lint, 203 tests and build pass; all five pages at 1440 px and 375 px, figures on one line, no horizontal overflow.
+    - **DK LAO battery photos** (owner-approved 2026-10-25, from `2020_MARKETING ARTWORK\2.Jungheinrich\2023_FB-Page\Story\Odien Battery Replace`, a battery replacement job in January 2023). Three new own-photo library topics, centre crop to 16:10, 1600x1000 WebP, no other edits: `battery-label` (photo 8, the battery label: 48 V, 465 Ah, 770 kg) for "Choosing battery and charger"; `battery-swap` (photo 13, technicians moving a battery with a Toyota forklift at a loading dock) for "Planning charging for your shifts"; `battery-heat` (photo 10, a battery in full sun) for "Battery care in hot conditions". "A safe charging area" keeps the stock battery photo. Registered in `LICENCES.md` as DK LAO and in `ownPhotoTopics`, so they show without the stock brand stripe; matched by card title in `library.ts`. The battery cards no longer repeat one photo. Checked: typecheck, lint, 203 tests and build pass; `/batteries-chargers` at 1440 px shows four different card photos and no broken images. The cleaning cards still share one photo.
+    - **Nilfisk as the cleaning brand** (owner-confirmed 2026-10-25: Nilfisk is the main brand, focus on industrial and professional, and DK LAO also supplies the Nilfisk consumer range). Cleaning page: meta title "Nilfisk Cleaning Equipment in Laos", eyebrow "Nilfisk Cleaning Equipment", H1 "Industrial and Professional Cleaning Equipment in Laos", intro naming Nilfisk (Danish brand since 1906). The four hidden machine cards were replaced by "The Nilfisk professional range": scrubber dryers, sweepers, robotic floor cleaners, industrial vacuums, commercial vacuums, pressure washers and detergents, following the categories on nilfisk.com/global/professional/products; robotic floor cleaners added the same day after the owner confirmed them. "Match machine to site" gained industrial vacuum, commercial vacuum and pressure washer rows. New "Nilfisk for home and small business" text section (pressure washers, vacuum cleaners, wet and dry vacuums, from nilfisk.com/global/consumer) and a "Cleaning equipment questions" FAQ (brand, which machine, prices). Nilfisk is also named in the Cleaning menu blurb (`routes.ts`), the homepage cleaning card, the Warehouse "Cleaning equipment" card and the About cleaning card. No stock, model, price or authorised-distributor claims. Checked: typecheck, lint, 203 tests and build pass; `/cleaning-equipment` at 1440 px, title and sections as above, no horizontal overflow. Known gap: all cleaning cards still use the one stock cleaning photo.
+    - **Nilfisk product photos on the cleaning cards** (owner-approved 2026-10-25: DK LAO may use Nilfisk's product images as a Nilfisk dealer). Six images from the DK LAO archive (`2020_MARKETING ARTWORK\3.NILFISK` and `2023_FACEBOOK\2021_Post\Promote_DK-LAO_May 2021\Nilfisk`), cropped to 16:10 WebP (1600x1000; the Liberty SC50 is 1000x625 because its source is 1000x900), no other edits: `nilfisk-scrubber` (SC6500 ride-on in a warehouse), `nilfisk-sweeper` (SR1101 in a workshop), `nilfisk-robot` (Liberty SC50 autonomous scrubber), `nilfisk-industrial-vacuum` (GM80P in production), `nilfisk-commercial-vacuum` (GD5 backpack in a café), `nilfisk-pressure-washer` (MC6P under a bus). Matched to the range cards by exact title in `library.ts`; Detergents keeps the stock cleaning photo. Registered in `LICENCES.md` under a new licence "Nilfisk dealer material" (copyright Nilfisk, not DK LAO scenes, so cards keep the brand stripe); the licence test now accepts it. Nothing was downloaded from nilfisk.com. Checked: typecheck, lint, 203 tests and build pass; `/cleaning-equipment` at 1440 px shows the six images and no broken images.
+    - **Nilfisk photos on the "Planning floor cleaning" cards** (owner-approved 2026-10-25, same "Nilfisk dealer material" licence). From the DK LAO archive, cropped to 16:10 WebP 1600x1000, no other edits: `nilfisk-large-area` (SC8000 ride-on in a long warehouse aisle) for "Sizing the machine to the area"; `nilfisk-combination` (CS7010 ride-on sweeper-scrubber in a warehouse) for "Sweep, scrub or both"; `nilfisk-machine-care` (SC500 parked in a clean room) for "Daily machine care", the closest match since no archive image shows maintenance steps. Matched by exact card title in `library.ts`; the card sections show the same photos. Checked: typecheck, lint, 203 tests and build pass; `/cleaning-equipment` at 1440 px shows the three photos on the cards and in their sections, no broken images. Every card on the cleaning page now has its own photo except Detergents (stock).
+    - **Photos on the Warehouse "Problems we help solve" cards** (owner-approved 2026-10-25: DK LAO may use LPI Rack Range and Jungheinrich images as their dealer, as with Nilfisk). From the DK LAO archive, cropped to 16:10 WebP, no other edits: `warehouse-racking-guards` (LPI racking with column guards, 864x540, the "LPI RACK RANGE (THAILAND)" watermark strip cropped off) for "Unsafe racking and stacking"; `warehouse-picking` (Jungheinrich pallet trucks in a busy warehouse, 1280x800 from a 1920x800 banner) for "Slow picking and loading"; `warehouse-narrow-aisle` (Jungheinrich very-narrow-aisle truck, 1280x800) for "Aisles too narrow or blocked"; `warehouse-sweeper` (Nilfisk SW5500 ride-on sweeper, 1400x875) for "Dusty or slippery floors". New licences "LPI dealer material" and "Jungheinrich dealer material" in `LICENCES.md`; matched by exact card title in `library.ts`. Test repair: two shell substitutions had damaged the untracked `library.test.ts` (one prefixed every line, the earlier one turned the source check on line 35 into a pattern that matched anything and altered lines 87 and 107); all four lines restored by hand and the licence list extended. Checked: typecheck, lint, 203 tests and build pass with the strict checks back; `/warehouse-equipment` at 1440 px shows the four photos on the cards and in their sections, no broken images.
+    - **Industries hub: a section per industry and a new hero** (owner request, same editorial model). The six "Choose your industry" cards (Logistics and warehousing, Manufacturing, Construction, Food and beverage, Retail and wholesale, Hospitality and facilities) each got an opening paragraph, three topics with their own headings and a checklist, in `industry-pages.ts`. Client names come only from the owner-confirmed `referenceClients` fact: HOYA in Manufacturing; Beerlao, Coca-Cola and Heineken in Food and beverage. No onsite-service, warranty or response-time claims. `LinkCard` in `content-page.tsx`: a card that has both its own page and a section shows "Read more" and "View page"; `CardDetail` adds a "<industry> page" button next to Request a Quote when the card links to a page. New hero: `industries.webp`, DK LAO's own photo of a technician with a UniCarriers forklift at a customer's beverage depot (`Pictures\Nissan Forklift Delivery to  SNK\WhatsApp Image 2022-12-09 at 20.46.53.jpg`, December 2022), 1280x800 centre crop, registered as DK LAO in `LICENCES.md`; it replaces the team photo on the Industries page. Test: the hub must have six card sections. Checked: typecheck, lint, 203 tests and build pass; `/industries` at 1440 px and 375 px, six sections, links reach the sector pages, no broken images, no horizontal overflow.
+    - **Industry pages: a section for every recommended solution** (owner request, same editorial model). The "What we recommend" cards on all six `/industries/*` pages (23 cards) each got an opening paragraph, two topics with their own headings and a checklist, written for that industry: for example "Plan the peak in advance" for logistics rental, "Service by hours worked" for manufacturing maintenance, "Fit for rough ground" for used forklifts in construction, "A layout for first in, first out" for food and beverage racking, "Clean before the doors open" for retail cleaning, and "A back-of-house route" for hotel deliveries. The content lives in the new `src/lib/data/industry-details.ts` (keyed by industry page and card title) and is merged in `industryPage()`. Claims stay within confirmed facts: no onsite service, warranty, response times or stock; Nilfisk is named for the cleaning cards; the maintenance figures (200–250 h, 3 months) match the Maintenance page. Each card shows "Read more" and "View page", and each section links to the solution's page. Test: every "What we recommend" card on every industry page has its own section. Checked: typecheck, lint, 203 tests and build pass; all six pages render their sections (4, 4, 4, 4, 4 and 3), checked in the browser at 1440 px and 375 px, no broken images, no horizontal overflow.
+    - **Section page buttons name the destination** (owner request). In `CardDetail`, the button beside Request a Quote now uses the linked route's label ("Maintenance Service page", "Short-Term Rental page", "Cleaning Equipment page") instead of the card title, falling back to the card title when the card has no route. Checked: typecheck, lint, 203 tests and build pass; `/industries/construction` shows Short-Term Rental, Long-Term Rental, Used Forklifts and Maintenance Service page buttons with matching links, and `/industries` shows the six industry page names.
+    - **Key account customers with logos** (owner request, 2026-10-25; owner chose logos and confirmed DK LAO may show them). `referenceClients` now lists five groups from the owner's `D:\Backup_Old_Data\WORKS\DK_LAO\Key Account Customers` folder plus the earlier names: Beverage (Beerlao, Coca-Cola, Heineken, Pepsi, Tiger Beer), Logistics and power (DHL, Lao Freight Forwarder, NTPC, PTT, Savan Logistics), Mining and chemical (MMG, Phu Bia Mining, KCL, 5N Plus), Others (Lao Telecom, Lao Tobacco, Lao World, CPF, Phonesack Group, HOYA) and Government (Ministry of Public Health). The 19 supplied logos are WebP in `public/images/clients/` (500x250, 202 KB in total), mapped by name in `clientLogos` (`src/lib/data/clients.ts`). `TrustedBy` shows a logo tile with the company name as alt text, or a text pill when there is no logo (HOYA, Ministry of Public Health). Groups sit in two columns from 1100 px and stack below; phone tiles are 104 px so three fit per row. The Manufacturing and Food and beverage industry sections now say "DK LAO's customers include…" instead of naming the old "forklift rental and fleet" group. Tests: groups, every mapped logo file exists and is in the list, unmapped clients stay text; the app's client-group test uses the new titles. Checked: typecheck, lint, 204 tests and build pass; home page at 1440 px and 375 px and About at 375 px, 19 logos, no broken images, no horizontal overflow. HOYA's logo is waiting for a file from the owner.
+    - **Ministry of Public Health logo** (sent by the owner in chat, 2026-10-25). The 320x320 emblem is centred on a 500x250 white canvas like the other logos, saved as `public/images/clients/ministry-of-public-health.webp` (15 KB) and mapped in `clientLogos`. The Government group now shows the logo; HOYA is still text because the HOYA image sent earlier was not saved to disk. Checked: typecheck, lint, 204 tests and build pass; home page at 1440 px shows 20 logos and the HOYA text pill, no broken images.
+    - **HOYA logo** (owner-supplied link, 2026-10-25: `https://cdn.108.jobs/company-images/973d640d-017b-4f73-aead-d3a2e8e80f99.jpeg`, 866x650 JPEG, 11.7 KB). White border trimmed, wordmark centred on a 500x250 white canvas, saved as `public/images/clients/hoya.webp` (6 KB) and mapped in `clientLogos`. Every customer now shows a logo; the text-pill fallback stays for names added later without artwork. Checked: typecheck, lint, 204 tests and build pass; home page at 1440 px shows 21 logos, no text pills, no broken images.
+    - **Link audit** (owner request: no dead links). A crawl from `/` and `/app` reached 31 pages and checked 127 unique links: every internal page, every `#anchor` against the ids on its target page, `tel:` and `mailto:` formats, and all 12 external URLs; all 26 sitemap URLs also return 200. One dead link: the app's "Company profile" opened `https://www.dklao.com/about`, which returns 404 because dklao.com still serves the old website. Fix: the app's "Company profile", "Open dklao.com" and "Website" rows now use relative links (`/about`, `/`, `/`), so they open this site's pages in every environment (local, ngrok preview, production) and still open outside the app; the unused `APP_URL` constants in those three pages were removed. Test: the app pages may not hard-code `https://www.dklao.com` or read `APP_URL` for links. Re-crawl: 31 pages, 125 links, 0 internal problems, 10 of 10 external links return 200. Checked: typecheck, lint, 205 tests and build pass. External checks are status codes only: Facebook and X can answer 200 with a login page.
+    - **`pnpm links:check`** (owner request). The link audit crawler is now `scripts/check-links.mjs`: it crawls every page reachable from `/` and `/app` on a running site (default `http://127.0.0.1:3000`, or a base URL argument such as the ngrok preview), and fails with exit code 1 on internal 4xx/5xx or redirects, `#anchor` links without a matching id, malformed `tel:`/`mailto:` links, and external URLs at 400+ or unreachable; `--skip-external` checks internal links only. No new dependency (Node's built-in `fetch`). Documented in `con_agents/QA_CHECKLIST.md` (new section 8, and "links:check passes" added to Release QA). Checked: against the local site, 31 pages and 125 links, all work (exit 0), also with `--skip-external`; with no site running it explains how to start one (exit 1); against a throwaway local page with a 404, a missing anchor, a malformed `tel:` link and a 301, it reported all four (exit 1). Lint and 205 tests pass.
+    - **Forms tested end to end, and every request emailed to info@dklao.com** (owner request). Found by testing: a valid request returned 500 "could not be saved" because `.env.local` points `DATABASE_URL` at the local Postgres, which is not running, so every lead was lost. Fixes:
+    - **PostgreSQL 16 installed on the dklao.com cPanel server** (owner decision 2026-10-25: host the site and its database on dklao.com instead of Vercel and Supabase; owner chose PostgreSQL 16 over the cPanel default 13, which is end of life since November 2025). Server `host.bizera.la` (50.6.224.71, AlmaLinux 9.8, cPanel & WHM 11.138), which also hosts laogencms.com and 10 other accounts. Steps over SSH as root with key authentication: `dnf module enable postgresql:16`, then cPanel's supported installer `/usr/local/cpanel/scripts/installpostgres --yes`; log at `/root/installpostgres-20261025.log`. Installed postgresql-server 16.15 (AlmaLinux AppStream module); cPanel wrote its configuration, created a PostgreSQL login for every cPanel account and set a random password for the `postgres` superuser. Checked: service active and enabled at boot, monitored by cPanel (chkservd); listens on 127.0.0.1 and cPanel's internal 127.0.0.200 only, not the internet; password authentication for local connections; all 12 accounts, including `dklao` and `laogencms`, have their role and the "PostgreSQL Databases" feature (default and standard feature lists). No existing data was touched; MySQL is unchanged. Not done: databases for the site are not created yet; `docs/deploy-checklist.md` still describes Vercel and Supabase and needs updating for cPanel hosting.
+    - **Website database created, and the deploy checklist rewritten for the cPanel server** (owner request, 2026-10-25). In the `dklao` cPanel account, through cPanel's UAPI as root: database `dklao_site` and user `dklao_app` (all privileges). The user was created with a random temporary password generated on the server and never shown or stored; the owner sets the real one in cPanel. Checked: cPanel lists the user under the database; the database is owned by role `dklao_site` and `dklao_app` is a member, which satisfies cPanel's "samerole" access rule and lets it create tables in `public` on PostgreSQL 16; `dklao_app` is not a superuser. `docs/deploy-checklist.md` now describes hosting the site, admin and database on the dklao.com cPanel server: server facts (Node.js 20.20 installed, 22 available; Passenger not installed yet), one-time WHM setup (EasyApache 4: `ea-apache24-mod-passenger`, `ea-nodejs22`; backups), building on the server, cPanel Application Manager registration and environment variables, migrations with a `pg_dump` before each, a protected preview subdomain, verification (including `pnpm links:check`), go-live through Cloudflare (Full strict), rollback, and what is not covered (the Passenger startup file `server.mjs`, uploads, monitoring). The CI workflow comment no longer says Vercel deploys the site.
+    - **Passenger start file `server.mjs`** (owner request; `docs/deploy-checklist.md` section 3). A small Node HTTP server in the repository root that cPanel's Application Manager (Phusion Passenger) can start: it prepares the built Next.js app (`next({ dev: false })`), serves every request through Next's handler (pages, API and `/admin`), listens on `PORT`/`HOSTNAME` (default 127.0.0.1:3000), answers a plain 500 if a request handler throws, and closes open connections before exiting on SIGTERM or SIGINT. New `server.test.ts` starts it on a free port against the real build and checks: the ready line names the port, `/` and `/cleaning-equipment` return 200, an unknown page returns 404, the lead API answers 400 to an empty request, and SIGTERM stops it (exit code 0 checked on Linux and macOS; Windows has no signal handlers). Skipped when there is no build (CI runs tests before building). Checked: build, then the test (4 passed); by hand with `PORT=3010 node server.mjs`, the home page renders with all 21 client logos; `/admin` shows a server error both through `server.mjs` and through `pnpm start`, because `.env.local` points at the local Postgres on port 5433, which is not running (not caused by this change). Typecheck, lint and 220 tests pass. The deploy checklist marks the start file done.
+    - **Passenger and Node.js 22 installed on the cPanel server** (owner-approved change list, 2026-10-25). On `host.bizera.la` through EasyApache 4 packages, as root: `dnf --allowerasing --setopt=install_weak_deps=False install ea-apache24-mod-passenger ea-nodejs22`. The transaction matched the reviewed dry run: 11 packages installed (Passenger 6.2.1, `ea-passenger-runtime`, `ea-nodejs22` 22.23.4, and AlmaLinux's Ruby 3.0.7 and Node.js 16.20 that Passenger depends on) and `ea-nodejs20` removed (EasyApache allows one Node.js; checked first that nothing on the host used it: `laos-travel-test` runs its own Node 24, the `omniroute` container carries its own Node, `berp-vm` is a VM). `/usr/local/bin/node`, `npm` and `npx` now point to Node 22 (`node -v` v22.23.4, npm 10.9.9). `httpd -t` Syntax OK, graceful restart, `passenger_module` loaded, Application Manager answers for `dklao`. Site check of all 13 hosted domains through 127.0.0.1 before and after: 12 unchanged; `pti-laos.com` already returned 500 before the change; `psvcoffee.com` changed from 200 to 403 for requests from 127.0.0.1 only. The 403 is a page from WordPress itself (PHP), consistent with its security plugin locking out the address the checks came from; from the internet psvcoffee.com, dklao.com and laogencms.com all return 200. That WordPress site was not touched. Logs on the server: `/root/ea4-passenger-20261025.log`, `/root/ea4-passenger-20261025-before.txt`, `-after.txt`. `docs/deploy-checklist.md` section 1 marks both steps done, with the rollback.
+    - **Website database is `dklao_dklApp`** (owner, 2026-10-25). The owner created `dklao_dklApp` in cPanel, granted it to `dklao_app` and set that user's password. Checked on the server: `dklao_app` is a member of role `dklao_dklApp`, can connect and can create tables in `public`; both `dklao_dklApp` and the earlier `dklao_site` are empty. `docs/deploy-checklist.md` now uses `dklao_dklApp` (note the capital A) in the server table, `DATABASE_URL`, `pg_dump` and restore commands; it notes that the password must be percent-encoded in `DATABASE_URL` and how, that the password was pasted into chat and should be changed before go-live, and that `dklao_site` is unused and can be deleted once the owner confirms. The password was not written to any file.
+    - **Unused `dklao_site` database deleted** (owner request, 2026-10-25). Checked first: no tables, views or sequences, and no open connections. Deleted with cPanel UAPI `Postgresql delete_database`. Verified: cPanel lists only `dklao_dklApp`, the `dklao_site` role is gone, and `dklao_app` can still connect to `dklao_dklApp`. Deploy checklist updated.
+      - **No lost leads.** `storeLead` falls back to `data/leads-local.jsonl` when the database cannot be reached. The route then emails and calls the webhook, and answers success with a reference when the lead was saved or at least one notification reached DK LAO; only when all fail does it answer 500 "Your request could not be sent. Please try again, or call or WhatsApp DK LAO."
+      - **Email.** New `src/lib/leads/email.ts` (nodemailer 7.0.10, new dependency; SMTP was already planned in ENVIRONMENT.md) sends the full request to `LEAD_NOTIFY_EMAIL`, default `info@dklao.com`, with Reply-To set to the visitor's email and line breaks stripped from header values. Settings only from the environment: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (added to `.env.example`; delivery documented in `con_agents/FORMS_AND_LEADS.md` section 10). No SMTP_HOST = no email.
+      - **Website form** (`QuoteRequestForm`): validates each field when the visitor leaves it; server field errors land on their fields; a network failure or non-JSON reply shows a clear message and keeps the typed details; the success message includes the reference; "Company or organisation" label; a hint and a 0 / 1,200 counter on the requirement. Error texts now say how to fix the problem (for example "Use digits, spaces and + ( ) - only, for example +856 20 5555 1234").
+      - **App form** (`/app/request`): focus goes to the first problem in screen order (it skipped "What is wrong" for "Address"); every problem in a group shows at once instead of only the first; a non-JSON reply shows a plain message, not a parser error.
+      - Tests: email settings, content, Reply-To, header safety and never-throw (`email.test.ts`); route save/email/webhook combinations including database down; store fallback.
+      - Checked: typecheck, lint, 216 tests and build pass. Against a test copy of the site with a local SMTP receiver: API valid (200 with reference), invalid (400 with a message per field), bot (thank-you, no email); website form in the browser (empty send shows four errors and focuses the first, blur validation, live clearing, sent with reference, form reset); app service form at 375 px (five errors shown, focus on "What is wrong", sent with reference). The receiver got exactly three emails, all to info@dklao.com, with the full request. Test leads and the test servers were removed afterwards. Not done: no real email was sent, because no SMTP account is configured.
+  - **Owner change: original colours, blue on hover.** The always-on navy duotone for stock photos is replaced: every card photo (stock and DK LAO's own) shows its original colour, and a DK LAO blue layer (`bg-brand-blue`, "color" blend) fades in over 260ms on hover or keyboard focus inside the card; opacity animates, not the blend. Page heroes show original colour (under the existing navy text shade). Stock cards keep the brand stripe along the photo's bottom edge, so they still read as illustrations. Checked on Spare Parts at 1440px: all cards in original colour at rest; hovering "Forks and attachments" and focusing the Batteries "View details" link each turned only that card blue. Test updated in `library.test.ts`.
+  - Fix after owner review: on Spare Parts, "Filters and fluids" and "Lights and safety devices" both showed the `parts` photo (a shelf of belts, also the page hero). With owner approval two free Unsplash photos were added: `filters.webp` (Hans Westbeek, fluid filter housings and a pressure gauge; brightened because the original disappeared under the navy treatment) and `safety.webp` (Ethan Hu, a forklift's blue safety spotlight and red working light; cropped to leave out brand lettering on the mast and seat panel). Both are 1600x1000, registered in `LICENCES.md`, and get the stock navy treatment. New title rules in `library.ts` put filter/fluid and light/safety cards on them before the general `parts` rule; only those two cards on the site match. All six "Parts we supply" cards now differ.
+  - Fix after owner review: the "Solutions" arrow sat below the word on desktop. The trigger shared the plain links' `display: block`, so the arrow wrapped to a second line (button 43px tall). It is now `inline-flex` with centred items: arrow right of the label, button 27px tall, level with the other header links. Checked at 1440 and 1121px, menu still opens.
+  - The worktree's `pnpm-lock.yaml` now matches `package.json` (exact versions, `radix-ui` added, the two removed packages dropped).
+- Tests that read CSS now read the component classes instead; new `share.test.ts` checks every published page has a share card and that metadata uses it.
+
+### Not changed
+
+- Page content, routes and layout. Home, About, Contact, Request a Quote and Forklift Rental were compared against before-screenshots at 1440 and 375 pixels: page heights within 1%, no sideways scroll, no console errors. Nothing was committed, pushed or deployed.
+
+## [0.17.3] - 2026-10-25
+
+### Patch Changed
+
+- About page "Industries we serve": the nine cards were text only. They are now six cards, one per industry page, each a link with an "Explore Industry" line, a hover lift and a visible keyboard focus.
+- Merged the three that had no page of their own: "Logistics & Transportation" and "Warehousing & Distribution" became "Logistics & Warehousing"; "Industrial Facilities" joined "Manufacturing & Industrial"; "Government & Institutional Operations" joined "Hospitality, Facilities & Institutions" (offices and public buildings, matching the confirmed Ministry of Public Health client). Food & Beverage now uses a drinks icon instead of a battery.
+- Tests check there is exactly one card per published industry page and that the merged sectors stay named in the wording.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.17.2] - 2026-10-25
+
+### Patch Changed
+
+- Design review (spacing, type, contrast, alignment, fit, repetition) of Home, About, Forklift Rental and Contact at 1440 and 375 pixels. Fixes:
+- **Internal notes shown as copy (biggest issue).** Home and About carried planning text written for the build team, for example "Semi-ecommerce discovery", "Ready for future CRM", "Used forklift inquiries without fake stock claims", "Article routes are prepared for future SEO content", "One form, structured for DK LAO follow-up" and "Six connected solution paths". All rewritten in customer language ("Rent, buy, service and supply in one place", "What do you need today?", "Short guides before you ask for a quote", "Tell us what you need", "Six ways we support your operation"). A new test (`src/lib/data/home-copy.test.ts`) fails if such wording returns.
+- **Repetition on Home.** Removed the dark "used / maintenance / spare parts" band (the same three services are already cards above) and the "cleaning / warehouse" pair (already in the equipment grid), and the three "how the site was built" trust cards. Home is about 16% shorter on desktop (8,679 to 7,250px) and 24% on phones (16,300 to 12,400px). The duplicate form heading under "Tell us what you need" is gone.
+- **Home industry cards** now open the industry pages (Logistics, Manufacturing, Construction, and the Industries hub) instead of general contact actions.
+- **About**: closing call to action cut from three buttons to two (Request a Quote, Talk to a DK LAO Advisor); the Coverage card now uses the confirmed wording ("Based in Vientiane, with customers served online across Laos").
+- **Related solutions** shows at most one row of four, so no single card hangs on a second row (Forklift Rental had five).
+- **Contact**: the form lines up with the sections below it instead of floating centred, and social links read "facebook.com/DKLAOonline" rather than full web addresses.
+- **Buttons** keep their label on one line on phones; the row wraps instead ("View Rental Fleet" was breaking in two).
+
+### Not changed
+
+- The hero, proof strip, clients band, anatomy diagram and quote form are unchanged. Nothing was committed, pushed or deployed.
+
+## [0.17.1] - 2026-10-25
+
+### Patch Changed
+
+- Design review of the industry pages (spacing, type, contrast, alignment, fit, repetition), fixed site-wide:
+- **Lists** ("What slows ... down", "What to tell us for a fast quote" and every other list section) no longer sit as small run-in text inside a wide box with empty space on the right. They sit on the page in columns: a 17px bold title over a 16px explanation, marked by a small orange square. One column on phones.
+- **Card titles** are bold (750) so they lead the card instead of reading like body text.
+- **Related solutions** no longer repeats pages already linked from a card on the same page, pages in the breadcrumb, or the quote and contact pages (each page already has its own calls to action). On the industry pages this removed a second row of the same cards; the section only shows when at least two new links remain.
+- Tests added for the related-links rule and the list layout.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.17.0] - 2026-10-24
+
+### Minor Changed
+
+- Industries rebuilt around one buyer journey, researched and documented in `docs/industries-journey.md` (Laos context per sector with sources, who arrives and why, what each section answers, how to measure it).
+- Five new sector pages, published: Manufacturing (`/industries/manufacturing`), Construction (`/industries/construction`), Food & Beverage (`/industries/food-beverage`), Retail & Wholesale (`/industries/retail-wholesale`) and Hospitality & Facilities (`/industries/hospitality-facilities`). Before, five of the six industry cards linked back to the Industries page itself.
+- Every sector page, Logistics included, now follows the same path: a hero that names the operation, "What slows [industry] down" (4 problems), "What we recommend" (3 to 4 cards linking to rental, sales, racking, batteries, maintenance or cleaning, with a reason for that industry), "How it works" (4 steps), "What to tell us for a fast quote" (5 details), 3 industry questions, and a closing call to action. Quote links preselect the industry's category (warehouse, rental or cleaning) and record the page as the source.
+- The hub gives each industry a one-line need, adds Talk to a DK LAO Advisor beside Request a Quote, and a three-step "Not sure which fits?" route. Each sector page has its own library photo.
+- Fixed three author notes that were showing on the pages: "Sector page (template)" on Logistics, and "Article (template)" and the section heading "Question-style H2 sections" on the rental guide (now "The five things to prepare"). The test that bans author notes now also checks eyebrows, headings and that wording.
+- Footer: the six sector pages are reached from the Industries hub, so the footer lists the hub only. Breadcrumbs, sitemap and related links include all six.
+- New pages contain no figures, clients, brands or response times. Case-study sections stay hidden until the owner supplies a real client or project.
+- `pnpm cms:seed` creates the five new CMS pages. A new opt-in `SEED_REFRESH_PAGES=id,id` overwrites chosen pages with the built-in copy (used locally for industries, ind-logistics and article). Tests: `src/lib/data/industry-pages.test.ts`, plus updated page counts.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.16.0] - 2026-10-24
+
+### Minor Changed
+
+- Photo library: 22 topic photos in `public/images/library/` (1600 by 1000 WebP, 3.6 MB in total, 59 to 374 KB each), downloaded with the owner's approval from Unsplash (20) and Pexels (2) under their free commercial licences. Every file has a row in `public/images/library/LICENCES.md` with source page, photographer and licence. Plan and slot map: `docs/image-plan.md`.
+- Eye check before use: three first picks showed a brand name or store signage (a forklift brand on the long-term rental and used-forklift picks, store signs on retail) and were swapped for their alternatives; the guides photo was cropped to the hands and tablet so no face or clothing logo shows. Two picks keep small lettering (truck cab, truck side) because their alternatives showed bigger logos.
+- Every content page (rental, sales, service, parts, batteries, warehouse, material handling, racking, cleaning, industries, logistics, guides, contact, quote) now has its topic photo behind the hero, under a navy shade that keeps the text readable. Cards show a 16:10 photo above the text: a card that links to a page reuses that page's photo, and cards without a link (part types, industries, guides) pick one from their title. Photos are decorative (empty alt), lazy-loaded except the hero, and zoom 4% on hover (260ms, off for reduced motion). Home and About keep their own artwork.
+- New `src/lib/data/library.ts` holds the topic list and the page and title mapping, so replacing a photo with DK LAO's own shot means replacing one file. Tests in `src/lib/data/library.test.ts`.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.15.0] - 2026-10-23
+
+### Minor Changed
+
+- Site-wide motion with GSAP, in one client layer mounted in the site layout (`src/components/dklao/site-motion.tsx`), audited against the 12 principles of animation adapted for the web.
+- **Scroll reveals on every page:** section headers, cards, stats, chips, steps, FAQ rows, tables, the proof strip, the clients band, About cards and steps, the rental and cleaning panels and the quote form rise 28px and fade in the first time they scroll into view (0.6 seconds, eased out, 40ms stagger, grouped by what enters together). Only content that starts below the fold is hidden, so nothing visible on load flickers, and a parent and its child are never animated together. Hidden content uses opacity only, so screen readers and page search still find it.
+- **Header:** turns a deeper navy with a soft shadow once the page leaves the top. Header links get an orange underline that grows from the left on hover and keyboard focus.
+- **Depth:** the About story photos and the quote section photo drift slightly against the scroll (a 4% parallax).
+- **Press feedback:** card links, footer chips, footer actions, social buttons and the menu trigger squash to 0.98 when pressed; the menu arrow now uses the same timing tokens as everything else.
+- The old CSS scroll-timeline reveal only ran in Chrome-based browsers; it is replaced, so Firefox and Safari get the same motion. The footer stagger was cut from 70ms to 40ms to meet the 50ms rule.
+- Reduced motion: no reveals, parallax or header animation; the page is shown at rest (the footer keeps its plain fade). Tests added in `src/lib/data/motion.test.ts` (stagger limit, eases, press scale, timing tokens, no linear transitions, reduced-motion gate, layout mount).
+
+### Not changed
+
+- The hero keeps its existing CSS entrance. Nothing was committed, pushed or deployed.
+
+## [0.14.1] - 2026-10-23
+
+### Patch Changed
+
+- Owner report: the footer motion was not working. Cause: the computer and the built-in preview browser report "reduce motion" (Windows: Settings, Accessibility, Visual effects, Animation effects is off), and 0.14.0 deliberately showed no motion at all in that case. Fix: with reduced motion the footer layers now fade in and out (0.5 seconds, no sideways travel), so the feature is visible everywhere; with motion allowed they still slide in from the left and right and out again on scroll up. Test updated.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.14.0] - 2026-10-23
+
+### Minor Changed
+
+- Footer motion with GSAP (ScrollTrigger). Scrolling down to a footer layer makes its contents flow in: the left half slides in from the left and the right half from the right (90px, fading in, 0.7 seconds, eased out, short stagger). Scrolling back up plays the same motion in reverse, so the left half flows out to the left and the right half out to the right. The three layers (contact, links, copyright line) each have their own trigger and replay every time.
+- What moves: Talk to us, the address and the left contact chips come from the left; the actions, the right contact chips, the Toyota forklift and the social buttons from the right. In the links layer the logo and first two groups come from the left, the last two groups from the right. The copyright line comes from the left and the BizEra credit from the right.
+- The last layer starts as soon as it enters the viewport, and the triggers are re-measured whenever the page height changes (images above the footer settle after load). Without that re-measure the copyright line never played in the first test.
+- Visitors who ask for reduced motion see the footer as before, with no movement. The footer is clipped sideways so the off-screen start positions never widen the page (checked at 375px).
+- New dependencies, pinned: `gsap` 3.15.0 and `@gsap/react` 2.1.2. The footer shell is now a small client component (`footer-motion.tsx`); the footer content is still rendered on the server. Test added for the setup and for every selector existing in the markup.
+
+### Verified
+
+- In a browser with motion allowed: all three layers start hidden at the sides, are fully in after scrolling to the bottom, and are back out at the sides after scrolling to the top. The built-in preview browser reports "reduce motion", so there the footer correctly stays still.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.13.3] - 2026-10-23
+
+### Patch Changed
+
+- The footer forklift is now a transparent product image instead of a dark photo panel, so the machine stands directly on the blue contact layer. Source: `Landing_Page/images/toyota-35_50-tonne-8_series-4_wheel-forklift.png`, chosen by the owner. The original is copied unchanged to `public/images/hero/toyota-35-50-tonne-8-series-forklift.png`, and the file the footer uses is a trimmed WebP, `public/images/hero/toyota-35-50-forklift-cutout.webp` (698 by 483px, 49KB, alpha channel kept). The earlier AI-made cut-out was deleted. The studio photo `forklift-product-hero.png` is untouched and still used on the About page.
+- Fit: the image is 340px wide, sits level with the contact chips and bottom-aligned, with a soft drop shadow. The address and social row below runs full width. It is decorative (empty alt text) and hidden below 900px. Test added for the image file (alpha channel, size limit) and the placement.
+
+### To confirm
+
+- This is a Toyota product photo. Before launch, confirm DK LAO may use it (for example as an authorised Toyota dealer). If not, replace the one file; the footer code does not change.
+- Nothing was committed, pushed or deployed.
+
+## [0.13.2] - 2026-10-23
+
+### Patch Changed
+
+- The footer contact layer now shows the DK LAO forklift product photo (`/images/hero/forklift-product-hero.png`, already in the repo and used on the About page) to the right of the contact details, 300px wide with rounded corners, cropped to the forklift. It is decorative (empty alt text, hidden from screen readers) and is not shown below 900px, where the contact details already fill the width. No new image was created or bought. Test added.
+
+### Not changed
+
+- The contact details and their order are unchanged. Nothing was committed, pushed or deployed.
+
+## [0.13.1] - 2026-10-23
+
+### Patch Changed
+
+- Footer contact layer set out as the owner described. "Talk to us" and its actions sit on their own line above a hairline. Below it the chips are in two columns, row by row: Phone | info email, Sales | salescenter email, then the two Aftersales numbers. The last row is the address on one line (it wraps only below 900px) with the Facebook, YouTube and X buttons at the right. On phones the numbers pair up and the two emails take a full row each, as before.
+- The row order comes from one small function, `orderFooterChannels`, so a missing channel never drops another. Tests added for the order, the one-line address and its small-screen wrap.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.13.0] - 2026-10-23
+
+### Minor Changed
+
+- Problem found by the owner: the footer still felt hard and unfriendly. Cause: one dark block held contact details, actions and thirty links in the same weight, with long link wording and no recognisable brand marks. Fix, in two layers:
+- **Contact layer** (lighter blue, warmer): a short heading "Talk to us", the three actions (Request a Quote first), contact chips that show only an icon, a small label and the number (WhatsApp Sales and Aftersales show the WhatsApp mark, labelled "Sales" and "Aftersales"; phone and email show just the value), the address, and round white buttons for the Facebook, YouTube and X marks, 44px each with an accessible name.
+- **Links layer** (dark, quiet) below it: the logo and the four link groups. Link wording is shortened because the group heading already gives the context (for example "Rental", "Short-term", "Long-term", "For sale", "New", "Used", "Maintenance", "Batteries", "Warehouse", "Racking", "Cleaning", "About", "Logistics", "Rental guide"). Page names elsewhere, and the sitemap, are unchanged.
+- Brand marks come from the `simple-icons` package (16.35.0, pinned, CC0 official glyphs), not hand-drawn. Lucide still supplies the generic phone, mail and pin icons. On phones the contact chips sit two by two so the layer stays short.
+- Tests added: brand marks sourced from the package, accessible names on icon-only links, contact layer before links layer, short unique labels (18 characters at most), chip pairing and button size.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.12.1] - 2026-10-23
+
+### Patch Changed
+
+- Checked the footer on Home, About and Contact at 1440 and 375 pixels. All three pages render the same footer with no sideways scroll, and every footer link is at least 40px tall on the phone. Fixes: on desktop the contact column was too narrow, so the address wrapped to four lines; it is now wider (address is three lines). On the phone the filled Request a Quote button came after two text links; it now comes first at full width, and the contact rows are slightly tighter. Tests added.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.12.0] - 2026-10-23
+
+### Minor Changed
+
+- Footer redesigned in a quiet, clean style taken from professional-services (law firm) sites: a thin blue and red brand rule, the logo with three short actions (Request a Quote is the only filled button), then one row of five columns: Contact and the four link groups, set under small uppercase headings with hairline dividers. No numbering, no cards, no hazard stripe.
+- Icons use the site's own set: Lucide with the same `dk-icon-badge` tile as the service cards, 18px, for phone, WhatsApp, email and address. All are hidden from screen readers. Facebook, YouTube and X are plain text links because Lucide has no brand marks and logos are not guessed. The address shows only from the confirmed fact.
+- Text kept short: the long blurb and the headline band were removed; every contact line is a small label plus the value, and every link group keeps its names. Spacing follows the 4/8/12/16/24/32/48 tokens. Hover motion is off for reduced-motion users.
+- Required ownership line (copyright with version, BizEra credit) and all published-page links unchanged. Tests updated.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.11.2] - 2026-10-23
+
+### Patch Changed
+
+- Looked at the clients band on the About and Rental pages at 1440 and 375 pixels. Fixes: on desktop the two groups were spread far apart (1.6 to 1 columns), so they now size to their content with a 72px gap; on phones the pills were large and the band was 423px tall, so the pills, padding and gaps are smaller (band now 310px, no sideways scroll). Test for both rules.
+
+### Not changed
+
+- Nothing else looked wrong: the band sits cleanly between the page sections and keeps the heading "Our clients". Nothing was committed, pushed or deployed.
+
+## [0.11.1] - 2026-10-23
+
+### Patch Changed
+
+- The reference clients (same `referenceClients` site fact) now also show on the About page, after the Company snapshot, and on the Forklift Rental page, after its sections, each under the short heading "Our clients". Home keeps its longer heading. The band reads the fact in one place, so editing the list in the admin updates all three pages, and an empty fact hides all three.
+- `ContentPage` has a new `showClients` option, set only on the rental page, so other content pages do not repeat the list. Tests cover the placement and the heading.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.11.0] - 2026-10-23
+
+### Minor Changed
+
+- Reference clients supplied by the owner are published on the home page, in a "Trusted by businesses and public bodies in Laos" band under the proof strip. Forklift rental and fleet: Beerlao, Coca-Cola, Heineken, Lao Telecom, HOYA. Government: Ministry of Public Health. The owner said more would be added later.
+- Stored as the `referenceClients` site fact in the form "Group: Name, Name | Group: Name", so the owner can add names in the admin without a developer (`src/lib/data/clients.ts` parses it). Names are shown as text pills, not logos: a logo wall needs each company's permission and artwork. The band disappears when the fact is empty.
+- CMS: new Site facts field and a migration (`20261023_050041_reference_clients`). Local facts reseeded.
+- Tests for parsing, odd input, the empty case and the placement on the home page.
+
+### Not changed
+
+- The Ministry and the companies' agreement to be named publicly has not been checked by us: the owner's list is taken as permission, and spellings (for example Coca-Cola) should be confirmed. No case study, result or number is claimed. The About and rental pages do not show the clients yet. Nothing was committed, pushed or deployed.
+
+## [0.10.3] - 2026-10-23
+
+### Patch Changed
+
+- The owner confirmed the WhatsApp roles: Sales is +85620 2802 3355; Aftersales is +85620 2323 1922 and +85620 2323 1911 (the 1911 number does start with +85620). The fact now reads "Sales: ..., Aftersales: ..., Aftersales: ...", and the footer links are labelled "WhatsApp Sales" and "WhatsApp Aftersales". A WhatsApp value without a team name still shows as plain "WhatsApp", so the CMS field needs no change.
+- Footer channel links now use their address as the list key, since several channels share a label.
+- Test for the team labels. The 2802 3355 number is no longer listed under aftersales.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.10.2] - 2026-10-23
+
+### Patch Changed
+
+- Added two site facts, `youtube` (https://www.youtube.com/channel/UCONgeO8Upbiwk1ba681-Erg) and `twitter` (https://twitter.com/DKLaoTrading), supplied by the owner. They show in the footer "Reach us" block as "YouTube" and "X" links after Facebook, and as "YouTube" and "X (Twitter)" rows on the Contact page. Unset values stay hidden.
+- CMS: two new fields in Site facts, and the two keys can be chosen for fact-bound page items. Migration `20261023_044132_social_links` adds the columns and enum values. The sanitiser treats them like every other fact. Local CMS facts and the Contact page row were refreshed.
+- Tests for the channel order, labels, link text, hiding when unset, the Contact rows and the CMS sanitising.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed. The links were not opened or checked by a request from this machine.
+
+## [0.10.1] - 2026-10-23
+
+### Patch Changed
+
+- Published the contact details the owner supplied on 23 October 2026: office phone +85621 480 248; WhatsApp +85620 2802 3355 (sales), +85620 2323 1922 and +85620 2323 1911 (aftersales); email info@dklao.com and salescenter@dklao.com; address Unit 24, Kamphaengmeuang Rd, NongHai Village, Hatxayfong District, Vientiane Capital, Lao PDR. The footer "Reach us" block and the Contact page now show them. Facebook was already set.
+- A contact fact can now hold several comma-separated values, and each becomes its own link (tel, wa.me, mailto). The local CMS site facts were reseeded.
+- Tests for multi-value channels and the published contact details.
+
+### Not changed
+
+- The aftersales number 2323 1911 was written without the +85620 prefix in the owner's message; +85620 is assumed from the old live page. The old page listed 2802 3355 as Service and 2323 1911 and 1922 as Sales; the owner's new list swaps the roles, so only numbers are published, with no role labels. Twitter (DKLaoTrading) and YouTube channel links were supplied but are not shown yet (no fields). The 021 480 248 number on the old page is the same as the new office number without the country code. Nothing was committed, pushed or deployed.
+
+## [0.10.0] - 2026-10-23
+
+### Minor Changed
+
+- Spam protection on `POST /api/leads/quote`: a hidden trap field (`homepageUrl`, off-screen, skipped by keyboard and screen readers) whose filled value gets the normal thank-you but is never saved or notified; a per-address limit (default 5 requests per 10 minutes, `LEAD_RATE_LIMIT` and `LEAD_RATE_WINDOW_SECONDS`) that answers 429 with a `Retry-After` time and counts bot attempts too; and a 20,000-character body cap. The trap field is stripped before saving. The limiter is in memory (`src/lib/leads/rate-limit.ts`), so on serverless hosting each instance counts alone: add the host's firewall before launch.
+- New-lead notification (`src/lib/leads/notify.ts`): one outbound webhook set by `LEAD_NOTIFY_WEBHOOK_URL`, so email, WhatsApp, Slack or chat can be reached through any automation service with nothing secret in the code. https only (http for localhost), no embedded credentials, no redirects, a 4-second timeout. `LEAD_NOTIFY_WEBHOOK_SECRET` adds an `X-DKLAO-Signature: sha256=<hmac>` header. By default it sends only the lead id, category, company, source page and an admin link; `LEAD_NOTIFY_DETAILS=full` adds the contact, phone, email and message. It runs after the lead is saved and can never fail or slow the visitor's request beyond the timeout. Logs name only the lead id.
+- The saved lead now returns its record id, which the notification uses for the admin link.
+- Tests (116 in total): the limiter, the settings, the client address, the notification content, signing and failure handling, the endpoint end to end (honeypot, limit, size, validation, order of save and notify) and the trap markup. A live run with a local receiver confirmed signing, summary and full modes, honeypot, the sixth-request refusal, a down receiver and no receiver; its test leads were deleted.
+- `.env.example` and `docs/deploy-checklist.md` list the new settings and the checks to run on the preview.
+
+### Not changed
+
+- No email service, WhatsApp account or webhook receiver was created or called, and no secret was added. Nothing was committed, pushed or deployed.
+
+## [0.9.6] - 2026-10-23
+
+### Patch Changed
+
+- Launch-readiness test, run locally against the production build: 63 checks across pages, content, accessibility basics, links, SEO files, assets, security, the quote form and edge cases. First run found two items: no browser protection headers (real), and a test that wrongly flagged Next.js's own routing data (not a bug). The second run passed 63 of 63.
+- Added security headers to every response (`src/lib/security-headers.ts`, wired in `next.config.ts`): `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin` and a `Permissions-Policy` that turns off camera, microphone, location and payment. HSTS is left to the host, and a Content-Security-Policy is a later step.
+- Test for the headers and for their wiring into `next.config.ts`.
+- The test leads the run created in the local database were deleted.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed. Not yet covered: a real device and screen reader test, a performance audit with Lighthouse, lead notifications, spam protection on the quote form, and analytics.
+
+## [0.9.5] - 2026-10-22
+
+### Patch Changed
+
+- Search titles and descriptions: Home is now "Forklift Rental, Sales & Service in Laos | DK LAO" (49 characters, was 82) with a 128-character description (was 159), and the long dash is gone. About is now "About Us: Forklift & Warehouse Partner in Laos | DK LAO" (55 characters, was 98) with a 122-character description (was 206). Social titles and descriptions follow the same limits. The text lives in `src/lib/data/seo.ts`, used by the layout and the About page.
+- The About title rule in `AGENTS.md` and the Home and About lines in `con_agents/CONTENT.md` were updated to match. This replaces the earlier 89-character About title, on the owner's instruction to keep titles to 60 characters.
+- Call-to-action wording: one label per intent, all in Title Case. "Talk to a DK LAO Advisor" replaces "Talk to DK LAO Advisor", "Talk to a DK LAO advisor" and the About "Contact DK LAO" button. "Get a Recommendation" replaces "Ask for Recommendation", "Ask for a recommendation", "Get Recommendation" and "Get Cleaning Equipment Recommendation". "See Rental Options" replaces "See rental options". Changed in the home, About, content-page and footer sources, the sitemap page generator and the local CMS rows.
+- Tests: `seo.test.ts` checks all 21 pages (title up to 60, description 70 to 155, no long dashes, unique titles and descriptions, Home and About read from one module). `cta.test.ts` checks Title Case and one label per intent across data and components.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.9.4] - 2026-10-22
+
+### Patch Changed
+
+- About page: the first trust card title "One-stop industrial equipment partner" is now "Forklift and warehouse equipment partner", matching the planned About wording and the hero. Its description is unchanged. No "one-stop" wording remains in the source.
+- Tests: the card title, and a check that the About data and hero contain no "one-stop" wording.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.9.3] - 2026-10-22
+
+### Patch Changed
+
+- Footer: the single 18-link list is now four named groups in four columns (two on phones): Rent & buy, Service & parts, Warehouse & cleaning, Company & guides. The groups live in `src/lib/data/footer.ts`, and a test fails if a published page is missing from the footer or listed twice. The contact block (lead actions, reach us) sits above the groups.
+- Phone tap targets: below 760px, footer links, the credit link, card links ("View details" and the home service band), About solution links, breadcrumb links, contact-table links and FAQ question rows are at least 40px tall. Measured on all 21 pages at 375px: 0 targets under 38px (it was 7 to 23 per page).
+- Phone headlines: below 560px, hero headlines on content and About pages and section titles are smaller, with balanced wrapping. The longest headline now sets in 3 lines (it was 4 on About and Logistics), most in 1 to 2, and nothing scrolls sideways.
+- Tests for the footer groups and for the phone rules in the stylesheet.
+
+### Not changed
+
+- Home page length on phones, page imagery and the About "One-stop" trust card are untouched. Nothing was committed, pushed or deployed.
+
+## [0.9.2] - 2026-10-22
+
+### Patch Changed
+
+- Fixed `/forklift-sales`: the New forklifts and Used forklifts cards, and their links to `/forklift-sales/new` and `/forklift-sales/used`, had been hidden because their descriptions carried an unconfirmed claim. The cards now show with safe wording ("Compare new options for your site and budget." and "Ask what used units are available now."). The warranty, service history and inspection claims are kept as separate cards flagged **Needs owner confirmation**, so they stay hidden until the owner confirms them. The generated page data and the local CMS row were refreshed.
+- About hero: the headline is now "Your Forklift and Warehouse Equipment Partner in Laos" (no "one-stop" wording), the copy is the planned sentence, and the hero has one primary button (Request a Quote) and one secondary button (Contact DK LAO). The "View Our Solutions" button and the four badge chips were removed; the founding year stays in the Company snapshot. Removed the unused badge styles.
+- Tests: the hero buttons and copy, the sales cards and their links, and a rule that no page loses a link to a child page because of an unconfirmed claim.
+
+### Not changed
+
+- Nothing was committed, pushed or deployed.
+
+## [0.9.1] - 2026-10-22
+
+### Patch Changed
+
+- Standout visual pass on the home page, keeping the DK LAO colours, Inter and the layout of the site (a preserving redesign, not a new style).
+- Hero: the headline is now the planned search headline "Forklift Rental, Sales & Service in Laos", set in two lines; the approved tagline moved to the eyebrow; the word "platform" is gone; the copy under it is 19 words; the hero shows one primary and one secondary button (the maintenance button stays in the routing cards). Phones stack the two buttons.
+- Added `HomeProof`, a strip under the hero with three plain facts: 2010, 24/7 reply (AI agents and human advisors) and Vientiane. Each comes from the founding year or the CMS site facts, and a fact that is not confirmed is not shown.
+- Routing cards are now a bento: Rental inquiry as the large featured card with a navy grid texture, and three supporting cards, filling the 3 by 2 grid exactly. The section heading is stacked and left-aligned instead of split.
+- Controls: cards lift and the arrow slides on hover, buttons press down on click, headings use tighter tracking and balanced wrapping.
+- Motion: the hero text rises in, and sections reveal as they scroll into view using CSS scroll-driven animation. Browsers without it show everything at rest, and reduced-motion users get no animation.
+
+### Not changed
+
+- No new image, font or colour. Home copy below the hero, the other pages and all routes are unchanged. Nothing is deployed or pushed.
+
+## [0.9.0] - 2026-10-22
+
+### Minor Changed
+
+- Built the 16 remaining sitemap pages, planned in `docs/cms-page-plan.md`: short and long term rental, forklifts for sale (new and used), maintenance, spare parts, batteries and chargers, warehouse, material handling, racking, cleaning, industries, logistics and warehousing, knowledge centre, and the rental checklist article. All 21 routes are now published and listed in `sitemap.xml`.
+- One catch-all route, `src/app/(site)/[...slug]/page.tsx`, serves every published route without its own file. A published CMS row wins over the built-in page (`src/lib/data/sitemap-pages.ts`, generated from the sitemap). Unknown or unpublished addresses return 404.
+- Five new section types: `list`, `stats`, `chips`, `text` and `form` (the real quote form, preselected for the page). Pages also get breadcrumbs on nested routes and `BreadcrumbList` and `FAQPage` structured data.
+- Hidden content: the 38 sitemap items marked `[[CONFIRM]]` are stored with **Needs owner confirmation** ticked and the marker text removed, so they stay hidden until the owner reviews and unticks them. Sections and items can both carry the flag. Author notes in the sitemap (photo and diagram instructions, stock rules, article byline) were rewritten as real copy or dropped.
+- Menu: new Solutions dropdown (seven pages with a line each), then Industries, Knowledge, About and Contact, with a grouped mobile menu. The menu is a `navigation` global in the CMS with a built-in default; links to unpublished pages are hidden. The dropdown opens on click or Enter, closes on Escape, outside click or tabbing away, and returns focus.
+- Articles now use Payload's `slugField()`. Migration `20261022_151309_pages_sitemap_menu` adds the new fields and the navigation tables, and re-runs the Supabase lockdown through a shared helper (`src/payload/supabase-lockdown.ts`) so new tables are closed to the Data API too.
+- `pnpm cms:seed` now also creates the 16 pages and the default menu, never overwriting existing rows. Added tests for the 16 pages, hidden items, breadcrumbs, quote categories and the menu.
+
+### Not changed
+
+- Home and About copy is still in `src/lib/data/`. No photos, no Lao content, no article pages from the Articles collection.
+- Nothing is deployed, pushed or sent to a remote service. No prices, stock or brand or dealer claims are published.
+
 ## [0.8.1] - 2026-10-22
 
 ### Patch Changed

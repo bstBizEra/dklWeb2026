@@ -2,9 +2,9 @@ import Image from "next/image";
 
 export function AnatomyDiagram() {
   return (
-    <figure className="anatomy-diagram">
+    <figure className="m-0 w-full overflow-hidden rounded-card border border-slate-300/25 bg-navy-950 shadow-card max-[560px]:rounded-2xl">
       <Image
-        className="anatomy-diagram__image"
+        className="block h-auto w-full"
         src="/images/anatomy/forklift-equipment-matching-reference.png"
         width={1672}
         height={941}

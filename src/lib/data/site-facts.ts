@@ -5,6 +5,8 @@ export type FactKey =
   | "phone"
   | "whatsapp"
   | "facebook"
+  | "youtube"
+  | "twitter"
   | "email"
   | "address"
   | "hours"
@@ -13,19 +15,23 @@ export type FactKey =
   | "deliveryCoverage"
   | "maintenanceTerms"
   | "rentToBuyTerms"
-  | "brands";
+  | "brands"
+  | "referenceClients";
 
 export type SiteFacts = Record<FactKey, string | null>;
 
 
-// Confirmed by the owner on 22 October 2026, in the owner's own words where possible.
-// phone and whatsapp stay null: the owner sent masked numbers (+85620xxxxxxxx).
+// Other facts were confirmed by the owner on 22 October 2026, in the owner's own words where possible.
+// Contact details were supplied by the owner on 23 October 2026. A fact may hold several values
+// separated by commas: each becomes its own link. Sales number first, then the aftersales numbers.
 export const siteFacts: SiteFacts = {
-  phone: null,
-  whatsapp: null,
+  phone: "+85621 480 248",
+  whatsapp: "Sales: +85620 2802 3355, Aftersales: +85620 2323 1922, Aftersales: +85620 2323 1911",
   facebook: "https://www.facebook.com/DKLAOonline",
-  email: null,
-  address: null,
+  youtube: "https://www.youtube.com/channel/UCONgeO8Upbiwk1ba681-Erg",
+  twitter: "https://twitter.com/DKLaoTrading",
+  email: "info@dklao.com, salescenter@dklao.com",
+  address: "Unit 24, Kamphaengmeuang Rd, NongHai Village, Hatxayfong District, Vientiane Capital, Lao PDR",
   hours: "Open 24/7. AI agents and human advisors work together.",
   serviceAreas:
     "Based in Vientiane. We also serve customers online through Facebook, WhatsApp and phone.",
@@ -34,6 +40,10 @@ export const siteFacts: SiteFacts = {
   deliveryCoverage: null,
   maintenanceTerms: null,
   rentToBuyTerms: null,
+  // Key account customers from the owner's "Key Account Customers" folder (25 October 2026), plus HOYA and
+  // the Ministry of Public Health from the earlier list.
+  referenceClients:
+    "Beverage: Beerlao, Coca-Cola, Heineken, Pepsi, Tiger Beer | Logistics and power: DHL, Lao Freight Forwarder, NTPC, PTT, Savan Logistics | Mining and chemical: MMG, Phu Bia Mining, KCL, 5N Plus | Others: Lao Telecom, Lao Tobacco, Lao World, CPF, Phonesack Group, HOYA | Government: Ministry of Public Health",
   brands:
     "We supply the brand that meets your requirement. Tell us your load, lift height and site and we recommend.",
 };
@@ -44,23 +54,25 @@ export type ContactChannel = { label: string; href: string; text: string; extern
 
 // Phone, WhatsApp and Facebook are shown together wherever contact details appear,
 // because customers combine all three. Only channels with a confirmed value are returned.
+const splitValues = (value: string | null): string[] =>
+  (value ?? "").split(/[,;\n]/).map((part) => part.trim()).filter(Boolean);
+
 export function contactChannels(facts: SiteFacts = siteFacts): ContactChannel[] {
   const channels: ContactChannel[] = [];
 
-  if (facts.phone) {
-    channels.push({
-      label: "Phone",
-      href: `tel:${facts.phone.replace(/[^\d+]/g, "")}`,
-      text: facts.phone,
-      external: false,
-    });
+  for (const phone of splitValues(facts.phone)) {
+    channels.push({ label: "Phone", href: `tel:${phone.replace(/[^\d+]/g, "")}`, text: phone, external: false });
   }
 
-  if (facts.whatsapp) {
+  // A WhatsApp value may start with a team name and a colon: "Sales: +85620 2802 3355".
+  for (const entry of splitValues(facts.whatsapp)) {
+    const match = entry.match(/^([^:+\d][^:]*):\s*(.+)$/);
+    const team = match ? match[1].trim() : "";
+    const number = match ? match[2].trim() : entry;
     channels.push({
-      label: "WhatsApp",
-      href: `https://wa.me/${facts.whatsapp.replace(/\D/g, "")}`,
-      text: facts.whatsapp,
+      label: team ? `WhatsApp ${team}` : "WhatsApp",
+      href: `https://wa.me/${number.replace(/\D/g, "")}`,
+      text: number,
       external: true,
     });
   }
@@ -74,8 +86,14 @@ export function contactChannels(facts: SiteFacts = siteFacts): ContactChannel[] 
     });
   }
 
-  if (facts.email) {
-    channels.push({ label: "Email", href: `mailto:${facts.email}`, text: facts.email, external: false });
+  const social: [string, string | null][] = [["YouTube", facts.youtube], ["X", facts.twitter]];
+
+  for (const [label, url] of social) {
+    if (url) channels.push({ label, href: url, text: url.replace(/^https?:\/\/(www\.)?/, ""), external: true });
+  }
+
+  for (const email of splitValues(facts.email)) {
+    channels.push({ label: "Email", href: `mailto:${email}`, text: email, external: false });
   }
 
   return channels;

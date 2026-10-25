@@ -1,55 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { navRoutes, quoteHref } from "@/lib/data/routes";
+import { MainNavigation } from "@/components/dklao/mega-menu";
+import { MobileMenu } from "@/components/dklao/mobile-menu";
+import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/section";
+import { getNavigation } from "@/lib/cms/navigation";
+import { quoteHref } from "@/lib/data/routes";
 
-const navItems = navRoutes().map((route) => ({ label: route.navLabel, href: route.href }));
+// Sticky navy header. site-motion.tsx adds .is-scrolled once the page leaves the top, which deepens the
+// surface and adds a shadow.
+export async function SiteHeader() {
+  const items = await getNavigation();
 
-export function SiteHeader() {
   return (
-    <header className="site-header" aria-label="DK LAO primary navigation">
-      <div className="dk-container site-header__inner">
-        <Link className="site-header__logo" href="/" aria-label="DK LAO home">
+    <header
+      className="site-header sticky top-0 z-40 border-b border-slate-300/30 bg-navy-950/92 backdrop-blur-[18px] transition-[background-color,box-shadow] duration-[260ms] ease-premium [&.is-scrolled]:bg-navy-950/98 [&.is-scrolled]:shadow-[0_12px_32px_rgba(7,17,31,0.32)]"
+      aria-label="DK LAO primary navigation"
+    >
+      <Container className="grid min-h-[78px] grid-cols-[auto_1fr_auto] items-center gap-7 max-[780px]:min-h-[68px]">
+        <Link className="inline-flex items-center py-2" href="/" aria-label="DK LAO home">
           <Image
             src="/images/logo/Logo-H_Text.svg"
             width={295}
             height={63}
             alt="DK LAO"
             priority
+            className="h-auto w-[178px] max-[780px]:w-[142px]"
           />
         </Link>
 
-        <nav className="site-header__nav" aria-label="Main menu">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <MainNavigation items={items} className="justify-self-center max-[1120px]:hidden" />
 
-        <Link className="dk-button dk-button-primary site-header__cta" href={quoteHref()}>
-          Request a Quote
-          <ArrowRight size={18} aria-hidden="true" />
-        </Link>
+        <Button asChild variant="primary" className="max-[1120px]:hidden">
+          <Link href={quoteHref()}>
+            Request a Quote
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+        </Button>
 
-        <details className="site-header__mobile">
-          <summary aria-label="Open navigation menu">
-            <Menu size={24} aria-hidden="true" />
-          </summary>
-          <nav aria-label="Mobile menu">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                {item.label}
-              </Link>
-            ))}
-            <Link className="dk-button dk-button-primary" href={quoteHref()}>
-              Request a Quote
-              <ArrowRight size={18} aria-hidden="true" />
-            </Link>
-          </nav>
-        </details>
-      </div>
+        <MobileMenu items={items} quoteHref={quoteHref()} />
+      </Container>
     </header>
   );
 }

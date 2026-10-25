@@ -14,41 +14,35 @@ import {
 import { FloatingContactActions } from "@/components/dklao/floating-contact-actions";
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
+import { TrustedBy } from "@/components/dklao/trusted-by";
+import { aboutSeo } from "@/lib/data/seo";
+import { shareImage } from "@/lib/data/share";
 
 // The footer reads site facts from the CMS, so refresh the page at most once a minute.
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title:
-    "About DK LAO - Material Handling, Forklift Rental, Services & Warehouse Solutions in Laos",
-  description:
-    "DK LAO is a trusted industrial equipment partner in Laos, providing forklift rental, new and used forklift sales, spare parts, maintenance services, warehouse solutions, and professional cleaning equipment.",
+  title: aboutSeo.title,
+  description: aboutSeo.description,
   alternates: {
     canonical: "/about",
   },
   openGraph: {
-    title:
-      "About DK LAO - Material Handling, Forklift Rental, Services & Warehouse Solutions in Laos",
-    description:
-      "Learn how DK LAO supports material handling, forklift rental, sales, spare parts, maintenance, warehouse solutions, and professional cleaning equipment in Laos.",
+    title: aboutSeo.shareTitle,
+    description: aboutSeo.shareDescription,
     url: "/about",
-    images: [
-      {
-        url: "/images/hero/forklift-product-hero.png",
-        width: 1672,
-        height: 941,
-        alt: "DK LAO forklift and industrial equipment support",
-      },
-    ],
+    images: [shareImage("about")],
   },
 };
 
 export default function AboutPage() {
   return (
-    <main className="dk-page" id="main-content">
+    <div className="min-h-screen overflow-x-clip">
       <SiteHeader />
+      <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
       <AboutHero />
       <CompanySnapshot />
+      <TrustedBy title="Our clients" />
       <AboutStory />
       <VisionCommitment />
       <AboutWhatWeDo />
@@ -56,8 +50,9 @@ export default function AboutPage() {
       <IndustriesServed />
       <ServicePromise />
       <AboutFinalCTA />
+      </main>
       <IndustrialFooter />
       <FloatingContactActions />
-    </main>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import { slugField, type CollectionConfig } from "payload";
 
 import { noConfirmMarker } from "../../lib/data/confirm";
 import { getRoute } from "../../lib/data/routes";
@@ -15,16 +15,7 @@ export const Articles: CollectionConfig = {
   access: { create: isOwnerOrEditor, read: publishedOrStaff, update: isOwnerOrEditor, delete: isOwner },
   fields: [
     { name: "title", type: "text", required: true, validate: noConfirmMarker },
-    {
-      name: "slug",
-      type: "text",
-      required: true,
-      unique: true,
-      index: true,
-      validate: (value: unknown) =>
-        typeof value === "string" && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(value) ? true : "Use lowercase words joined by hyphens.",
-      admin: { description: "Becomes /knowledge-center/<slug>." },
-    },
+    slugField(), // lowercase, hyphenated, unique; the public address is /knowledge-center/<slug>
     { name: "category", type: "select", required: true, options: articleCategories.map((value) => ({ label: value, value })) },
     { name: "excerpt", type: "textarea", required: true, maxLength: 300, validate: noConfirmMarker },
     { name: "body", type: "richText" },

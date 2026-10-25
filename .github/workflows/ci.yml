@@ -1,5 +1,5 @@
 # CI for DK LAO Website 2026. It only checks the code: it deploys nothing and holds no secrets.
-# Vercel builds and deploys on its own once the repository is connected (see docs/deploy-checklist.md).
+# The site is deployed by hand to the dklao.com cPanel server (see docs/deploy-checklist.md).
 name: CI
 
 on:

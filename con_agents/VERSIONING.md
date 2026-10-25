@@ -26,10 +26,10 @@ pnpm version:status
 ## 3. Current Version
 
 ```txt
-Current version: 0.8.1
+Current version: 0.18.0
 Status: local-preview
-Change level: patch
-Release date: 2026-10-22
+Change level: minor
+Release date: 2026-10-25
 ```
 
 DK LAO is still in `0.x` pre-production development. Breaking changes can occur before `1.0.0`, but they must still be documented as major changed when they affect routes, data, APIs, deployment, or owner workflows.

@@ -61,8 +61,8 @@ Explore Warehouse Solutions
 ## 6. SEO Page Titles
 
 ```txt
-Home: DK LAO — Forklift Rental, Sales, Spare Parts & Cleaning Equipment in Laos
-About: About DK LAO - Material Handling, Forklift Rental, Services & Warehouse Solutions in Laos
+Home: Forklift Rental, Sales & Service in Laos | DK LAO
+About: About Us: Forklift & Warehouse Partner in Laos
 Forklift Rental: Forklift Rental in Laos — Short-Term & Long-Term Rental
 New Forklifts: New Forklifts for Sale in Laos
 Used Forklifts: Used Forklifts for Sale in Laos

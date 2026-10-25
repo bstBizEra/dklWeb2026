@@ -1,17 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import { homeSeo } from "@/lib/data/seo";
 import "./globals.css";
+import { SiteMotion } from "@/components/dklao/site-motion";
+import { shareImage } from "@/lib/data/share";
 
 const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default:
-      "DK LAO — Forklift Rental, Sales, Spare Parts & Cleaning Equipment in Laos",
+    default: homeSeo.title,
     template: "%s | DK LAO",
   },
-  description:
-    "Reliable forklift rental, new and used forklift sales, spare parts, maintenance services, warehouse solutions, and professional cleaning equipment across Laos.",
+  description: homeSeo.description,
   applicationName: "DK LAO",
   keywords: [
     "forklift rental Laos",
@@ -45,28 +46,19 @@ export const metadata: Metadata = {
     apple: "/images/fav-icon/FAV-Icon.png",
   },
   openGraph: {
-    title: "DK LAO — Industrial Equipment Solutions in Laos",
-    description:
-      "Forklift rental, sales, spare parts, maintenance, warehouse solutions, and cleaning equipment.",
+    title: homeSeo.shareTitle,
+    description: homeSeo.shareDescription,
     url: "/",
     siteName: "DK LAO",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "/images/hero/forklift-product-hero.png",
-        width: 1672,
-        height: 941,
-        alt: "DK LAO industrial forklift and equipment solutions in Laos",
-      },
-    ],
+    images: [shareImage("home")],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DK LAO — Industrial Equipment Solutions in Laos",
-    description:
-      "Forklift rental, sales, spare parts, maintenance, warehouse solutions, and cleaning equipment in Laos.",
-    images: ["/images/hero/forklift-product-hero.png"],
+    title: homeSeo.shareTitle,
+    description: homeSeo.shareDescription,
+    images: [shareImage("home").url],
   },
   robots: {
     index: true,
@@ -95,10 +87,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <a className="dk-skip-link" href="#main-content">
+        <a
+          className="absolute -top-16 left-4 z-[100] inline-flex items-center rounded-button bg-action-red px-[18px] py-3 text-[15px] font-extrabold text-white shadow-cta transition-[top] duration-150 ease-premium focus:top-4 focus:outline-3 focus:outline-offset-2 focus:outline-white"
+          href="#main-content"
+        >
           Skip to main content
         </a>
         {children}
+        <SiteMotion />
       </body>
     </html>
   );

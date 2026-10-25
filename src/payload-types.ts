@@ -93,9 +93,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'site-facts': SiteFact;
+    navigation: Navigation;
   };
   globalsSelect: {
     'site-facts': SiteFactsSelect<false> | SiteFactsSelect<true>;
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
   };
   locale: null;
   widgets: {
@@ -182,9 +184,20 @@ export interface Page {
     | null;
   sections?:
     | {
-        kind: 'cards' | 'steps' | 'table' | 'faq';
+        /**
+         * How the section looks: cards, steps, table, faq, list, stats, chips, text or form.
+         */
+        kind: 'cards' | 'steps' | 'table' | 'faq' | 'list' | 'stats' | 'chips' | 'text' | 'form';
         title: string;
         intro?: string | null;
+        /**
+         * Paragraph for text sections.
+         */
+        body?: string | null;
+        /**
+         * Draft wording the owner has not confirmed. The whole section stays hidden on the site until this is unticked.
+         */
+        needsConfirmation?: boolean | null;
         items?:
           | {
               title: string;
@@ -197,6 +210,10 @@ export interface Page {
                */
               routeId?: string | null;
               /**
+               * Draft wording the owner has not confirmed. Hidden on the site until this is unticked.
+               */
+              needsConfirmation?: boolean | null;
+              /**
                * Take the text from Site facts. The item stays hidden until that fact is filled in.
                */
               fact?:
@@ -204,6 +221,8 @@ export interface Page {
                     | 'phone'
                     | 'whatsapp'
                     | 'facebook'
+                    | 'youtube'
+                    | 'twitter'
                     | 'email'
                     | 'address'
                     | 'hours'
@@ -212,9 +231,49 @@ export interface Page {
                     | 'deliveryCoverage'
                     | 'maintenanceTerms'
                     | 'rentToBuyTerms'
+                    | 'referenceClients'
                     | 'brands'
                   )
                 | null;
+              /**
+               * Cards only. An opening paragraph and at least two topics give this card a "Read more" link and its own section under the cards. Leave it empty for no section.
+               */
+              details?: {
+                /**
+                 * Two or three sentences that introduce the service.
+                 */
+                lead?: string | null;
+                /**
+                 * Optional. Only figures you can back up, for example "200–250 h" with "typical service interval".
+                 */
+                facts?:
+                  | {
+                      value: string;
+                      label: string;
+                      id?: string | null;
+                    }[]
+                  | null;
+                /**
+                 * Two or more. Give each its own heading, written for this service.
+                 */
+                topics?:
+                  | {
+                      heading: string;
+                      body: string;
+                      id?: string | null;
+                    }[]
+                  | null;
+                /**
+                 * Optional, for example "Signs it is time for a service".
+                 */
+                checklistHeading?: string | null;
+                checklist?:
+                  | {
+                      point: string;
+                      id?: string | null;
+                    }[]
+                  | null;
+              };
               id?: string | null;
             }[]
           | null;
@@ -245,8 +304,9 @@ export interface Article {
   id: number;
   title: string;
   /**
-   * Becomes /knowledge-center/<slug>.
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
+  generateSlug?: boolean | null;
   slug: string;
   category:
     | 'rental-guide'
@@ -458,13 +518,42 @@ export interface PagesSelect<T extends boolean = true> {
         kind?: T;
         title?: T;
         intro?: T;
+        body?: T;
+        needsConfirmation?: T;
         items?:
           | T
           | {
               title?: T;
               description?: T;
               routeId?: T;
+              needsConfirmation?: T;
               fact?: T;
+              details?:
+                | T
+                | {
+                    lead?: T;
+                    facts?:
+                      | T
+                      | {
+                          value?: T;
+                          label?: T;
+                          id?: T;
+                        };
+                    topics?:
+                      | T
+                      | {
+                          heading?: T;
+                          body?: T;
+                          id?: T;
+                        };
+                    checklistHeading?: T;
+                    checklist?:
+                      | T
+                      | {
+                          point?: T;
+                          id?: T;
+                        };
+                  };
               id?: T;
             };
         id?: T;
@@ -497,6 +586,7 @@ export interface PagesSelect<T extends boolean = true> {
  */
 export interface ArticlesSelect<T extends boolean = true> {
   title?: T;
+  generateSlug?: T;
   slug?: T;
   category?: T;
   excerpt?: T;
@@ -585,6 +675,8 @@ export interface SiteFact {
   phone?: string | null;
   whatsapp?: string | null;
   facebook?: string | null;
+  youtube?: string | null;
+  twitter?: string | null;
   email?: string | null;
   address?: string | null;
   hours?: string | null;
@@ -594,6 +686,42 @@ export interface SiteFact {
   maintenanceTerms?: string | null;
   rentToBuyTerms?: string | null;
   brands?: string | null;
+  referenceClients?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The header menu. Leave it empty to use the built-in menu.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: number;
+  items?:
+    | {
+        label: string;
+        /**
+         * Route registry id, for example rental or maintenance. The link is hidden while that page is unpublished.
+         */
+        routeId?: string | null;
+        /**
+         * Add links to turn this item into a dropdown. The page above is then ignored.
+         */
+        children?:
+          | {
+              label: string;
+              /**
+               * Route registry id, for example rental or maintenance. The link is hidden while that page is unpublished.
+               */
+              routeId: string;
+              description?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -605,6 +733,8 @@ export interface SiteFactsSelect<T extends boolean = true> {
   phone?: T;
   whatsapp?: T;
   facebook?: T;
+  youtube?: T;
+  twitter?: T;
   email?: T;
   address?: T;
   hours?: T;
@@ -614,6 +744,31 @@ export interface SiteFactsSelect<T extends boolean = true> {
   maintenanceTerms?: T;
   rentToBuyTerms?: T;
   brands?: T;
+  referenceClients?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        label?: T;
+        routeId?: T;
+        children?:
+          | T
+          | {
+              label?: T;
+              routeId?: T;
+              description?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

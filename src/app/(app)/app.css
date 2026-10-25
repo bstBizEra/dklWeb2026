@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+/* Android phones get Material 3 instead of the iOS look. The <html data-platform> attribute is set before
+   the first paint (see layout.tsx), and `android:` styles apply inside it. */
+@custom-variant android (&:where([data-platform="android"], [data-platform="android"] *));
+
+/* DK LAO iPhone web app. It looks like an iOS app, not like the website: system font, grouped lists,
+   large titles, a translucent tab bar, iOS system greys, light and dark mode. DK LAO red and blue are
+   the accents. Utilities: bg-ios-bg, bg-ios-cell, text-ios-label, text-ios-secondary, border-ios-separator,
+   text-ios-tint, bg-ios-action. */
+
+@theme inline {
+  /* System font on each phone: SF Pro on iPhone, Roboto on Android. Lao text falls back to Noto Sans Lao. */
+  --font-sans: -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Segoe UI", "Noto Sans Lao", sans-serif;
+  --color-md-primary: var(--md-primary);
+  --color-md-on-primary: var(--md-on-primary);
+  --color-md-primary-container: var(--md-primary-container);
+  --color-md-on-primary-container: var(--md-on-primary-container);
+  --color-md-secondary-container: var(--md-secondary-container);
+  --color-md-on-secondary-container: var(--md-on-secondary-container);
+  --color-md-surface: var(--md-surface);
+  --color-md-surface-low: var(--md-surface-low);
+  --color-md-surface-container: var(--md-surface-container);
+  --color-md-surface-high: var(--md-surface-high);
+  --color-md-on-surface: var(--md-on-surface);
+  --color-md-on-surface-variant: var(--md-on-surface-variant);
+  --color-md-outline: var(--md-outline);
+  --color-md-outline-variant: var(--md-outline-variant);
+  --color-md-error: var(--md-error);
+  --color-ios-bg: var(--ios-bg);
+  --color-ios-cell: var(--ios-cell);
+  --color-ios-fill: var(--ios-fill);
+  --color-ios-label: var(--ios-label);
+  --color-ios-secondary: var(--ios-secondary);
+  --color-ios-tertiary: var(--ios-tertiary);
+  --color-ios-separator: var(--ios-separator);
+  --color-ios-bar: var(--ios-bar);
+  --color-ios-tint: var(--ios-tint);
+  --color-ios-action: var(--ios-action);
+  --color-ios-fill-blue: var(--ios-fill-blue);
+  --color-ios-red: var(--ios-red);
+  --color-ios-green: var(--ios-green);
+  --color-ios-navy: #07111f;
+}
+
+:root {
+  color-scheme: light dark;
+  /* iOS systemGroupedBackground / secondarySystemGroupedBackground and label colours. */
+  --ios-bg: #f2f2f7;
+  --ios-cell: #ffffff;
+  --ios-fill: rgba(118, 118, 128, 0.12);
+  --ios-label: #000000;
+  /* iOS secondaryLabel is 0.6 alpha; 0.78 keeps the look and reaches 4.5:1 on small text (WCAG 2.2 AA). */
+  --ios-secondary: rgba(60, 60, 67, 0.78);
+  --ios-tertiary: rgba(60, 60, 67, 0.3);
+  --ios-separator: rgba(60, 60, 67, 0.29);
+  --ios-bar: rgba(249, 249, 249, 0.82);
+  /* DK LAO brand blue for links and selection, DK LAO red for the one primary action per screen.
+     Filled buttons keep the brand colours in both modes so white text stays above 4.5:1. */
+  --ios-tint: #0061af;
+  --ios-action: #d91a21;
+  --ios-fill-blue: #0061af;
+  --ios-red: #d70015;
+  --ios-green: #34c759;
+  /* Material 3 colour roles from the DK LAO brand blue (#0061af) as seed. */
+  --md-primary: #0061af;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #d4e3ff;
+  --md-on-primary-container: #001c3a;
+  --md-secondary-container: #d7e3f8;
+  --md-on-secondary-container: #101c2b;
+  --md-surface: #f9f9ff;
+  --md-surface-low: #f3f3fa;
+  --md-surface-container: #ededf4;
+  --md-surface-high: #e7e8ee;
+  --md-on-surface: #191c20;
+  --md-on-surface-variant: #43474e;
+  --md-outline: #73777f;
+  --md-outline-variant: #c3c6cf;
+  --md-error: #ba1a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ios-bg: #000000;
+    --ios-cell: #1c1c1e;
+    --ios-fill: rgba(118, 118, 128, 0.24);
+    --ios-label: #ffffff;
+    --ios-secondary: rgba(235, 235, 245, 0.6);
+    --ios-tertiary: rgba(235, 235, 245, 0.3);
+    --ios-separator: rgba(84, 84, 88, 0.65);
+    --ios-bar: rgba(22, 22, 24, 0.82);
+    /* Brand blue lifted so links stay readable on black (4.5:1 or better). */
+    --ios-tint: #4da3ff;
+    --ios-red: #ff6961;
+    --ios-green: #30d158;
+    --md-primary: #a5c8ff;
+    --md-on-primary: #00315f;
+    --md-primary-container: #004786;
+    --md-on-primary-container: #d4e3ff;
+    --md-secondary-container: #3c4858;
+    --md-on-secondary-container: #d7e3f8;
+    --md-surface: #111318;
+    --md-surface-low: #191c20;
+    --md-surface-container: #1d2024;
+    --md-surface-high: #282a2f;
+    --md-on-surface: #e2e2e9;
+    --md-on-surface-variant: #c3c6cf;
+    --md-outline: #8d9199;
+    --md-outline-variant: #43474e;
+    --md-error: #ffb4ab;
+  }
+}
+
+@layer base {
+  /* Native feel: no pull-to-refresh or bounce reload, no double-tap zoom delay, no grey tap flash. */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  /* Apps do not let you select button and menu text or open a long-press menu on it. Form fields and
+     anything marked data-selectable (the address, phone numbers) stay selectable. */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  input,
+  textarea,
+  select,
+  [data-selectable] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+
+  img {
+    -webkit-user-drag: none;
+  }
+
+  /* Installed app: no browser scrollbar. */
+  @media (display-mode: standalone) {
+    html {
+      scrollbar-width: none;
+    }
+    html::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  [data-platform="android"] body {
+    background: var(--md-surface);
+    color: var(--md-on-surface);
+    letter-spacing: 0.1px;
+  }
+
+  [data-platform="android"] :focus-visible {
+    outline-color: var(--md-primary);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--ios-bg);
+    color: var(--ios-label);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.29;
+    letter-spacing: -0.41px;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--ios-tint);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

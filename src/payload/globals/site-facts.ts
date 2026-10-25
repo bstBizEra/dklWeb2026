@@ -12,10 +12,12 @@ export const SiteFacts: GlobalConfig = {
   admin: { description: "Owner-confirmed business facts. Leave a field empty until the owner confirms it." },
   access: { read: anyone, update: isOwner },
   fields: [
-    fact("phone", "Phone"),
-    fact("whatsapp", "WhatsApp"),
+    fact("phone", "Phone (separate several with commas)"),
+    fact("whatsapp", "WhatsApp (separate several with commas)"),
     fact("facebook", "Facebook page"),
-    fact("email", "Email", "email"),
+    fact("youtube", "YouTube channel"),
+    fact("twitter", "X (Twitter) profile"),
+    fact("email", "Email (separate several with commas)"),
     fact("address", "Address", "textarea"),
     fact("hours", "Opening hours", "textarea"),
     fact("serviceAreas", "Service areas", "textarea"),
@@ -24,5 +26,6 @@ export const SiteFacts: GlobalConfig = {
     fact("maintenanceTerms", "Maintenance terms", "textarea"),
     fact("rentToBuyTerms", "Rent-to-buy terms", "textarea"),
     fact("brands", "Brands", "textarea"),
+    fact("referenceClients", "Reference clients (Group: Name, Name | Group: Name)", "textarea"),
   ],
 };

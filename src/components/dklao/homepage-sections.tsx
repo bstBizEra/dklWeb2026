@@ -2,271 +2,168 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  BatteryCharging,
   ClipboardCheck,
   Gauge,
-  PackageCheck,
-  ShieldCheck,
   Warehouse,
-  Wrench,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Container, Eyebrow, Section, SectionCopy, SectionHeader, SectionTitle } from "@/components/ui/section";
 import {
   industrySolutions,
   knowledgeArticles,
   solutionCards,
-  trustSignals,
 } from "@/lib/data/homepage";
 import { AnatomyDiagram } from "./anatomy-diagram";
 import { CTASection } from "./cta-section";
 import { QuoteRequestForm } from "./quote-request-form";
 import { ServiceCard } from "./service-card";
 
+// Faint blueprint grid on white, shared by the rental and knowledge sections.
+const paperGrid =
+  "bg-[linear-gradient(rgba(7,17,31,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(7,17,31,0.04)_1px,transparent_1px)] bg-[size:42px_42px] bg-white";
+const cardGrid = "grid grid-cols-4 gap-[18px] max-[1120px]:grid-cols-2 max-[780px]:grid-cols-1";
+const tile = "rounded-[22px] border border-slate-300/80 bg-card shadow-card";
+
 export function SolutionOverview() {
   return (
-    <section className="dk-section" id="solutions">
-      <div className="dk-container">
-        <div className="dk-section-header">
-          <p className="dk-eyebrow">Semi-ecommerce discovery</p>
-          <h2 className="dk-section-title">Industrial solutions organized around business action</h2>
-          <p className="dk-section-copy">
-            DK LAO customers can browse by need, compare service paths, and move
-            directly into a quote, rental, service, spare-parts, or recommendation
-            workflow.
-          </p>
-        </div>
-        <div className="card-grid card-grid--four">
+    <Section id="solutions">
+      <Container>
+        <SectionHeader
+          eyebrow="What we do"
+          title="Rent, buy, service and supply in one place"
+          copy="One team for your forklifts and warehouse: choose what you need and we reply with a quotation."
+        />
+        <div className={cardGrid}>
           {solutionCards.map((card) => (
             <ServiceCard key={card.title} item={card} />
           ))}
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
+
+const rentalFacts = [
+  { icon: Gauge, label: "Capacity", value: "On request" },
+  { icon: Warehouse, label: "Indoor or outdoor", value: "Site matched" },
+  { icon: ClipboardCheck, label: "Rental period", value: "Flexible" },
+];
 
 export function RentalHighlight() {
   return (
-    <section className="rental-highlight">
-      <div className="dk-container rental-highlight__grid">
+    <section className={`py-[84px] ${paperGrid}`}>
+      <Container className="grid grid-cols-[minmax(0,0.9fr)_minmax(360px,0.6fr)] items-center gap-12 max-[1120px]:grid-cols-1">
         <div>
-          <p className="dk-eyebrow">Forklift rental</p>
-          <h2>Short-term and long-term rental inquiry support</h2>
-          <p>
-            Rental requests can capture capacity, lift height, rental period,
-            operating environment, working hours, operator needs, delivery location,
-            and transport requirements.
+          <Eyebrow>Forklift rental</Eyebrow>
+          <SectionTitle className="mt-4 leading-[1.06] max-[780px]:text-[2rem]">Forklift rental for a week, a season or years</SectionTitle>
+          <p className="mt-4 mb-0 leading-[1.75] text-slate-700">
+            Tell us the load, lift height, site and dates. We match the truck and send a rental quotation.
           </p>
-          <div className="rental-highlight__actions">
-            <Link className="dk-button dk-button-primary" href="/forklift-rental">
-              Ask for Rental Price
-              <ArrowRight size={18} aria-hidden="true" />
-            </Link>
-            <Link className="dk-button dk-button-light" href="#quote-request">
-              Request a Quote
-            </Link>
+          <div className="mt-[26px] flex flex-wrap gap-3.5 max-[780px]:grid">
+            <Button asChild variant="primary">
+              <Link href="/forklift-rental">
+                Ask for Rental Price
+                <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button asChild variant="light">
+              <Link href="#quote-request">
+                Request a Quote
+              </Link>
+            </Button>
           </div>
         </div>
-        <div className="rental-highlight__panel">
-          <div>
-            <Gauge size={28} aria-hidden="true" />
-            <span>Capacity</span>
-            <strong>On request</strong>
-          </div>
-          <div>
-            <Warehouse size={28} aria-hidden="true" />
-            <span>Indoor or outdoor</span>
-            <strong>Site matched</strong>
-          </div>
-          <div>
-            <ClipboardCheck size={28} aria-hidden="true" />
-            <span>Rental period</span>
-            <strong>Flexible</strong>
-          </div>
+        <div className="rental-highlight__panel grid gap-3.5 max-[1120px]:max-w-[680px]">
+          {rentalFacts.map(({ icon: Icon, label, value }) => (
+            <div key={label} className={`${tile} grid grid-cols-[auto_1fr] items-center gap-x-3.5 gap-y-1.5 p-[22px]`}>
+              <Icon size={28} aria-hidden="true" className="row-span-2 text-action-red" />
+              <span className="text-[0.88rem] font-extrabold text-slate-500">{label}</span>
+              <strong className="text-[1.2rem] text-navy-950">{value}</strong>
+            </div>
+          ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-export function UsedAndServiceSection() {
-  return (
-    <section className="dk-section-tight service-band">
-      <div className="dk-container service-band__grid">
-        <article>
-          <span className="dk-icon-badge">
-            <ShieldCheck size={24} aria-hidden="true" />
-          </span>
-          <h2>Used forklift inquiries without fake stock claims</h2>
-          <p>
-            Visitors can request selected used equipment review by use case, condition
-            needs, capacity, and inspection preference.
-          </p>
-          <Link className="service-band__link" href="/forklift-sales/used">
-            View Used Forklift Stock
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </article>
-        <article>
-          <span className="dk-icon-badge">
-            <Wrench size={24} aria-hidden="true" />
-          </span>
-          <h2>Maintenance service and repair booking</h2>
-          <p>
-            Service requests are prepared for equipment brand, model, serial number,
-            issue description, preferred date, and service location.
-          </p>
-          <Link className="service-band__link" href="/maintenance-service">
-            Book Maintenance Service
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </article>
-        <article>
-          <span className="dk-icon-badge">
-            <PackageCheck size={24} aria-hidden="true" />
-          </span>
-          <h2>Spare-parts inquiry workflow</h2>
-          <p>
-            Parts requests can include part type, equipment brand, model, serial
-            number, quantity, urgency, and image attachments in future phases.
-          </p>
-          <Link className="service-band__link" href="/spare-parts">
-            Request Spare Parts
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </article>
-      </div>
+      </Container>
     </section>
   );
 }
 
 export function ForkliftAnatomyInteractive() {
   return (
-    <section className="dk-section anatomy-section">
-      <div className="dk-container anatomy-section__layout">
-        <div className="anatomy-section__intro">
-          <p className="dk-eyebrow">Equipment matching</p>
-          <h2 className="dk-section-title">Know the forklift, ask the right questions</h2>
-          <p className="dk-section-copy">
-            Every DK LAO rental, sales, or service recommendation starts from the
-            same components. Explore the main forklift parts DK LAO reviews before
-            preparing your quotation.
-          </p>
+    <Section className="bg-[linear-gradient(rgba(0,97,175,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(0,97,175,0.08)_1px,transparent_1px),linear-gradient(135deg,#ffffff,#eef4fa)] bg-[size:44px_44px,44px_44px,cover]">
+      <Container className="grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-12 max-[1024px]:grid-cols-1 max-[1024px]:gap-7">
+        <div className="grid max-w-[420px] gap-4 max-[1024px]:max-w-[640px]">
+          <Eyebrow>Equipment matching</Eyebrow>
+          <SectionTitle>Know the forklift, ask the right questions</SectionTitle>
+          <SectionCopy>
+            Every recommendation starts from the same parts of the truck. See what we check before we quote.
+          </SectionCopy>
         </div>
         <AnatomyDiagram />
-      </div>
-    </section>
-  );
-}
-
-export function CleaningAndWarehouseSection() {
-  return (
-    <section className="dk-section clean-warehouse">
-      <div className="dk-container clean-warehouse__grid">
-        <article className="clean-warehouse__feature">
-          <span className="dk-icon-badge">
-            <BatteryCharging size={24} aria-hidden="true" />
-          </span>
-          <h2>Professional cleaning equipment recommendations</h2>
-          <p>
-            Connect floor type, working area, cleaning routine, and facility profile
-            to the right cleaning equipment inquiry workflow.
-          </p>
-          <Link className="dk-button dk-button-light" href="/cleaning-equipment">
-            Get Cleaning Equipment Recommendation
-          </Link>
-        </article>
-        <article className="clean-warehouse__feature clean-warehouse__feature--dark">
-          <span className="dk-icon-badge">
-            <Warehouse size={24} aria-hidden="true" />
-          </span>
-          <h2>Warehouse equipment and racking solutions</h2>
-          <p>
-            Plan material flow, storage, shelving, racking, and movement equipment
-            from one site-survey conversation.
-          </p>
-          <Link className="dk-button dk-button-primary" href="/warehouse-equipment">
-            Explore Warehouse Solutions
-          </Link>
-        </article>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
 
 export function IndustriesAndTrustSection() {
   return (
-    <section className="dk-section">
-      <div className="dk-container">
-        <div className="dk-section-header">
-          <p className="dk-eyebrow">Industries served</p>
-          <h2 className="dk-section-title">Built for procurement and operations teams</h2>
-          <p className="dk-section-copy">
-            The content structure helps warehouse managers, factory teams, logistics
-            operators, and facility managers reach the correct DK LAO workflow.
-          </p>
-        </div>
-        <div className="card-grid card-grid--four">
+    <Section>
+      <Container>
+        <SectionHeader
+          eyebrow="Industries"
+          title="Equipment for the way your operation works"
+          copy="Pick your industry to see what slows it down and the equipment that fixes it."
+        />
+        <div className={cardGrid}>
           {industrySolutions.map((industry) => (
             <ServiceCard key={industry.title} item={industry} />
           ))}
         </div>
-
-        <div className="trust-grid">
-          {trustSignals.map((signal) => {
-            const Icon = signal.icon;
-            return (
-              <article key={signal.title}>
-                <Icon size={24} aria-hidden="true" />
-                <h3>{signal.title}</h3>
-                <p>{signal.description}</p>
-              </article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
 
 export function KnowledgeCenterPreview() {
   return (
-    <section className="dk-section-tight knowledge-preview">
-      <div className="dk-container knowledge-preview__grid">
+    <Section spacing="tight" className={paperGrid}>
+      <Container className="grid grid-cols-[minmax(0,0.8fr)_minmax(360px,1fr)] items-start gap-12 max-[1120px]:grid-cols-1">
         <div>
-          <p className="dk-eyebrow">Knowledge center</p>
-          <h2>Practical guides for equipment inquiries</h2>
-          <p>
-            Article routes are prepared for future SEO content around rental,
-            spare-parts matching, service planning, warehouse equipment, and cleaning.
+          <Eyebrow>Knowledge center</Eyebrow>
+          <SectionTitle className="mt-4 text-[2.3rem] leading-[1.08] max-[780px]:text-[2rem]">Short guides before you ask for a quote</SectionTitle>
+          <p className="mt-4 mb-0 leading-[1.7] text-slate-700">
+            What to prepare for a rental request, how to match a spare part and how to choose a floor scrubber.
           </p>
         </div>
-        <div className="knowledge-preview__cards">
+        <div className="grid gap-3">
           {knowledgeArticles.map((article) => (
-            <Link key={article.title} href={article.href}>
-              <span>{article.category}</span>
-              <strong>{article.title}</strong>
-              <ArrowRight size={16} aria-hidden="true" />
+            <Link
+              key={article.title}
+              href={article.href}
+              className={`${tile} group grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-[18px] px-5 py-[18px] transition-[transform,border-color] duration-150 ease-premium hover:-translate-y-0.5 hover:border-brand-blue/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
+            >
+              <span className="text-[0.8rem] font-[850] text-action-red uppercase">{article.category}</span>
+              <strong className="text-[1.05rem] text-navy-950">{article.title}</strong>
+              <ArrowRight size={16} aria-hidden="true" className="col-start-2 row-span-2 row-start-1 text-brand-blue" />
             </Link>
           ))}
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
 
 export function QuoteSection() {
   return (
-    <section className="dk-section quote-section">
-      <div className="dk-container quote-section__grid">
+    <Section className="bg-[linear-gradient(135deg,var(--dk-color-surface),var(--dk-color-neutral-white))]">
+      <Container className="grid grid-cols-[minmax(0,0.7fr)_minmax(420px,0.9fr)] items-start gap-12 max-[1120px]:grid-cols-1 max-[780px]:gap-7">
         <div>
-          <p className="dk-eyebrow">Request routing</p>
-          <h2 className="dk-section-title">One form, structured for DK LAO follow-up</h2>
-          <p className="dk-section-copy">
-            The first homepage form captures the required universal lead fields and
-            keeps the data shape ready for CRM, email, and admin dashboard expansion.
-          </p>
-          <div className="quote-section__asset">
+          <Eyebrow>Request a quote</Eyebrow>
+          <SectionTitle className="mt-4">Tell us what you need</SectionTitle>
+          <SectionCopy className="mt-4">
+            One short form for rental, sales, service, parts, warehouse or cleaning. An advisor replies with a recommendation and a quotation.
+          </SectionCopy>
+          <div className={`quote-section__asset ${tile} mt-8 inline-flex items-center gap-4 p-4 font-extrabold text-slate-700`}>
             <Image
               src="/images/logo/Logo-V_Text.svg"
               width={84}
@@ -276,20 +173,20 @@ export function QuoteSection() {
             <span>Quotation-based pricing. Availability on request.</span>
           </div>
         </div>
-        <QuoteRequestForm />
-      </div>
-    </section>
+        <QuoteRequestForm showHeader={false} />
+      </Container>
+    </Section>
   );
 }
 
 export function FinalHomepageCTA() {
   return (
     <CTASection
-      title="Ready to review equipment, rental, service, or spare-parts needs?"
-      copy="Send a structured request so DK LAO can route it to the right business workflow."
+      title="Ready when you are"
+      copy="Send your request any time. An advisor replies with the next step."
       primaryLabel="Request a Quote"
       primaryHref="#quote-request"
-      secondaryLabel="Talk to DK LAO Advisor"
+      secondaryLabel="Talk to a DK LAO Advisor"
       secondaryHref="/contact"
     />
   );

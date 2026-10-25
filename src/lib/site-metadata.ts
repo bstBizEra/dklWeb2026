@@ -9,4 +9,5 @@ export const siteFooterMetadata = {
   developerUrl: "https://www.bizera.la/",
   developerDisplayUrl: "www.bizera.la",
   version: versionInfo.version,
+  releaseDate: versionInfo.releaseDate,
 } as const;
