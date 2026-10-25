@@ -107,13 +107,16 @@ fails on the pnpm layout. The app runs outside cPanel instead. Backups of every 
 | `DATABASE_POOL_MAX` | `5` |
 | `PAYLOAD_SECRET` | New random 32 bytes (see `.env.example`), different from any developer machine |
 | `SMTP_HOST`, `SMTP_PORT` | `mail.dklao.com`, `465` |
-| `SMTP_USER`, `SMTP_PASS` | `website@dklao.com` and its mailbox password |
+| `SMTP_USER`, `SMTP_PASS` | `notify@dklao.com` and its mailbox password (owner choice, 2026-10-25; `website@dklao.com` does not exist) |
 | `LEAD_NOTIFY_EMAIL` | `info@dklao.com` |
 | `LEAD_RATE_LIMIT`, `LEAD_RATE_WINDOW_SECONDS` | Optional. Defaults 5 requests per 600 seconds per address |
 | `LEAD_NOTIFY_WEBHOOK_URL` and its secret | Optional, only if a WhatsApp or chat automation is added |
 
-- [ ] Migrations run when the service starts (`prodMigrations`); check `journalctl -u dklao-site` after the
-      first start. The Supabase lockdown migration does nothing on this server (no Supabase roles).
+- [x] Filled 2026-10-25 at the owner's request without anyone seeing a password: the server generated a new
+      random password for `dklao_app` (replacing the one pasted in chat) and for `notify@dklao.com` (any mail
+      app using notify@ needs the new one from the env file), and wrote both only into the env file.
+      Earlier copy: `/home/dklao/.config/dklao-site.env.bak-20261025130445`.
+- [x] Migrations run when the service starts (`prodMigrations`): all applied on 2026-10-25, 31 tables. The Supabase lockdown migration does nothing on this server (no Supabase roles).
 - [ ] Before each later migration: `pg_dump -U dklao_app -h 127.0.0.1 dklao_dklApp > ~/backups/dklao_dklApp-<date>.sql`.
 - [ ] `systemctl restart dklao-site` (root) after every build or settings change.
 
