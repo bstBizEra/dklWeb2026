@@ -127,7 +127,11 @@ pointed at the same app, protected with cPanel Directory Privacy.
 
 - [ ] Open `/admin`. The first account registered becomes the **owner**, so the owner registers it personally, right away.
 - [ ] Create the editor and advisor accounts from the admin.
-- [ ] Run `pnpm cms:seed` on the server with the same settings. It copies the confirmed facts and the built-in
+- [x] CMS emails (password reset, invites) go out through `notify@dklao.com` since 0.19.4; a Payload test
+      email reached info@dklao.com on 2026-10-25 (exim log).
+- [x] Run `pnpm cms:seed` on the server with the same settings (done 2026-10-25, v0.19.4: 24 pages and the
+      default menu; log `~/deploy-logs/seed-v0.19.4.log`). As `dklao`:
+      `set -a; . ~/.config/dklao-site.env; set +a; cd ~/dklao-app && npx -y pnpm@10.29.3 cms:seed`. It copies the confirmed facts and the built-in
       pages, and never overwrites rows an editor has changed.
 - [ ] Fill in the facts the owner has confirmed. Leave the others empty: empty facts stay hidden.
 - [ ] Send a test quote. Check that it appears under Leads and arrives at info@dklao.com, then delete it.
