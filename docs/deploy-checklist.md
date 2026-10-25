@@ -122,8 +122,10 @@ fails on the pnpm layout. The app runs outside cPanel instead. Backups of every 
 
 ## 5. First start (before anything is public)
 
-Test on a temporary address first, for example a `preview.dklao.com` subdomain in the dklao account
-pointed at the same app, protected with cPanel Directory Privacy.
+Test on a temporary address first: `preview.dklao.com` (done 2026-10-26). Cloudflare record: A `preview` →
+`50.6.224.71`, proxied, so Cloudflare's certificate serves HTTPS. nginx restores the visitor address from
+`CF-Connecting-IP` only for Cloudflare's ranges, so the admin IP lock still sees the real visitor
+(checked: owner IP 200, other IP 403, public pages 200). Delete the record once dklao.com is live.
 
 - [ ] Open `/admin`. The first account registered becomes the **owner**, so the owner registers it personally, right away.
 - [ ] Create the editor and advisor accounts from the admin.
