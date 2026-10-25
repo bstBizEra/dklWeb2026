@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { homeSeo } from "@/lib/data/seo";
 import "./globals.css";
+import { AppInstallBanner } from "@/components/dklao/app-install-banner";
 import { SiteMotion } from "@/components/dklao/site-motion";
 import { shareImage } from "@/lib/data/share";
+import { siteFooterMetadata } from "@/lib/site-metadata";
 
 const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
+const iconVersion = siteFooterMetadata.version;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -37,13 +40,14 @@ export const metadata: Metadata = {
     email: true,
     address: false,
   },
+  // The version query makes browsers fetch the icon again after a release instead of reusing a cached one.
   icons: {
     icon: [
-      { url: "/favicon.ico", type: "image/x-icon" },
-      { url: "/images/fav-icon/FAV-Icon.png", type: "image/png" },
+      { url: `/favicon.ico?v=${iconVersion}`, type: "image/x-icon" },
+      { url: `/images/fav-icon/FAV-Icon.png?v=${iconVersion}`, type: "image/png" },
     ],
-    shortcut: "/favicon.ico",
-    apple: "/images/fav-icon/FAV-Icon.png",
+    shortcut: `/favicon.ico?v=${iconVersion}`,
+    apple: `/images/fav-icon/FAV-Icon.png?v=${iconVersion}`,
   },
   openGraph: {
     title: homeSeo.shareTitle,
@@ -94,6 +98,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         {children}
+        <AppInstallBanner />
         <SiteMotion />
       </body>
     </html>

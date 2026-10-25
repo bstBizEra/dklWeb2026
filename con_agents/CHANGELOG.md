@@ -2,6 +2,14 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.20.0] - 2026-10-26
+
+### Minor Changed
+
+- **Website asks phone visitors to install the app** (owner request: preview.dklao.com should ask users to install). New `AppInstallBanner` (`src/components/dklao/app-install-banner.tsx`) on every website page, phones only (under 780px, where the floating contact buttons are hidden): "Get the DK LAO app" with an Install button and Close. Install opens `/app?install`, where the existing card offers Chrome's Install button on Android or the Share > Add to Home Screen steps on iPhone; `?install` shows that card even if it was closed before, and where Chrome offers no install prompt (other browsers, or Chrome holding it back) the card shows the browser-menu steps (Install app / Add to Home screen) instead of nothing. Hidden inside the installed app and after Close (remembered on the phone under `dklao-site-app-banner-dismissed`).
+- **Favicon refresh.** The website's icon URLs now carry the release version (`/favicon.ico?v=0.20.0`), so browsers fetch the current DK LAO icon after a release instead of a cached one. The icon files are unchanged (the official `FAV-Icon.png`).
+- Tests in `src/components/dklao/app-install-banner.test.ts`.
+
 ## [0.19.4] - 2026-10-26
 
 ### Patch Changed

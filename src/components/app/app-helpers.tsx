@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, Share, SquarePlus, X } from "lucide-react";
+import { Download, EllipsisVertical, Share, SquarePlus, X } from "lucide-react";
 
 import { appStorageKeys } from "@/lib/data/mobile-app";
 
@@ -61,19 +61,23 @@ function readFlag(key: string): boolean {
 // real install prompt (caught early in layout.tsx), so it shows an Install app button.
 // Hidden once installed, after Close, or where neither applies.
 export function InstallHint() {
-  const [mode, setMode] = useState<"ios" | "android" | null>(null);
+  const [mode, setMode] = useState<"ios" | "android" | "menu" | null>(null);
 
   useEffect(() => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (standalone || readFlag(hintKey)) return;
+    // Arriving from the website's "Install" button (/app?install) shows the card even if it was closed before.
+    const asked = new URLSearchParams(window.location.search).has("install");
+    if (standalone || (readFlag(hintKey) && !asked)) return;
 
     const apple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes("Mac") && navigator.maxTouchPoints > 1);
     // Reading the browser only after mount keeps the server and first client render identical.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (apple) return setMode("ios");
 
-    const ready = () => setMode((window as InstallWindow).__dklaoInstall ? "android" : null);
+    // Without Chrome's prompt (other browsers, or Chrome holding it back), a visitor who asked to install
+    // gets the browser-menu steps instead of an empty page.
+    const ready = () => setMode((window as InstallWindow).__dklaoInstall ? "android" : asked ? "menu" : null);
     const installed = () => setMode(null);
     ready();
     window.addEventListener("dklao-install-ready", ready);
@@ -119,6 +123,11 @@ export function InstallHint() {
             <SquarePlus className="inline size-4 align-[-2px] text-ios-tint" aria-hidden="true" /> Add to Home Screen
           </span>
           . It opens full screen, like an app.
+        </p>
+      ) : mode === "menu" ? (
+        <p className="m-0 mt-1 text-[14px] leading-5 tracking-[0.25px]">
+          Open the browser menu <EllipsisVertical className="inline size-4 align-[-3px]" aria-label="menu" /> and tap{" "}
+          <strong>Install app</strong> or <strong>Add to Home screen</strong>.
         </p>
       ) : (
         <>
