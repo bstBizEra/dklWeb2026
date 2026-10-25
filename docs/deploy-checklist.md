@@ -90,7 +90,10 @@ fails on the pnpm layout. The app runs outside cPanel instead. Backups of every 
 - [x] `/admin` and `/api/users` answer only from the owner's IP while the preview is open:
       `<LocationMatch "^/(admin|api/users)(/|$)"> Require expr "%{HTTP:X-Real-IP} == '<owner IP>'" </LocationMatch>`
       in both includes (nginx sets `X-Real-IP` to the connecting address, so visitors cannot fake it).
-      Change the IP when the owner's address changes; others see 404.
+      Inside the same block: `Header always set Cache-Control "private, no-store"` and
+      `ErrorDocument 403 "Forbidden"`. Without them Apache answers with the app's 404 page, which nginx caches
+      under `/admin` and then replays to the owner too. Others see a plain 403. Change the IP when the owner's
+      address changes, then `/usr/local/cpanel/scripts/ea-nginx clear_cache dklao`.
 - [x] The app sends `Cache-Control: private, no-store` for `/api` and `/admin`, because the host's nginx cache
       keys on the URL alone (`next.config.ts`).
 - [ ] Settings in `/home/dklao/.config/dklao-site.env` (owner `dklao`, mode 600; edit with `nano -B` over
