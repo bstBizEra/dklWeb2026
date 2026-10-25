@@ -24,6 +24,14 @@ describe("CMS migrations", () => {
     }
   });
 
+  it("are applied automatically when the production app starts", () => {
+    const config = readFileSync(join(process.cwd(), "src", "payload.config.ts"), "utf8");
+
+    expect(config).toContain('import { migrations } from "./payload/migrations"');
+    expect(config).toContain("prodMigrations: migrations");
+    expect(config).toContain("push: false");
+  });
+
   it("registers every migration file in the index", () => {
     const index = readFileSync(join(dir, "index.ts"), "utf8");
     for (const name of readdirSync(dir).filter((file) => /^\d{8}_\d{6}_.+\.ts$/.test(file))) {

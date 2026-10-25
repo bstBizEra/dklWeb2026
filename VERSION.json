@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "status": "local-preview",
   "releaseDate": "2026-10-25",
-  "changeLevel": "minor",
-  "summary": "Phone web app at /app: iOS look on iPhone, Material 3 look on Android; Home, Services, Request (quote and service booking with site pin) and Location; installable with app shortcuts and offline support. Local only.",
+  "changeLevel": "patch",
+  "summary": "Deployment prep for the dklao.com cPanel server: the production app applies pending database migrations on start (Payload prodMigrations), so the database password stays in the host settings.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

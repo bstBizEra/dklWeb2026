@@ -2,6 +2,12 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.19.1] - 2026-10-25
+
+### Patch Changed
+
+- **Migrations run when the production app starts** (owner decision for the dklao.com cPanel deploy). `payload.config.ts` passes the migration list to the Postgres adapter as `prodMigrations`, so with `NODE_ENV=production` the app applies any pending migrations on start, using the `DATABASE_URL` the owner types into cPanel Application Manager. Nobody types the database password into a terminal; development still runs `pnpm cms:migrate` by hand, and `push: false` keeps schema changes in reviewed migrations. Test in `src/payload/migrations.test.ts`.
+
 ## [0.19.0] - 2026-10-25
 
 ### Minor Changed

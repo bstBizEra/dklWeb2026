@@ -11,6 +11,7 @@ import { Pages } from "./payload/collections/pages";
 import { Users } from "./payload/collections/users";
 import { Navigation } from "./payload/globals/navigation";
 import { SiteFacts } from "./payload/globals/site-facts";
+import { migrations } from "./payload/migrations";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,5 +32,8 @@ export default buildConfig({
     pool: { connectionString: process.env.DATABASE_URL, max: Number(process.env.DATABASE_POOL_MAX ?? 10) },
     push: false, // schema changes go through reviewed migrations only
     migrationDir: path.resolve(dirname, "payload/migrations"),
+    // In production the app applies any pending migrations when it starts, with the DATABASE_URL from the
+    // host's settings, so nobody types the database password into a terminal. Development runs them by hand.
+    prodMigrations: migrations,
   }),
 });
