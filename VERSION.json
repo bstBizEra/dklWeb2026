@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.19.3",
+  "version": "0.19.4",
   "status": "local-preview",
-  "releaseDate": "2026-10-25",
+  "releaseDate": "2026-10-26",
   "changeLevel": "patch",
-  "summary": "Rate limit keyed on the address nginx saw (X-Real-IP, CF-Connecting-IP only from Cloudflare); no-store for /api and /admin; preview runs as a systemd service.",
+  "summary": "CMS password-reset and invite emails sent through the lead SMTP account (Payload nodemailer adapter).",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

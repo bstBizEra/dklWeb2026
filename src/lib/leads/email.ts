@@ -101,3 +101,13 @@ export async function emailNewLead(
     return "failed";
   }
 }
+
+// The same SMTP account sends the CMS's own emails (password reset, account invites) through Payload's
+// nodemailer adapter. Without SMTP settings there is no adapter: Payload then writes emails to the log,
+// instead of the adapter's default of creating an online test mailbox.
+export function payloadEmailOptions(env: Record<string, string | undefined> = process.env) {
+  const config = readEmailConfig(env);
+  if (!config) return null;
+  const { host, port, secure, auth, from } = config;
+  return { defaultFromAddress: from, defaultFromName: "DK LAO", transportOptions: { host, port, secure, auth } };
+}

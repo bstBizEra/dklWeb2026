@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
@@ -12,8 +13,10 @@ import { Users } from "./payload/collections/users";
 import { Navigation } from "./payload/globals/navigation";
 import { SiteFacts } from "./payload/globals/site-facts";
 import { migrations } from "./payload/migrations";
+import { payloadEmailOptions } from "./lib/leads/email";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const emailOptions = payloadEmailOptions();
 
 export default buildConfig({
   admin: {
@@ -26,6 +29,8 @@ export default buildConfig({
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   graphQL: { disable: true },
+  // Password reset and invite emails, over the same SMTP account as lead email (see lib/leads/email.ts).
+  ...(emailOptions ? { email: nodemailerAdapter(emailOptions) } : {}),
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   db: postgresAdapter({
     // Serverless hosting opens many short-lived connections: keep each instance small (set 1 to 3 on Vercel).

@@ -5,7 +5,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 
-import { buildLeadEmail, defaultLeadInbox, emailNewLead, readEmailConfig } from "./email";
+import { buildLeadEmail, defaultLeadInbox, emailNewLead, payloadEmailOptions, readEmailConfig } from "./email";
 import type { NotifiableLead } from "./notify";
 
 const lead: NotifiableLead = {
@@ -87,5 +87,19 @@ describe("lead email", () => {
     expect(await emailNewLead(lead, smtp, () => ({ sendMail: vi.fn().mockRejectedValue(new Error("ECONNREFUSED")) }))).toBe("failed");
     expect(warn.mock.calls[0][0]).not.toContain(lead.phone);
     warn.mockRestore();
+  });
+});
+
+describe("CMS email settings", () => {
+  it("uses no adapter without an SMTP host", () => {
+    expect(payloadEmailOptions({})).toBeNull();
+  });
+
+  it("sends CMS email from the lead SMTP account", () => {
+    expect(payloadEmailOptions({ ...smtp, SMTP_PORT: "465" })).toEqual({
+      defaultFromAddress: "web@dklao.com",
+      defaultFromName: "DK LAO",
+      transportOptions: { host: "smtp.example.com", port: 465, secure: true, auth: { user: "web@dklao.com", pass: "secret" } },
+    });
   });
 });

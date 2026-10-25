@@ -2,6 +2,12 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.19.4] - 2026-10-26
+
+### Patch Changed
+
+- **CMS emails are sent.** Payload had no email adapter, so password-reset and account-invite emails from `/admin` only went to the server log. `payload.config.ts` now uses `@payloadcms/email-nodemailer` 3.80.0 (same version as Payload) with the lead SMTP account (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`; on the server `notify@dklao.com`), sender name "DK LAO". Without `SMTP_HOST` there is no adapter, so developer machines keep logging emails instead of the adapter default of creating an online test mailbox. Settings come from `payloadEmailOptions` in `src/lib/leads/email.ts`, tested in `email.test.ts`.
+
 ## [0.19.3] - 2026-10-25
 
 ### Patch Changed
