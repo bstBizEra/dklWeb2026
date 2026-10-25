@@ -70,7 +70,7 @@ describe.skipIf(!built).each([
     expect((await fetch(`${base}/no-such-page`)).status).toBe(404);
     const invalid = await fetch(`${base}/api/leads/quote`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.250" },
+      headers: { "Content-Type": "application/json", "X-Real-IP": "203.0.113.250" },
       body: JSON.stringify({}),
     });
     expect(invalid.status).toBe(400);

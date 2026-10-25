@@ -2,11 +2,20 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.19.3] - 2026-10-25
+
+### Patch Changed
+
+- **Quote-form rate limit can no longer be dodged with a made-up address** (security review, 2026-10-25). The limit used the first `X-Forwarded-For` entry, which the server's nginx passes on from the visitor, so a new made-up value on each request was never limited (shown from the internet against preview.dklao.com: 7 of 7 requests accepted with a rotating header). `clientKey` now uses `X-Real-IP`, which nginx overwrites with the address that actually connected, and uses `CF-Connecting-IP` only when that address is in Cloudflare's published ranges (the same list Apache trusts). `X-Forwarded-For` and `X-Vercel-Forwarded-For` are ignored; values that are not IP addresses fall into the shared bucket. Tests in `src/lib/leads/rate-limit.test.ts` cover spoofed headers, Cloudflare and non-Cloudflare connections, IPv6 and invalid values.
+- **No caching of `/api` and `/admin` answers.** The host's nginx cache keys on the URL only and caches answers without a `Cache-Control` header for 60 minutes; Payload's API sends none. `next.config.ts` now sends `Cache-Control: private, no-store` for `/api/*`, `/admin` and `/admin/*`, so an answer to one visitor (or to the admin IP) is never replayed to another.
+- **Preview hosting moved off Application Manager** (owner decision): the app runs as the systemd service `dklao-site` (user `dklao`, `127.0.0.1:3110`, settings in `/home/dklao/.config/dklao-site.env`, mode 600) behind an Apache proxy include for preview.dklao.com. `/admin` and `/api/users` on the preview answer only from the owner's public IP (Apache `LocationMatch` on nginx's `X-Real-IP`), set before the database settings were filled. See `docs/deploy-checklist.md`.
+
 ## [0.19.2] - 2026-10-25
 
 ### Patch Changed
 
 - **`app.js` entry file for cPanel Application Manager.** cPanel registers Node.js apps without a startup-file setting, so Phusion Passenger runs `app.js` from the app folder. `app.js` loads `server.mjs` with a dynamic `import()` and has no top-level `await`, because Passenger may load it with `require()`, which on Node 22 cannot load a module that uses top-level `await`. `server.test.ts` now starts the built app both ways (`node server.mjs`, and `require("./app.js")`): 8 checks pass. The deploy checklist names `app.js`.
+- **First server deploy: private preview at preview.dklao.com** (2026-10-25). Code copied from this PC as a git bundle over SSH (repository is private; no deploy key), cloned to `/home/dklao/dklao-app` at tag `v0.19.2`, installed with pnpm 10.29.3 and built on the server with Node 22.23 as the `dklao` user (69 pages; logs in `~/deploy-logs/`). Smoke test on a private port: pages 200, unknown page 404; the app also starts through `require("./app.js")` on Node 22. Subdomain `preview.dklao.com` created in the dklao account (no DNS record at Cloudflare, so not public) and the app registered in Application Manager as `dklao-site-preview` (production) with APP_URL, DATABASE_POOL_MAX, SMTP_HOST, SMTP_PORT, SMTP_USER, LEAD_NOTIFY_EMAIL and a server-generated PAYLOAD_SECRET that nobody has seen. Through Apache and Passenger 6.2.1: all pages 200, unknown page 404; `/admin` 500 until the owner adds DATABASE_URL; HTTPS for the preview waits for a certificate. Not done: DATABASE_URL and SMTP_PASS (owner), end-to-end test, switch of dklao.com.
 
 ## [0.19.1] - 2026-10-25
 

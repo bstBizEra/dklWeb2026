@@ -3,6 +3,8 @@
 // its own count, so treat it as a first line of defence and put a shared store (or the host's firewall)
 // behind it before a real launch. Nothing here stores an address beyond the window.
 
+import { BlockList, isIP } from "node:net";
+
 export type RateLimitResult = { allowed: boolean; remaining: number; retryAfterSeconds: number };
 export type RateLimiter = { check: (key: string, now?: number) => RateLimitResult };
 export type RateLimitConfig = { limit: number; windowMs: number };
@@ -59,10 +61,34 @@ export function createRateLimiter(config: RateLimitConfig = defaults): RateLimit
   };
 }
 
-// The visitor's address as the host reports it. Behind a proxy the first entry of X-Forwarded-For is the
-// client. Requests with no address at all share one bucket, so they are limited too.
+// Cloudflare's published address ranges (cloudflare.com/ips), the same list Apache trusts on the server
+// (RemoteIPTrustedProxy). Update both together if Cloudflare changes them.
+const cloudflareRanges = [
+  "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22", "103.31.4.0/22", "141.101.64.0/18", "108.162.192.0/18",
+  "190.93.240.0/20", "188.114.96.0/20", "197.234.240.0/22", "198.41.128.0/17", "162.158.0.0/15", "104.16.0.0/13",
+  "104.24.0.0/14", "172.64.0.0/13", "131.0.72.0/22",
+  "2400:cb00::/32", "2606:4700::/32", "2803:f800::/32", "2405:b500::/32", "2405:8100::/32", "2a06:98c0::/29", "2c0f:f248::/32",
+];
+const cloudflare = new BlockList();
+for (const range of cloudflareRanges) {
+  const [address, prefix] = range.split("/");
+  cloudflare.addSubnet(address, Number(prefix), isIP(address) === 6 ? "ipv6" : "ipv4");
+}
+
+const validIp = (value: string | null): string | undefined => {
+  const ip = value?.trim();
+  return ip && isIP(ip) ? ip : undefined;
+};
+
+// The visitor's address. X-Forwarded-For and X-Vercel-Forwarded-For are never trusted: visitors can set
+// them, so a different made-up value on each request would dodge the limit. On the cPanel server nginx
+// overwrites X-Real-IP with the address that actually connected; when that address is Cloudflare, the
+// visitor is in CF-Connecting-IP, which only Cloudflare can vouch for. Requests without a usable address
+// (for example local development with no proxy) share one bucket, so they are limited too.
 export function clientKey(request: Request): string {
-  const forwarded = request.headers.get("x-vercel-forwarded-for") ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip");
-  const first = forwarded?.split(",")[0]?.trim().slice(0, 64);
-  return first || "unknown";
+  const connected = validIp(request.headers.get("x-real-ip"));
+  if (!connected) return "unknown";
+
+  const viaCloudflare = cloudflare.check(connected, isIP(connected) === 6 ? "ipv6" : "ipv4");
+  return (viaCloudflare && validIp(request.headers.get("cf-connecting-ip"))) || connected;
 }

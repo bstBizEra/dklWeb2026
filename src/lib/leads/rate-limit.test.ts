@@ -71,14 +71,29 @@ describe("rate limit settings", () => {
 describe("client address", () => {
   const request = (headers: Record<string, string>) => new Request("http://localhost/api/leads/quote", { headers });
 
-  it("uses the first forwarded address, then the real-ip header, then one shared bucket", () => {
-    expect(clientKey(request({ "x-forwarded-for": "203.0.113.9, 10.0.0.1" }))).toBe("203.0.113.9");
-    expect(clientKey(request({ "x-vercel-forwarded-for": "198.51.100.4", "x-forwarded-for": "203.0.113.9" }))).toBe("198.51.100.4");
+  it("uses the address nginx saw (X-Real-IP), else one shared bucket", () => {
     expect(clientKey(request({ "x-real-ip": "192.0.2.7" }))).toBe("192.0.2.7");
+    expect(clientKey(request({ "x-real-ip": "2001:db8::7" }))).toBe("2001:db8::7");
     expect(clientKey(request({}))).toBe("unknown");
   });
 
-  it("caps the length of what it keeps", () => {
-    expect(clientKey(request({ "x-forwarded-for": "x".repeat(500) })).length).toBe(64);
+  it("ignores forwarding headers a visitor can make up", () => {
+    const real = { "x-real-ip": "192.0.2.7" };
+    expect(clientKey(request({ ...real, "x-forwarded-for": "203.0.113.9" }))).toBe("192.0.2.7");
+    expect(clientKey(request({ ...real, "x-vercel-forwarded-for": "198.51.100.4" }))).toBe("192.0.2.7");
+    expect(clientKey(request({ "x-forwarded-for": "203.0.113.9" }))).toBe("unknown");
+  });
+
+  it("trusts CF-Connecting-IP only when the connection came from Cloudflare", () => {
+    expect(clientKey(request({ "x-real-ip": "192.0.2.7", "cf-connecting-ip": "203.0.113.9" }))).toBe("192.0.2.7");
+    expect(clientKey(request({ "x-real-ip": "172.70.1.2", "cf-connecting-ip": "203.0.113.9" }))).toBe("203.0.113.9");
+    expect(clientKey(request({ "x-real-ip": "2606:4700::1", "cf-connecting-ip": "2001:db8::9" }))).toBe("2001:db8::9");
+    // From Cloudflare but without a usable visitor address: counted under the Cloudflare address.
+    expect(clientKey(request({ "x-real-ip": "172.70.1.2", "cf-connecting-ip": "not-an-ip" }))).toBe("172.70.1.2");
+  });
+
+  it("rejects values that are not addresses", () => {
+    expect(clientKey(request({ "x-real-ip": "x".repeat(500) }))).toBe("unknown");
+    expect(clientKey(request({ "x-real-ip": "192.0.2.7, 10.0.0.1" }))).toBe("unknown");
   });
 });

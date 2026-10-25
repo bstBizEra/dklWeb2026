@@ -30,7 +30,7 @@ function post(body: unknown, ip = "203.0.113.10", raw?: string) {
   return POST(
     new Request("http://localhost/api/leads/quote", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-forwarded-for": ip },
+      headers: { "content-type": "application/json", "x-real-ip": ip },
       body: raw ?? JSON.stringify(body),
     }),
   );

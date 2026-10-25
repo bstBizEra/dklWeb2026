@@ -61,24 +61,40 @@ These change the whole server, not only the dklao account.
 
 ## 3. Put the code on the server
 
-- [ ] Commit and push the release branch, then on the server as the `dklao` user:
-      `git clone https://github.com/bstBizEra/dklWeb2026.git ~/dklao-app` (later releases: `git pull`).
-      Use a read-only deploy key on GitHub if the repository is private.
-- [x] Start files: Passenger runs `app.js` in the app folder (its default), which loads `server.mjs` (added
-      2026-10-25, tested by `server.test.ts`, also through `require("./app.js")` as Passenger may load it).
-      `server.mjs` serves the built app on the port Passenger gives it and stops cleanly on SIGTERM.
-      Local check after a build: `node server.mjs` (http://127.0.0.1:3000).
+- [x] The repository is private and the server has no deploy key, so each release travels as a git bundle
+      from a developer PC: `git bundle create dklao-vX.Y.Z.bundle vX.Y.Z`, `scp` it to `/home/dklao/`, then
+      as `dklao`: `cd ~/dklao-app && git fetch ~/dklao-vX.Y.Z.bundle 'refs/tags/*:refs/tags/*' && git checkout vX.Y.Z`.
+      (First time: `git clone ~/dklao-v0.19.2.bundle ~/dklao-app`.)
+- [x] Start file: `server.mjs` serves the built app on `PORT`/`HOSTNAME` and stops cleanly on SIGTERM
+      (`app.js` also loads it, for Passenger; not used now). Local check after a build: `node server.mjs`.
 - [ ] Install and build on the server, so native packages such as `sharp` get Linux binaries:
-      `cd ~/dklao-app && corepack enable && pnpm install --frozen-lockfile && pnpm build`
+      `cd ~/dklao-app && pnpm install --frozen-lockfile && pnpm build` (logs in `~/deploy-logs/`).
       Build outside busy hours: the build uses about 2 GB of memory on a shared server. If it runs out,
       set `NODE_OPTIONS=--max-old-space-size=2048` or switch Next.js to `output: "standalone"`.
-- [ ] Never copy `.env.local` from a developer machine. Settings go in the Application Manager (section 4).
+- [ ] Never copy `.env.local` from a developer machine. Settings go in the env file (section 4).
 
-## 4. Register the app (cPanel, dklao account)
+## 4. Run the app (systemd service behind Apache; owner decision 2026-10-25)
 
-- [ ] cPanel, Application Manager, Register Application: name `dklao-site`, path `dklao-app`, domain
-      `dklao.com`, base URL `/`, deployment environment `production`. Passenger starts `app.js` (no setting needed).
-- [ ] Environment variables (typed in the Application Manager, never committed):
+cPanel's Application Manager was dropped: its saves did not reach the server and its npm dependency step
+fails on the pnpm layout. The app runs outside cPanel instead. Backups of every file changed are in
+`/root/backups/dklao-20261025/`.
+
+- [x] `/etc/systemd/system/dklao-site.service`: `User=dklao`, `ExecStart=/opt/cpanel/ea-nodejs22/bin/node
+      /home/dklao/dklao-app/server.mjs`, `NODE_ENV=production`, `PORT=3110`, `HOSTNAME=127.0.0.1`,
+      `EnvironmentFile=/home/dklao/.config/dklao-site.env`, `Restart=on-failure`, `NoNewPrivileges`,
+      `PrivateTmp`, `ProtectSystem=full`. Enabled; port 3110 is closed in the firewall.
+- [x] Apache includes `/etc/apache2/conf.d/userdata/{std,ssl}/2_4/dklao/preview.dklao.com/dklao-site.conf`
+      proxy the subdomain to `http://127.0.0.1:3110/` (keeping `/.well-known/` for AutoSSL). An nginx include
+      does not work: cPanel's server block already has `location /`. For go-live, the same include goes under
+      `.../dklao/dklao.com/`; then `/scripts/rebuildhttpdconf && /scripts/restartsrv_httpd --graceful`.
+- [x] `/admin` and `/api/users` answer only from the owner's IP while the preview is open:
+      `<LocationMatch "^/(admin|api/users)(/|$)"> Require expr "%{HTTP:X-Real-IP} == '<owner IP>'" </LocationMatch>`
+      in both includes (nginx sets `X-Real-IP` to the connecting address, so visitors cannot fake it).
+      Change the IP when the owner's address changes; others see 404.
+- [x] The app sends `Cache-Control: private, no-store` for `/api` and `/admin`, because the host's nginx cache
+      keys on the URL alone (`next.config.ts`).
+- [ ] Settings in `/home/dklao/.config/dklao-site.env` (owner `dklao`, mode 600; edit with `nano -B` over
+      SSH or File Manager, never committed), then `systemctl restart dklao-site`:
 
 | Variable | Value |
 |---|---|
@@ -93,11 +109,10 @@ These change the whole server, not only the dklao account.
 | `LEAD_RATE_LIMIT`, `LEAD_RATE_WINDOW_SECONDS` | Optional. Defaults 5 requests per 600 seconds per address |
 | `LEAD_NOTIFY_WEBHOOK_URL` and its secret | Optional, only if a WhatsApp or chat automation is added |
 
-- [ ] Run the migrations once, as the `dklao` user, with the same values:
-      `cd ~/dklao-app && DATABASE_URL=... PAYLOAD_SECRET=... pnpm cms:migrate`
-      The Supabase lockdown migration does nothing on this server (it only acts when Supabase's roles exist).
+- [ ] Migrations run when the service starts (`prodMigrations`); check `journalctl -u dklao-site` after the
+      first start. The Supabase lockdown migration does nothing on this server (no Supabase roles).
 - [ ] Before each later migration: `pg_dump -U dklao_app -h 127.0.0.1 dklao_dklApp > ~/backups/dklao_dklApp-<date>.sql`.
-- [ ] Restart the app from the Application Manager after every build or settings change.
+- [ ] `systemctl restart dklao-site` (root) after every build or settings change.
 
 ## 5. First start (before anything is public)
 
@@ -111,8 +126,8 @@ pointed at the same app, protected with cPanel Directory Privacy.
 - [ ] Fill in the facts the owner has confirmed. Leave the others empty: empty facts stay hidden.
 - [ ] Send a test quote. Check that it appears under Leads and arrives at info@dklao.com, then delete it.
 - [ ] Check spam protection: the sixth quote from one address within ten minutes gets "too many requests".
-      The limit is counted per app process; if the Application Manager runs several processes, also use
-      Cloudflare's rate limiting or bot protection.
+      A made-up `X-Forwarded-For` must not reset the count (fixed in 0.19.3: the limit keys on nginx's
+      `X-Real-IP`, and on `CF-Connecting-IP` only when the connection comes from Cloudflare).
 - [ ] Check what visitors' addresses look like behind Cloudflare: the rate limit must see the visitor, not Cloudflare.
 
 ## 6. Verify
@@ -128,7 +143,7 @@ pointed at the same app, protected with cPanel Directory Privacy.
 ## 7. Go live (needs the owner's approval)
 
 - [ ] Keep a copy of the current `public_html` ("coming soon" page): `cp -a ~/public_html ~/public_html.before-site`.
-- [ ] Point the Application Manager app at `dklao.com` (and `www.dklao.com`) instead of the preview address.
+- [ ] Copy the Apache include to `dklao.com` (section 4), set `APP_URL=https://www.dklao.com`, restart the service.
 - [ ] Cloudflare: SSL mode **Full (strict)** (the server has an AutoSSL certificate), and a page rule or
       redirect so `dklao.com` and `www.dklao.com` end up on one address that matches `APP_URL`.
 - [ ] Re-check section 6 on the real domain, plus `/sitemap.xml` and `/robots.txt`.
@@ -136,7 +151,7 @@ pointed at the same app, protected with cPanel Directory Privacy.
 
 ## 8. Rollback
 
-- Site: unregister or stop the app in the Application Manager and restore `~/public_html.before-site`.
+- Site: remove the dklao.com Apache include (rebuild and restart Apache) and restore `~/public_html.before-site`.
   For a bad release: `git checkout <previous tag>`, `pnpm install --frozen-lockfile && pnpm build`, restart.
 - Database: restore the `pg_dump` taken before the migration
   (`psql -U dklao_app -h 127.0.0.1 dklao_dklApp < ~/backups/dklao_dklApp-<date>.sql`) or the nightly cPanel

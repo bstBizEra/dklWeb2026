@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "status": "local-preview",
   "releaseDate": "2026-10-25",
   "changeLevel": "patch",
-  "summary": "Passenger entry file app.js for cPanel Application Manager, loading server.mjs; migrations run when the production app starts.",
+  "summary": "Rate limit keyed on the address nginx saw (X-Real-IP, CF-Connecting-IP only from Cloudflare); no-store for /api and /admin; preview runs as a systemd service.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
