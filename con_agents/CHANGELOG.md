@@ -2,6 +2,12 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.19.2] - 2026-10-25
+
+### Patch Changed
+
+- **`app.js` entry file for cPanel Application Manager.** cPanel registers Node.js apps without a startup-file setting, so Phusion Passenger runs `app.js` from the app folder. `app.js` loads `server.mjs` with a dynamic `import()` and has no top-level `await`, because Passenger may load it with `require()`, which on Node 22 cannot load a module that uses top-level `await`. `server.test.ts` now starts the built app both ways (`node server.mjs`, and `require("./app.js")`): 8 checks pass. The deploy checklist names `app.js`.
+
 ## [0.19.1] - 2026-10-25
 
 ### Patch Changed

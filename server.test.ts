@@ -23,7 +23,11 @@ function freePort(): Promise<number> {
   });
 }
 
-describe.skipIf(!built)("server.mjs", () => {
+// Started directly, and through app.js loaded with require() the way Passenger may load it.
+describe.skipIf(!built).each([
+  ["server.mjs", ["server.mjs"]],
+  ["app.js loaded with require()", ["-e", "require('./app.js')"]],
+])("%s", (_label, args) => {
   let child: ChildProcess;
   let base = "";
   let output = "";
@@ -32,7 +36,7 @@ describe.skipIf(!built)("server.mjs", () => {
     const port = await freePort();
     base = `http://127.0.0.1:${port}`;
     // No database or mail settings: the built-in pages are served and leads go to the local file path.
-    child = spawn(process.execPath, ["server.mjs"], {
+    child = spawn(process.execPath, args, {
       cwd: root,
       env: { ...process.env, PORT: String(port), HOSTNAME: "127.0.0.1", DATABASE_URL: "", SMTP_HOST: "" },
       stdio: ["ignore", "pipe", "pipe"],

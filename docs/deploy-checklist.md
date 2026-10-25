@@ -64,9 +64,10 @@ These change the whole server, not only the dklao account.
 - [ ] Commit and push the release branch, then on the server as the `dklao` user:
       `git clone https://github.com/bstBizEra/dklWeb2026.git ~/dklao-app` (later releases: `git pull`).
       Use a read-only deploy key on GitHub if the repository is private.
-- [x] Startup file for the Application Manager: `server.mjs` in the repository root (added 2026-10-25,
-      tested by `server.test.ts`). Passenger starts it and hands it the port; it serves the built app and
-      stops cleanly on SIGTERM. Local check after a build: `node server.mjs` (http://127.0.0.1:3000).
+- [x] Start files: Passenger runs `app.js` in the app folder (its default), which loads `server.mjs` (added
+      2026-10-25, tested by `server.test.ts`, also through `require("./app.js")` as Passenger may load it).
+      `server.mjs` serves the built app on the port Passenger gives it and stops cleanly on SIGTERM.
+      Local check after a build: `node server.mjs` (http://127.0.0.1:3000).
 - [ ] Install and build on the server, so native packages such as `sharp` get Linux binaries:
       `cd ~/dklao-app && corepack enable && pnpm install --frozen-lockfile && pnpm build`
       Build outside busy hours: the build uses about 2 GB of memory on a shared server. If it runs out,
@@ -76,7 +77,7 @@ These change the whole server, not only the dklao account.
 ## 4. Register the app (cPanel, dklao account)
 
 - [ ] cPanel, Application Manager, Register Application: name `dklao-site`, path `dklao-app`, domain
-      `dklao.com`, base URL `/`, deployment environment `production`, startup file `server.mjs`.
+      `dklao.com`, base URL `/`, deployment environment `production`. Passenger starts `app.js` (no setting needed).
 - [ ] Environment variables (typed in the Application Manager, never committed):
 
 | Variable | Value |

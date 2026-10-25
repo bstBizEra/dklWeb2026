@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.19.1",
+  "version": "0.19.2",
   "status": "local-preview",
   "releaseDate": "2026-10-25",
   "changeLevel": "patch",
-  "summary": "Deployment prep for the dklao.com cPanel server: the production app applies pending database migrations on start (Payload prodMigrations), so the database password stays in the host settings.",
+  "summary": "Passenger entry file app.js for cPanel Application Manager, loading server.mjs; migrations run when the production app starts.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
