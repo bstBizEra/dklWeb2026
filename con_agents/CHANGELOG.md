@@ -2,6 +2,21 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.21.1] - 2026-10-27
+
+### Patch Changed
+
+- **Lift-off hero redesigned as a "drive-in"** (owner request, 2026-10-27: the boxed photo hero looked flat; research pointed to layered parallax with a cut-out object; the owner chose this option and then removed the fork lift and the level bar).
+  - The boxed studio photo is replaced by a warehouse stage: racking drawn in CSS at the back, a lit floor, and the owner-chosen Toyota 3.5 t cut-out (`public/images/hero/toyota-35-50-forklift-cutout.webp`, already used in the footer) carrying a pallet of cartons drawn as SVG over the forks (`PalletLoad` in `main-hero.tsx`). No new artwork or library.
+  - On load (motion allowed): the truck drives in from the right, runs slightly past its mark and settles back; its shadow and the racking fade in (CSS keyframes `hero-drive-in`, `hero-shadow-in`, `hero-depth-in` in `globals.css`, replacing the three photo keyframes).
+  - Scroll on desktop (pinned 1.2 screens): the racking and the blueprint grid drift at different speeds for depth ("grid" beat); at the "handoff" the truck rolls forward and grows slightly while the copy fades, the hero dims and the stripe thickens. The load is not lifted and there is no lift gauge.
+  - Phones and short screens: the same drive-in on load and a gentle racking drift, no pin. Reduced motion: the stage at rest, nothing moves.
+  - Fixed: the racking drift never ran, because its CSS fade-in (held by its fill mode) overrode GSAP's inline transform; the scene now moves a wrapper and the fade-in runs on the layer inside. A test checks no `data-lift` element carries a CSS animation.
+  - QA: 257 of 258 tests pass (the failure is the Windows-only executable-bit check in `deploy-preview.test.ts`); lint and typecheck clean; production build checked in Chromium at 1440x900 (drive-in, pin, depth drift, handoff, no GSAP warnings), with reduced motion (nothing moves, no pin) and at 390x844 (no pin, no horizontal scroll).
+  - Known limits: the cut-out is 698px wide, so it is slightly soft on high-density screens; a larger source image would fix it. The owner should confirm a Toyota-branded truck may lead the homepage (no unsupported distributor claims, `CONTENT.md`).
+- **Homepage console clean:** three "GSAP target not found" console warnings on the homepage are gone (`site-motion.tsx` no longer tweens empty lists; test in `motion.test.ts`). Present since 0.20.x; found while checking the scene.
+- **Preview deploys restart the site without sudo.** The `dklao` SSH shell is cPanel's jailshell (nosuid), where `sudo` cannot work, so the first real deploy was refused at the restart. `scripts/server/dklao-deploy-preview` now writes `~/.deploy/restart-request`, which the root systemd path unit `dklao-site-restart.path` turns into `systemctl restart dklao-site` and nothing else; the health check waits until the new Next build ID is served. The unused sudoers rule was removed. Tested with the restricted key on 2026-10-26, then by the first GitHub Actions deploy (run 40351591047). Server setup recorded in `docs/deploy-checklist.md` §3a.
+
 ## [0.21.0] - 2026-10-26
 
 ### Minor Changed

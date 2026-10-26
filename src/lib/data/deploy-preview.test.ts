@@ -83,8 +83,12 @@ describe("server deploy script", () => {
   });
 
   it("restarts only its own service and rolls back when any step fails", () => {
-    expect(script).toContain("sudo -n /usr/bin/systemctl restart dklao-site");
-    expect(script).not.toMatch(/sudo (?!-n \/usr\/bin\/systemctl restart dklao-site)/);
+    // No sudo (it cannot work in cPanel's jailshell): the script asks root's path unit for a restart.
+    expect(script).not.toMatch(/^\s*sudo\b/m);
+    expect(script).toContain('> "$HOME/.deploy/restart-request"');
+    // Healthy means the new build is served, so an old process that has not restarted never passes.
+    expect(script).toContain('id="$(cat "$APP/.next/BUILD_ID")"');
+    expect(script).toContain('"$code" == "200" && "$page" == *"$id"*');
     expect(script).toContain('git checkout --quiet --force "$1" && pnpm install --frozen-lockfile && pnpm build');
     expect(script).toContain('build "$previous"');
     expect(script).toMatch(/exit 1\n$/);

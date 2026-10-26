@@ -79,19 +79,25 @@ These change the whole server, not only the dklao account.
 labelled `deploy:preview` (and on each later push to it), or by hand (Actions > Deploy preview > Run workflow).
 It runs the checks, bundles the commit as tag `preview-<run>-<sha>`, and sends it over one SSH connection to
 `scripts/server/dklao-deploy-preview` on the server. That script builds as `dklao`, takes a `pg_dump` first when
-`src/payload/migrations` changed, restarts `dklao-site`, checks `http://127.0.0.1:3110/` answers, and rebuilds
-the previous version if anything fails. The deploy key can run nothing else. Manual deploys (section 3) still work.
+`src/payload/migrations` changed, asks for a restart of `dklao-site`, waits until `http://127.0.0.1:3110/` serves
+the new build, and rebuilds the previous version if anything fails. The deploy key can run nothing else. Manual
+deploys (section 3) still work.
 
-One-time setup (owner; root steps need the owner's approval on the day):
+One-time setup (done on the server 2026-10-26 at the owner's request, except the GitHub steps):
 
-- [ ] On the owner's PC, make a key used only for this: `ssh-keygen -t ed25519 -N "" -C github-actions-dklao-preview -f dklao_preview_deploy`.
-- [ ] As `dklao`: copy `scripts/server/dklao-deploy-preview` to `~/bin/dklao-deploy-preview`, `chmod 700`, and check
-      `command -v pnpm` works in a non-login shell (the script's `PATH` lists the usual places; add pnpm's if missing).
-- [ ] As `dklao`, add one line to `~/.ssh/authorized_keys` (mode 600), with the public key from `dklao_preview_deploy.pub`:
+- [x] Deploy key made on the server, private half in `/root/dklao-preview-deploy/id_ed25519` (root only) until it
+      is saved as the GitHub secret, then deleted. Fingerprint `SHA256:CymV0YjTaqE+4z+w02EARHsRE6+55xCHPgcUOncdOxw`.
+- [x] pnpm 10.29.3 for `dklao` in `~/.local/lib/pnpm-cli`, linked as `~/bin/pnpm` (on the script's `PATH`).
+- [x] `scripts/server/dklao-deploy-preview` installed as `~/bin/dklao-deploy-preview` (mode 700, owner `dklao`).
+- [x] One line in `dklao`'s `~/.ssh/authorized_keys`:
       `restrict,command="/home/dklao/bin/dklao-deploy-preview" ssh-ed25519 AAAA... github-actions-dklao-preview`.
       `restrict` turns off port forwarding, agent forwarding and terminals; `command=` means the key only deploys.
-- [ ] As root, let `dklao` restart only its own service: `/etc/sudoers.d/dklao-deploy` containing
-      `dklao ALL=(root) NOPASSWD: /usr/bin/systemctl restart dklao-site`, mode 440, checked with `visudo -cf /etc/sudoers.d/dklao-deploy`.
+      Checked: a shell or any other command gets only the usage line.
+- [x] Restart without root for `dklao`: its SSH shell is cPanel's `jailshell`, where `sudo` cannot work (nosuid), so
+      no sudoers rule. Instead the root units `/etc/systemd/system/dklao-site-restart.path` (watches
+      `/home/dklao/.deploy/restart-request`) and `dklao-site-restart.service` (oneshot,
+      `systemctl restart dklao-site`, at most 5 starts in 5 minutes) restart the site when the script writes that
+      file. Root never reads the file. Checked: writing it as `dklao` restarted the service.
 - [ ] Firewall: the SSH port must accept connections from GitHub-hosted runners (their addresses change; see
       `https://api.github.com/meta`, `actions`). If cPHulk or CSF limits SSH to known addresses, either allow those
       ranges for this one account or run a self-hosted runner on a DK LAO machine instead.
@@ -101,13 +107,15 @@ One-time setup (owner; root steps need the owner's approval on the day):
 
 | Secret | Value |
 |---|---|
-| `PREVIEW_SSH_KEY` | The whole private key file `dklao_preview_deploy` |
-| `PREVIEW_SSH_HOST` | The SSH host name used today (`mail.dklao.com` or the server address) |
-| `PREVIEW_SSH_PORT` | The SSH port (leave unset for 22) |
-| `PREVIEW_SSH_KNOWN_HOSTS` | The host's line from the owner's own `~/.ssh/known_hosts` (already verified), or `ssh-keyscan -p <port> <host>` checked against the server's fingerprint |
+| `PREVIEW_SSH_KEY` | The whole private key, `/root/dklao-preview-deploy/id_ed25519` on the server (copy it straight into GitHub, never into chat or a file on a PC) |
+| `PREVIEW_SSH_HOST` | `50.6.224.71` |
+| `PREVIEW_SSH_PORT` | Leave unset (22) |
+| `PREVIEW_SSH_KNOWN_HOSTS` | `50.6.224.71 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILYxCy02CJ58JH9bYKibk5xrVsgew2KWF7ZyuWA4QQM3` |
 
 - [ ] Create the label `deploy:preview` (Issues > Labels). Adding it to a pull request deploys that pull request.
-- [ ] Delete `dklao_preview_deploy` from the PC once the secret is saved. To revoke: remove the line from
+- [x] Tested 2026-10-26 with this key from the server itself: `deploy preview-2-f5c76d5` built, restarted and
+      confirmed the new build, exit 0.
+- [ ] Delete `/root/dklao-preview-deploy/` on the server once the secret is saved. To revoke: remove the line from
       `authorized_keys` and the secret from GitHub.
 - [ ] First run: label a pull request or run the workflow by hand, approve it, and confirm the job ends with
       "preview.dklao.com serves X.Y.Z". Logs on the server: `~/deploy-logs/build-preview-*.log`.

@@ -11,8 +11,36 @@ type MainHeroProps = {
   ctas: Cta[];
 };
 
-// The two navy panels slide off the photo on load; with reduced motion they are not drawn at all.
-const panel = "pointer-events-none absolute inset-y-0 z-[2] w-[54%] max-[780px]:w-[58%] motion-reduce:hidden";
+// The forklift is one transparent cut-out (698 by 483px).
+const truckSrc = "/images/hero/toyota-35-50-forklift-cutout.webp";
+
+// A pallet with two tiers of cartons sitting on the forks, drawn in the photo's own coordinates (698 by
+// 483) so it lines up with the blades at any size. The truck is seen from its front right, so the load
+// shows its front (fork-tip) face and its right-hand face. Decorative.
+function PalletLoad() {
+  return (
+    <svg className="absolute inset-0 size-full" viewBox="0 0 698 483" aria-hidden="true">
+      {/* Pallet: right face, front face, top boards. */}
+      <polygon points="232,463 366,434 366,449 232,478" fill="#5c432b" />
+      <polygon points="14,450 232,463 232,478 14,465" fill="#7a5b3a" />
+      <polygon points="14,450 232,463 366,434 192,432" fill="#9b7a50" />
+      {/* Lower tier: right face, front face. */}
+      <polygon points="230,461 348,436 348,360 230,385" fill="#9f6c3b" />
+      <polygon points="32,450 230,461 230,385 32,374" fill="#c48f57" />
+      {/* Upper tier: right face, front face, top. */}
+      <polygon points="230,385 348,360 348,286 230,311" fill="#a8743f" />
+      <polygon points="32,374 230,385 230,311 32,300" fill="#cf9a61" />
+      <polygon points="32,300 230,311 348,286 185,284" fill="#e2b882" />
+      <path d="M32,374 L230,385 L348,360" fill="none" stroke="#8a5f33" strokeWidth="2" />
+      {/* Packing tape down the front and over the top. */}
+      <polygon points="125,455 137,456 137,306 125,305" fill="#e9cfa6" opacity="0.9" />
+      <polygon points="125,305 137,306 272,285 260,285" fill="#efd9b4" opacity="0.9" />
+      {/* Shipping label with a DK LAO red band. */}
+      <polygon points="56,355 103,358 103,332 56,329" fill="#f4f1ea" />
+      <polygon points="56,336 103,339 103,332 56,329" fill="var(--dk-color-action-red)" />
+    </svg>
+  );
+}
 
 // The copy rises in line by line on load, 80ms apart. Reduced motion shows it at rest. The classes are
 // written out in full because Tailwind only generates classes it can find as complete strings.
@@ -69,40 +97,38 @@ export function MainHero({ ctas }: MainHeroProps) {
           </div>
         </div>
 
+        {/* The warehouse stage: racking far back, a lit floor, and the forklift with its load. Layers move at
+            different speeds in the scene, which gives the depth. */}
         <div
-          data-lift="frame"
-          className="relative aspect-video overflow-hidden rounded-[28px] border border-white/14 bg-[linear-gradient(135deg,rgba(0,97,175,0.22),rgba(7,17,31,0.62))] shadow-blue-glow max-[1120px]:max-w-[680px] max-[780px]:w-full max-[780px]:max-w-[min(520px,88vw)] max-[780px]:justify-self-center max-[780px]:rounded-[18px]"
-          aria-label="DK LAO forklift hero visual"
+          data-lift="stage"
+          className="relative aspect-[4/3] max-[1120px]:max-w-[680px] max-[780px]:w-full max-[780px]:max-w-[min(520px,88vw)] max-[780px]:justify-self-center"
+          role="img"
+          aria-label="A DK LAO forklift drives into a warehouse carrying a pallet of cartons"
         >
-          <span
-            className={`${panel} -left-0.5 animate-[hero-reveal-left_920ms_var(--dk-motion-ease-premium)_both] bg-[linear-gradient(90deg,rgba(7,17,31,0.98),rgba(7,17,31,0.86)_72%,rgba(7,17,31,0))]`}
-            aria-hidden="true"
-          />
-          <span
-            className={`${panel} -right-0.5 animate-[hero-reveal-right_920ms_var(--dk-motion-ease-premium)_260ms_both] bg-[linear-gradient(270deg,rgba(7,17,31,0.98),rgba(7,17,31,0.84)_72%,rgba(7,17,31,0))]`}
-            aria-hidden="true"
-          />
-          <div data-lift="photo" className="absolute inset-0">
-            <Image
-              className="absolute inset-0 size-full origin-center animate-[hero-image-settle_940ms_var(--dk-motion-ease-premium)_280ms_both] object-cover motion-reduce:animate-none"
-              src="/images/hero/forklift-product-hero.png"
-              width={1672}
-              height={941}
-              alt="Modern orange DK LAO forklift hero visual"
-              priority
-            />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_at_55%_55%,black_45%,transparent_78%)]" aria-hidden="true">
+            {/* The scene moves this wrapper; the CSS fade-in runs on the layer inside, because a CSS animation
+                (held by its fill mode) would override GSAP's inline transform on the same element. */}
+            <span data-lift="racking" className="absolute inset-x-0 -top-[8%] -bottom-[8%] block">
+              <span className="absolute inset-0 block animate-[hero-depth-in_1100ms_var(--dk-motion-ease-premium)_both] bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.13)_0_3px,transparent_3px_118px),repeating-linear-gradient(180deg,rgba(242,101,34,0.2)_0_4px,transparent_4px_78px)] blur-[0.6px] motion-reduce:animate-none" />
+            </span>
           </div>
-          {/* Lift gauge: shown and filled only by the scene, as the forklift is raised. */}
           <span
-            data-lift="gauge-track"
-            className="pointer-events-none absolute top-[18%] right-4 bottom-[18%] z-[3] w-1.5 overflow-hidden rounded-full bg-white/16 opacity-0"
+            className="pointer-events-none absolute inset-x-[-6%] bottom-0 h-[34%] bg-[radial-gradient(ellipse_at_50%_100%,rgba(0,97,175,0.38),transparent_70%)]"
             aria-hidden="true"
-          >
-            <span
-              data-lift="gauge"
-              className="absolute inset-0 rounded-full bg-[linear-gradient(0deg,var(--dk-color-action-red),var(--dk-color-action-orange))]"
-            />
-          </span>
+          />
+          <span className="pointer-events-none absolute inset-x-0 bottom-[11%] h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" aria-hidden="true" />
+
+          <div data-lift="truck" className="absolute bottom-[6%] left-[3%] w-[94%] aspect-[698/483]">
+            {/* CSS drives the truck in on load; the scene moves the wrapper above, never this element. */}
+            <div className="absolute inset-0 animate-[hero-drive-in_1150ms_var(--dk-motion-ease-premium)_200ms_both] motion-reduce:animate-none">
+              <span
+                className="absolute inset-x-[4%] bottom-[-3%] h-[9%] rounded-[50%] bg-black/55 blur-md animate-[hero-shadow-in_1150ms_var(--dk-motion-ease-premium)_200ms_both] motion-reduce:animate-none"
+                aria-hidden="true"
+              />
+              <Image className="absolute inset-0 size-full" src={truckSrc} width={698} height={483} sizes="(max-width: 780px) 88vw, 560px" alt="" priority />
+              <PalletLoad />
+            </div>
+          </div>
         </div>
       </Container>
 

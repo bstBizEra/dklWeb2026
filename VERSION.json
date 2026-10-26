@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "status": "local-preview",
-  "releaseDate": "2026-10-26",
-  "changeLevel": "minor",
-  "summary": "Homepage scroll scenes: shared scene system and scene 01 Lift-off (pinned hero lift on desktop).",
+  "releaseDate": "2026-10-27",
+  "changeLevel": "patch",
+  "summary": "Lift-off hero redesigned as a drive-in with depth layers; homepage console warnings fixed; preview deploys restart without sudo.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

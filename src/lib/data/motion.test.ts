@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), "utf8").replace(/\r\n/g, "\n");
 const css = read("src", "app", "(site)", "globals.css");
@@ -45,6 +45,20 @@ describe("site motion", () => {
     expect(site).toContain("once: true");
     // Opacity, not visibility: hidden content stays readable to screen readers and page search.
     expect(site).not.toContain("autoAlpha");
+  });
+
+  it("never hands GSAP an empty list, which logs \"GSAP target not found\" in the console", async () => {
+    // The cause, checked with the real library: a tween on an empty list warns.
+    const { gsap } = await import("gsap");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    gsap.set([], { opacity: 1 });
+    expect(warn.mock.calls.flat().join(" ")).toContain("not found");
+    warn.mockRestore();
+
+    // The homepage hit it once per revealed group: Tab focus is rarely inside one, so `focused` was empty.
+    expect(site).toContain("if (targets.length) {");
+    expect(site).toContain("if (focused.length) gsap.set(focused,");
+    expect(site).toContain("if (rest.length) gsap.to(rest,");
   });
 
   it("replaces the Chrome-only scroll-timeline reveal so every browser gets the same motion", () => {
