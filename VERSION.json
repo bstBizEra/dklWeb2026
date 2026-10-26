@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.20.1",
+  "version": "0.21.0",
   "status": "local-preview",
   "releaseDate": "2026-10-26",
-  "changeLevel": "patch",
-  "summary": "Codebase knowledge graph (Understand-Anything) added; VERSIONING.md current-version block corrected and now checked by pnpm version:status.",
+  "changeLevel": "minor",
+  "summary": "Homepage scroll scenes: shared scene system and scene 01 Lift-off (pinned hero lift on desktop).",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

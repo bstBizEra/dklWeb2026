@@ -1,0 +1,139 @@
+# Deploys to the private preview at https://preview.dklao.com on the DK LAO cPanel server.
+# Setup, secrets and the server side: docs/deploy-checklist.md section 3a. CI (ci.yml) stays check-only.
+#
+# When it runs:
+#   - a push to main (the preview follows main);
+#   - a pull request from this repository carrying the label "deploy:preview" (when the label is added
+#     and on every later push), to review unmerged work such as a new scroll scene;
+#   - by hand: Actions > Deploy preview > Run workflow, on any branch.
+# Every run waits for approval in the "preview" environment when it has required reviewers.
+#
+# The code travels as a git bundle over one SSH connection. The deploy key may run nothing but
+# ~/bin/dklao-deploy-preview on the server (a forced command), which builds, restarts and rolls back.
+name: Deploy preview
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [labeled, synchronize]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer request waits instead of cancelling a build halfway.
+concurrency:
+  group: preview-deploy
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: Checks before deploy
+    # Pull requests deploy only with the label, and never from forks (they get no secrets anyway).
+    if: >-
+      github.event_name != 'pull_request' ||
+      (contains(github.event.pull_request.labels.*.name, 'deploy:preview') &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Version records agree
+        run: pnpm version:status
+      - name: Test
+        run: pnpm test -- --run
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+
+  deploy:
+    name: Deploy to preview.dklao.com
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: preview
+      url: https://preview.dklao.com
+    env:
+      DEPLOY_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+          fetch-depth: 0 # the bundle carries the full history, so the server needs nothing else
+
+      - name: Check the deploy is set up
+        id: setup
+        env:
+          SSH_KEY: ${{ secrets.PREVIEW_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PREVIEW_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.PREVIEW_SSH_HOST }}
+        run: |
+          # Until the owner finishes docs/deploy-checklist.md section 3a, skip with a notice instead of
+          # failing, so main does not turn red. A labelled pull request or a manual run still fails loudly.
+          if [ -n "$SSH_KEY" ] && [ -n "$SSH_KNOWN_HOSTS" ] && [ -n "$SSH_HOST" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            echo "::notice::Preview deploy skipped: secrets are not set yet (docs/deploy-checklist.md section 3a)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Preview secrets are not set. See docs/deploy-checklist.md section 3a."
+            exit 1
+          fi
+
+      - name: Bundle the commit
+        if: steps.setup.outputs.ready == 'true'
+        run: |
+          tag="preview-${GITHUB_RUN_NUMBER}-${DEPLOY_SHA::7}"
+          git tag "$tag" "$DEPLOY_SHA"
+          git bundle create "$RUNNER_TEMP/deploy.bundle" "refs/tags/$tag"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          echo "VERSION=$(node -p 'require("./package.json").version')" >> "$GITHUB_ENV"
+
+      - name: Ship, build and restart on the server
+        if: steps.setup.outputs.ready == 'true'
+        env:
+          SSH_KEY: ${{ secrets.PREVIEW_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PREVIEW_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.PREVIEW_SSH_HOST }}
+          SSH_PORT: ${{ secrets.PREVIEW_SSH_PORT }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/preview_deploy
+          chmod 600 ~/.ssh/preview_deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The server's forced command reads the bundle from stdin and prints its progress.
+          ssh -i ~/.ssh/preview_deploy -p "${SSH_PORT:-22}" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 \
+            "dklao@${SSH_HOST}" "deploy ${TAG}" < "$RUNNER_TEMP/deploy.bundle"
+
+      - name: Check the public preview
+        if: steps.setup.outputs.ready == 'true'
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            page=$(curl -fsS https://preview.dklao.com/ || true)
+            if printf '%s' "$page" | grep -q "favicon.ico?v=${VERSION}"; then
+              echo "preview.dklao.com serves ${VERSION} (${TAG})"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::preview.dklao.com did not serve ${VERSION} after the deploy."
+          exit 1
+
+      - name: Remove the key from the runner
+        if: always()
+        run: rm -f ~/.ssh/preview_deploy
