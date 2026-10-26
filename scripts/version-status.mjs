@@ -37,6 +37,21 @@ if (!topRelease) {
   }
 }
 
+const versioningDoc = readFileSync(join(root, "con_agents", "VERSIONING.md"), "utf8");
+const versioningFields = {
+  "Current version": versionJson.version,
+  "Change level": versionJson.changeLevel,
+  "Release date": versionJson.releaseDate,
+};
+
+for (const [label, expected] of Object.entries(versioningFields)) {
+  const found = versioningDoc.match(new RegExp(`^${label}: (.+)$`, "m"))?.[1]?.trim();
+
+  if (found !== expected) {
+    failures.push(`con_agents/VERSIONING.md ${label} ${found ?? "(missing)"} does not match VERSION.json ${expected}`);
+  }
+}
+
 if (!["major", "minor", "patch"].includes(versionJson.changeLevel)) {
   failures.push(`VERSION.json changeLevel must be major, minor, or patch; received ${versionJson.changeLevel}`);
 }
@@ -52,4 +67,4 @@ if (failures.length > 0) {
 console.log(`[version] DK LAO ${versionJson.version}`);
 console.log(`[version] Change level: ${versionJson.changeLevel}`);
 console.log(`[version] Release date: ${versionJson.releaseDate}`);
-console.log(`[version] Package, VERSION.json, and CHANGELOG are aligned.`);
+console.log(`[version] Package, VERSION.json, CHANGELOG, and VERSIONING.md are aligned.`);
