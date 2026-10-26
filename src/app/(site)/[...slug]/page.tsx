@@ -8,8 +8,11 @@ import { sitemapPages } from "@/lib/data/sitemap-pages";
 
 // One template for every published page that has no file of its own: the 16 sitemap pages.
 // The CMS row wins over the built-in page. A route that is not published, or has no page data, is a 404.
+// Every slug is known at build time (the CMS edits a route's content, it cannot add a route), so unknown
+// slugs are answered 404 before rendering. With dynamicParams true, Next.js rendered them and saved the
+// not-found page to .next/server/app, which a later process could serve with status 200.
 export const revalidate = 60;
-export const dynamicParams = true;
+export const dynamicParams = false;
 
 type Params = Promise<{ slug: string[] }>;
 

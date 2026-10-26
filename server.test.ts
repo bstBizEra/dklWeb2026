@@ -23,6 +23,30 @@ function freePort(): Promise<number> {
   });
 }
 
+type Server = { child: ChildProcess; base: string; output: () => string };
+
+// No database or mail settings: the built-in pages are served and leads go to the local file path.
+async function startServer(args: string[]): Promise<Server> {
+  const port = await freePort();
+  const base = `http://127.0.0.1:${port}`;
+  let output = "";
+  const child = spawn(process.execPath, args, {
+    cwd: root,
+    env: { ...process.env, PORT: String(port), HOSTNAME: "127.0.0.1", DATABASE_URL: "", SMTP_HOST: "" },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  child.stdout?.on("data", (chunk) => (output += chunk));
+  child.stderr?.on("data", (chunk) => (output += chunk));
+
+  const deadline = Date.now() + 60_000;
+  while (!output.includes("DK LAO ready on")) {
+    if (child.exitCode !== null || Date.now() > deadline) throw new Error(`server did not start:
+${output}`);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  return { child, base, output: () => output };
+}
+
 // Started directly, and through app.js loaded with require() the way Passenger may load it.
 describe.skipIf(!built).each([
   ["server.mjs", ["server.mjs"]],
@@ -33,22 +57,9 @@ describe.skipIf(!built).each([
   let output = "";
 
   beforeAll(async () => {
-    const port = await freePort();
-    base = `http://127.0.0.1:${port}`;
-    // No database or mail settings: the built-in pages are served and leads go to the local file path.
-    child = spawn(process.execPath, args, {
-      cwd: root,
-      env: { ...process.env, PORT: String(port), HOSTNAME: "127.0.0.1", DATABASE_URL: "", SMTP_HOST: "" },
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    child.stdout?.on("data", (chunk) => (output += chunk));
-    child.stderr?.on("data", (chunk) => (output += chunk));
-
-    const deadline = Date.now() + 60_000;
-    while (!output.includes("DK LAO ready on")) {
-      if (child.exitCode !== null || Date.now() > deadline) throw new Error(`server did not start:\n${output}`);
-      await new Promise((resolve) => setTimeout(resolve, 200));
-    }
+    const server = await startServer(args);
+    ({ child, base } = server);
+    output = server.output();
   }, 70_000);
 
   afterAll(() => {
@@ -86,4 +97,23 @@ describe.skipIf(!built).each([
     if (process.platform !== "win32") expect(code).toBe(0);
     expect(child.exitCode !== null || child.signalCode !== null).toBe(true);
   }, 15_000);
+});
+
+// An unknown URL must stay a 404 for a server started later, and Next.js must not save its not-found render
+// as a page in .next/server/app: a fresh process can serve that entry with status 200 (a soft 404), and any
+// URL a visitor makes up would add files to the disk.
+describe.skipIf(!built)("unknown pages after a restart", () => {
+  it("still returns 404 from a fresh server", async () => {
+    for (let run = 0; run < 2; run++) {
+      const { child, base } = await startServer(["server.mjs"]);
+      try {
+        expect((await fetch(`${base}/no-such-page`)).status).toBe(404);
+        expect((await fetch(`${base}/no/such/page`)).status).toBe(404);
+        expect(existsSync(join(root, ".next", "server", "app", "no-such-page.html"))).toBe(false);
+        expect(existsSync(join(root, ".next", "server", "app", "no", "such", "page.html"))).toBe(false);
+      } finally {
+        child.kill("SIGKILL");
+      }
+    }
+  }, 150_000);
 });
