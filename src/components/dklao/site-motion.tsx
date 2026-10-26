@@ -51,7 +51,10 @@ export function SiteMotion() {
       });
 
       // Reveal: only what starts below the fold is hidden, so nothing visible on load flickers.
-      const all = gsap.utils.toArray<HTMLElement>(revealTargets).filter((el) => !el.closest(".industrial-footer"));
+      // Scroll scenes (data-scene, src/components/dklao/scenes) animate their own sections.
+      const all = gsap.utils
+        .toArray<HTMLElement>(revealTargets)
+        .filter((el) => !el.closest(".industrial-footer") && !el.closest("[data-scene]"));
       const targets = all.filter(
         (el) => el.getBoundingClientRect().top > window.innerHeight * 0.92 && !all.some((other) => other !== el && other.contains(el)),
       );
@@ -96,7 +99,10 @@ export function SiteMotion() {
 
     // Keyboard users tab to content before its reveal (or the footer slide-in) has played. Whatever holds
     // the focused element at part opacity is shown at once, so nothing receives focus while hard to see.
+    // Scenes handle focus inside their own sections; a tween here would fight their scroll-linked timeline.
     const reveal = (target: HTMLElement) => {
+      if (target.closest("[data-scene]")) return;
+
       for (let node: HTMLElement | null = target; node && node !== document.body; node = node.parentElement) {
         if (node.style.opacity !== "" && Number(node.style.opacity) < 1) {
           gsap.to(node, { opacity: 1, x: 0, y: 0, duration: 0.15, ease: "power3.out", overwrite: "auto" });

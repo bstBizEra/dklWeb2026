@@ -2,6 +2,19 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.21.0] - 2026-10-26
+
+### Minor Changed
+
+- **Homepage scroll scenes, part 1: scene system and scene 01 "Lift-off"** (owner request: start with the master brief and the Lift-off hero from the scroll-scenes prompt library).
+  - Reason: turn the homepage into one authored scroll story (a forklift lifts DK LAO's offer into view, carries it down the page and sets it down at the quote form), using only the approved motion patterns in `DESIGNS.md` §13.
+  - Scene system: `src/lib/motion/scene-config.ts` (shared conditions: motion only without reduced motion; full scene from 781px wide and 640px tall; lighter, never-pinned version on phones and short screens; timings from `TOKEN.md`; pin budget of 6 screens for the homepage; `NEXT_PUBLIC_MOTION_DEBUG=1` shows ScrollTrigger markers) and `src/components/dklao/scenes/use-scene.ts` (one `gsap.matchMedia()` per scene, scoped to its section, reverted on unmount or when a condition changes). Sections that become scenes carry `data-scene`; the site-wide reveal and focus fix in `site-motion.tsx` now leave them alone so nothing is animated twice.
+  - Lift-off (`src/components/dklao/scenes/lift-off.tsx`, `main-hero.tsx`): on desktop the hero pins for 1.2 screens and fills the screen below the header while pinned. Scroll-linked beats: "raise" (frame up 44px, photo raised in its frame, a red-orange lift gauge fills), "grid" (blueprint grid drifts), "handoff" (copy rises out, hero dims, brand stripe thickens into the proof band). Scrolling back up reverses it. On load the eyebrow, headline, text and buttons now rise in 80ms apart instead of as one block. Phones get a gentle photo drift only; reduced motion shows the original hero at rest. Keyboard users who tab into the hero after the copy has faded are scrolled back to the start.
+  - The blueprint grid and the brand stripe moved from the section background and `::after` to their own layers so the scene can move them; at rest the hero looks as before.
+  - Business impact: a stronger first impression on desktop without hiding the main calls to action, which stay visible and usable until the hand-off.
+  - QA: 13 new tests in `src/lib/data/scenes.test.ts` (245 total pass); lint, typecheck and build clean. Production build checked in Chromium at 1440x900 (pin, no console errors, keyboard return), 390x844 (no pin, no horizontal scroll) and with reduced motion (no pin, hero unchanged). Storyboard of the captured frames shared with the owner.
+  - Rollback: revert this release; no data, route or content changes.
+
 ## [0.20.1] - 2026-10-26
 
 ### Patch Changed
