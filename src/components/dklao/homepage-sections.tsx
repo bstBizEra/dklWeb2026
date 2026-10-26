@@ -92,14 +92,16 @@ export function ForkliftAnatomyInteractive() {
   return (
     <Section className="bg-[linear-gradient(rgba(0,97,175,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(0,97,175,0.08)_1px,transparent_1px),linear-gradient(135deg,#ffffff,#eef4fa)] bg-[size:44px_44px,44px_44px,cover]">
       <Container className="grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-12 max-[1024px]:grid-cols-1 max-[1024px]:gap-7">
-        <div className="grid max-w-[420px] gap-4 max-[1024px]:max-w-[640px]">
+        <div className="anatomy__intro grid max-w-[420px] gap-4 max-[1024px]:max-w-[640px]">
           <Eyebrow>Equipment matching</Eyebrow>
           <SectionTitle>Know the forklift, ask the right questions</SectionTitle>
           <SectionCopy>
             Every recommendation starts from the same parts of the truck. See what we check before we quote.
           </SectionCopy>
         </div>
-        <AnatomyDiagram />
+        <div className="anatomy__diagram">
+          <AnatomyDiagram />
+        </div>
       </Container>
     </Section>
   );
@@ -128,14 +130,15 @@ export function KnowledgeCenterPreview() {
   return (
     <Section spacing="tight" className={paperGrid}>
       <Container className="grid grid-cols-[minmax(0,0.8fr)_minmax(360px,1fr)] items-start gap-12 max-[1120px]:grid-cols-1">
-        <div>
+        <div className="knowledge-preview__intro">
           <Eyebrow>Knowledge center</Eyebrow>
           <SectionTitle className="mt-4 text-[2.3rem] leading-[1.08] max-[780px]:text-[2rem]">Short guides before you ask for a quote</SectionTitle>
           <p className="mt-4 mb-0 leading-[1.7] text-slate-700">
             What to prepare for a rental request, how to match a spare part and how to choose a floor scrubber.
           </p>
         </div>
-        <div className="grid gap-3">
+        {/* The list rises as one block: each tile has its own hover transition on transform. */}
+        <div className="knowledge-preview__list grid gap-3">
           {knowledgeArticles.map((article) => (
             <Link
               key={article.title}

@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle2, ClipboardCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Container, Eyebrow, IconBadge, Section, SectionCopy, SectionHeader, SectionTitle } from "@/components/ui/section";
+import { Container, Eyebrow, IconBadge, Section, SectionCopy, SectionHeader, SectionTitle, heroRise } from "@/components/ui/section";
 import {
   aboutHeroCtas,
   aboutSolutions,
@@ -33,15 +33,15 @@ export function AboutHero() {
     >
       <Container className="grid grid-cols-[minmax(0,0.86fr)_minmax(460px,1.14fr)] items-center gap-[46px] max-[1120px]:grid-cols-1 max-[780px]:gap-[22px]">
         <div className="grid gap-[18px] max-[780px]:gap-3.5">
-          <Eyebrow>About DK LAO</Eyebrow>
-          <h1 className="m-0 max-w-[760px] text-[3.2rem] leading-[1.02] font-black max-[780px]:text-[clamp(2.1rem,9.2vw,2.55rem)] max-[560px]:text-[clamp(1.6rem,7.3vw,1.95rem)] max-[560px]:leading-[1.12] max-[560px]:tracking-[-0.025em] max-[560px]:text-balance">
+          <Eyebrow className={heroRise.eyebrow}>About DK LAO</Eyebrow>
+          <h1 className={`${heroRise.title} m-0 max-w-[760px] text-[3.2rem] leading-[1.02] font-black max-[780px]:text-[clamp(2.1rem,9.2vw,2.55rem)] max-[560px]:text-[clamp(1.6rem,7.3vw,1.95rem)] max-[560px]:leading-[1.12] max-[560px]:tracking-[-0.025em] max-[560px]:text-balance`}>
             Your Forklift and Warehouse Equipment Partner in Laos
           </h1>
-          <p className="m-0 max-w-[680px] text-[1.05rem] leading-[1.7] text-white/78 max-[780px]:text-[0.96rem] max-[780px]:leading-[1.58]">
+          <p className={`${heroRise.lede} m-0 max-w-[680px] text-[1.05rem] leading-[1.7] text-white/78 max-[780px]:text-[0.96rem] max-[780px]:leading-[1.58]`}>
             Sales, rental, service, parts, warehouse equipment and cleaning
             machines, supported by one local team.
           </p>
-          <div className="mt-2 flex flex-wrap gap-3 max-[780px]:grid">
+          <div className={`${heroRise.actions} mt-2 flex flex-wrap gap-3 max-[780px]:grid`}>
             {aboutHeroCtas.map((cta) => (
               <Button key={cta.label} asChild variant={cta.variant}>
                 <Link href={cta.href}>
@@ -53,7 +53,7 @@ export function AboutHero() {
           </div>
         </div>
         <div
-          className="overflow-hidden rounded-[26px] border border-white/14 bg-white/6 shadow-blue-glow max-[1120px]:max-w-[680px] max-[780px]:w-full max-[780px]:rounded-[18px]"
+          className={`${heroRise.title} overflow-hidden rounded-[26px] border border-white/14 bg-white/6 shadow-blue-glow max-[1120px]:max-w-[680px] max-[780px]:w-full max-[780px]:rounded-[18px]`}
           aria-label="DK LAO forklift and warehouse support"
         >
           <Image

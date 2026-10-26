@@ -7,13 +7,14 @@ import { CTASection } from "@/components/dklao/cta-section";
 import { FloatingContactActions } from "@/components/dklao/floating-contact-actions";
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
+import { SocialShare } from "@/components/dklao/social-share";
 import { TrustedBy } from "@/components/dklao/trusted-by";
 import { QuoteRequestForm } from "@/components/dklao/quote-request-form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Container, Eyebrow, Section, SectionHeader } from "@/components/ui/section";
+import { Container, Eyebrow, Section, SectionHeader, heroRise } from "@/components/ui/section";
 import { relatedToShow, visibleSections, type ItemDetails, type PageContent, type ResolvedSection } from "@/lib/data/pages";
 import { getSiteFacts } from "@/lib/cms/site-facts";
 import { jsonLd } from "@/lib/data/json-ld";
@@ -130,7 +131,7 @@ function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string
   return (
     <Section spacing="tight" id={item.anchor} className={cn("page-detail scroll-mt-[96px]", shaded && "bg-surface")}>
       <Container className="grid grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-start gap-14 max-[900px]:grid-cols-1 max-[900px]:gap-8">
-        <div className="grid gap-5 min-[901px]:sticky min-[901px]:top-[110px]">
+        <div className="page-detail__lead grid gap-5 min-[901px]:sticky min-[901px]:top-[110px]">
           {topic ? (
             <div className="relative aspect-[16/10] overflow-hidden rounded-card bg-navy-900 shadow-card">
               <Image src={libraryImage(topic)} alt="" fill sizes="(max-width: 900px) 100vw, 460px" className="object-cover saturate-[0.9]" />
@@ -181,7 +182,7 @@ function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string
             </article>
           ))}
           {checklist && checklist.items.length > 0 ? (
-            <Card className="grid gap-4 p-6">
+            <Card className="page-detail__checklist grid gap-4 p-6">
               <h3 className="m-0 text-[1.1rem] font-[800] leading-[1.3] text-navy-950">{checklist.heading}</h3>
               <ul className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-3 p-0 max-[640px]:grid-cols-1">
                 {checklist.items.map((point) => (
@@ -351,6 +352,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
   const trail = breadcrumbTrail(page.id);
   const related = relatedToShow(page.id, sections);
   const heroTopic = topicForPage(page.id);
+  const route = getRoute(page.id);
   const questions = sections
     .filter((section) => section.kind === "faq")
     .flatMap((section) => section.items.filter((item) => item.description));
@@ -428,15 +430,15 @@ export async function ContentPage({ page, children, showClients = false }: Conte
         ) : null}
         <Container className="relative z-[2]">
           <div className="grid gap-[18px] max-[780px]:gap-3.5">
-            <Eyebrow>{page.eyebrow}</Eyebrow>
-            <h1 className="m-0 max-w-[760px] text-[3.2rem] font-black leading-[1.02] tracking-[-0.03em] text-balance max-[780px]:text-[clamp(2.1rem,9.2vw,2.55rem)] max-[560px]:text-[clamp(1.6rem,7.3vw,1.95rem)] max-[560px]:leading-[1.12] max-[560px]:tracking-[-0.025em]">
+            <Eyebrow className={heroRise.eyebrow}>{page.eyebrow}</Eyebrow>
+            <h1 className={cn(heroRise.title, "m-0 max-w-[760px] text-[3.2rem] font-black leading-[1.02] tracking-[-0.03em] text-balance max-[780px]:text-[clamp(2.1rem,9.2vw,2.55rem)] max-[560px]:text-[clamp(1.6rem,7.3vw,1.95rem)] max-[560px]:leading-[1.12] max-[560px]:tracking-[-0.025em]")}>
               {page.h1}
             </h1>
-            <p className="m-0 max-w-[680px] text-[17px] leading-[1.7] text-white/80 max-[780px]:text-[15px] max-[780px]:leading-[1.58]">
+            <p className={cn(heroRise.lede, "m-0 max-w-[680px] text-[17px] leading-[1.7] text-white/80 max-[780px]:text-[15px] max-[780px]:leading-[1.58]")}>
               {page.intro}
             </p>
             {page.ctas.length > 0 ? (
-              <div className="mt-2 flex flex-wrap gap-3 max-[780px]:grid">
+              <div className={cn(heroRise.actions, "mt-2 flex flex-wrap gap-3 max-[780px]:grid")}>
                 {page.ctas.map((cta, index) => (
                   <Button key={cta.label} asChild variant={index === 0 ? "primary" : "secondary"}>
                     <Link href={cta.href}>
@@ -450,6 +452,14 @@ export async function ContentPage({ page, children, showClients = false }: Conte
           </div>
         </Container>
       </section>
+
+      {route ? (
+        <div className="page-share border-b border-slate-100 bg-surface py-4">
+          <Container className={heroRise.after}>
+            <SocialShare url={`${siteUrl}${route.href}`} title={page.h1} />
+          </Container>
+        </div>
+      ) : null}
 
       {children ? (
         <Section spacing="tight">

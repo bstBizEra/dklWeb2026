@@ -31,6 +31,17 @@ function Section({
   );
 }
 
+// Page-hero entrance (content pages and About): each part rises in turn, 480ms ease-out, 50ms apart, the
+// whole sequence under 700ms. CSS keyframes, so it runs from first paint with no flash before hydration and
+// plays again when a link brings in a new page. The homepage hero keeps its own longer drive-in.
+const heroRise = {
+  eyebrow: "animate-[dk-rise_480ms_var(--dk-motion-ease-premium)_both] motion-reduce:animate-none",
+  title: "animate-[dk-rise_480ms_var(--dk-motion-ease-premium)_50ms_both] motion-reduce:animate-none",
+  lede: "animate-[dk-rise_480ms_var(--dk-motion-ease-premium)_100ms_both] motion-reduce:animate-none",
+  actions: "animate-[dk-rise_480ms_var(--dk-motion-ease-premium)_150ms_both] motion-reduce:animate-none",
+  after: "animate-[dk-rise_480ms_var(--dk-motion-ease-premium)_200ms_both] motion-reduce:animate-none",
+};
+
 function Eyebrow({ className, ...props }: React.ComponentProps<"p">) {
   return <p className={cn("m-0 text-[13px] font-extrabold uppercase leading-tight text-action-red", className)} {...props} />;
 }
@@ -82,4 +93,4 @@ function IconBadge({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
-export { Container, Section, Eyebrow, SectionTitle, SectionCopy, SectionHeader, IconBadge };
+export { Container, Section, Eyebrow, SectionTitle, SectionCopy, SectionHeader, IconBadge, heroRise };
