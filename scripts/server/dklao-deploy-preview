@@ -43,13 +43,17 @@ build() {
 }
 
 healthy() {
-  local code=""
-  for _ in $(seq 1 20); do
+  # The site must answer 200 with the build just made: every page carries Next's random build ID (escaped,
+  # as \"b\":\"<id>\"), so an old process that has not restarted yet never passes.
+  local code="" page id
+  id="$(cat "$APP/.next/BUILD_ID")"
+  for _ in $(seq 1 30); do
     sleep 2
-    code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3110/ || true)"
-    [[ "$code" == "200" ]] && return 0
+    page="$(curl -s -w '\n%{http_code}' http://127.0.0.1:3110/ || true)"
+    code="${page##*$'\n'}"
+    [[ "$code" == "200" && "$page" == *"$id"* ]] && return 0
   done
-  echo "health check: last answer $code" >&2
+  echo "health check: last answer $code, build $id not served" >&2
   return 1
 }
 
@@ -68,8 +72,10 @@ backup_database() {
 }
 
 restart() {
-  sudo -n /usr/bin/systemctl restart dklao-site ||
-    { echo "restart refused: check /etc/sudoers.d/dklao-deploy (docs/deploy-checklist.md 3a)" >&2; return 1; }
+  # dklao's SSH shell is cPanel's jailshell (nosuid), where sudo cannot work. Writing this file starts the
+  # root path unit dklao-site-restart.path, which restarts dklao-site and nothing else (checklist 3a).
+  printf '%s %s\n' "$tag" "$(date -u +%FT%TZ)" > "$HOME/.deploy/restart-request" ||
+    { echo "restart request failed: check ~/.deploy and dklao-site-restart.path (docs/deploy-checklist.md 3a)" >&2; return 1; }
 }
 
 echo "deploy $tag (running: $previous)"
