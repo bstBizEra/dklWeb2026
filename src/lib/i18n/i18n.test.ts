@@ -130,8 +130,9 @@ describe("localize", () => {
 });
 
 describe("messages and built-in content", () => {
+  // serverErrors is a free-form record: English leaves it empty on purpose, Lao lists the codes it translates.
   const shape = (value: unknown): unknown =>
-    value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, v]) => [key, shape(v)])) : typeof value;
+    value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, v]) => [key, key === "serverErrors" ? "record" : shape(v)])) : typeof value;
 
   it("Lao interface text has every English key", () => {
     expect(shape(lo)).toEqual(shape(en));
@@ -139,12 +140,12 @@ describe("messages and built-in content", () => {
 
   it("Lao pages keep English for anything not translated yet, with the same ids and links", () => {
     const strip = (value: unknown): unknown =>
-      Array.isArray(value) ? value.map(strip) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, typeof v === "string" && !["id", "href", "routeId", "fact", "kind"].includes(k) ? "text" : strip(v)])) : value;
+      Array.isArray(value) ? value.map((v) => (typeof v === "string" ? "text" : strip(v))) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, typeof v === "string" && !["id", "href", "routeId", "fact", "kind"].includes(k) ? "text" : strip(v)])) : value;
 
     for (const page of [requestQuotePage, contactPage, ...sitemapPageList]) {
       expect(strip(localizePage(page, "lo")), page.id).toEqual(strip(page));
     }
-    expect(localizePage(contactPage, "lo").h1).toBe("ຕິດຕໍ່ ດີ.ເຄ. ລາວ");
+    expect(localizePage(contactPage, "lo").h1).toBe("ຕິດຕໍ່ DK LAO");
     expect(localizePage(contactPage, "en")).toBe(contactPage);
     expect(Object.keys(sitemapPagesFor("lo"))).toEqual(Object.keys(sitemapPagesFor("en")));
     expect(getRoute("about", "lo")?.href).toBe("/about");

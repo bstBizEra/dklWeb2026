@@ -5,4 +5,9 @@ import type { SiteFacts } from "@/lib/data/site-facts";
 
 type TextFact = "address" | "hours" | "serviceAreas" | "quoteReplyTime" | "deliveryCoverage" | "maintenanceTerms" | "rentToBuyTerms";
 
-export const loSiteFacts: Partial<Pick<SiteFacts, TextFact>> = {};
+export const loSiteFacts: Partial<Pick<SiteFacts, TextFact>> = {
+  address: "ເລກທີ 24, ຖະໜົນຄຳແພງເມືອງ, ບ້ານໜອງໄຮ, ເມືອງຫາດຊາຍຟອງ, ນະຄອນຫຼວງວຽງຈັນ, ສ.ປ.ປ. ລາວ",
+  hours: "ເປີດ 24/7. ຕົວແທນ AI ແລະ ທີ່ປຶກສາເຮັດວຽກຮ່ວມກັນ.",
+  serviceAreas: "ຕັ້ງຢູ່ນະຄອນຫຼວງວຽງຈັນ. ພວກເຮົາຍັງບໍລິການລູກຄ້າອອນລາຍຜ່ານ Facebook, WhatsApp ແລະ ໂທລະສັບ.",
+  quoteReplyTime: "ສົ່ງຄຳຂໍໄດ້ທຸກເວລາ, 24/7. ຕົວແທນ AI ແລະ ທີ່ປຶກສາເຮັດວຽກຮ່ວມກັນເພື່ອຕອບກັບ.",
+};
