@@ -34,49 +34,66 @@ C:\laragon\www\dklao\Icons for slogan
 
 Agents must treat Windows paths as local source paths and use web-safe `/public/...` paths inside frontend code.
 
-## 3. Recommended Application Stack
+## 3. Application Stack
 
-Frontend:
+Versions are pinned in `package.json`.
+
+Frontend (current):
 
 ```txt
-Next.js
+Next.js (App Router)
 React
 TypeScript
 Tailwind CSS
-shadcn/ui
-Framer Motion
+shadcn/ui-style components on Radix UI
+GSAP (@gsap/react)
 React Hook Form
 Zod
+Lucide React, Simple Icons
 ```
 
-Backend options:
+Backend:
 
 ```txt
-Phase 1: Next.js API routes or server actions for lead capture
-Phase 2: Dedicated API layer using NestJS, Fastify, Laravel, or equivalent
-Phase 3: Service-oriented backend for rental, CRM, inventory, contracts, billing, and maintenance
+Phase 1 (current): Next.js route handlers for lead capture (POST /api/leads/quote) and Payload CMS 3 inside the Next.js app
+Phase 2: extend Payload collections, endpoints and admin for catalog, leads, rental fleet and service requests
+Phase 3: dedicated services for rental, CRM, inventory, contracts, billing and maintenance only where Payload no longer fits
 ```
 
-Database:
+Database (current):
 
 ```txt
-PostgreSQL preferred
-MySQL acceptable if existing hosting requires it
+PostgreSQL 16
 ```
 
-ORM/query layer:
+Data layer (current):
 
 ```txt
-Prisma or Drizzle for TypeScript stack
-Laravel Eloquent if Laravel backend is selected
+Payload CMS Postgres adapter (@payloadcms/db-postgres) with reviewed migrations in src/payload/migrations
+No second ORM (Prisma, Drizzle or similar) next to Payload without owner approval
 ```
 
 Admin/CMS:
 
 ```txt
-Phase 1: Lightweight admin or headless CMS
-Phase 2: Custom admin dashboard for catalog, leads, rental fleet, service requests
+Phase 1 (current): Payload CMS admin at /admin (pages, articles, leads, users, navigation, site facts)
+Phase 2: Payload admin extended for catalog, leads workflow, rental fleet, service requests
 Phase 3: Full operations portal
+```
+
+Email and notification (current):
+
+```txt
+Nodemailer over SMTP for lead emails and CMS emails
+Optional outbound webhook for new leads (signed with HMAC when a secret is set)
+```
+
+Testing and tooling (current):
+
+```txt
+Vitest + Testing Library
+ESLint (eslint-config-next)
+GitHub Actions CI
 ```
 
 ## 4. Local Development Rules
@@ -86,8 +103,8 @@ Recommended local environment:
 ```txt
 Windows 11
 Laragon root: C:\laragon\www\dklao
-Node.js runtime
-Package manager: pnpm preferred, npm acceptable
+Node.js 22
+Package manager: pnpm (version pinned in package.json packageManager)
 Git for version control
 Optional WSL support for Linux-compatible tooling
 Optional Podman/Docker for container-ready deployment
@@ -101,7 +118,7 @@ Agents must not assume Linux-only paths when working in Laragon.
 - Use reusable components.
 - Use Tailwind tokens from `TOKEN.md`.
 - Use shadcn/ui components only when they fit the design system.
-- Use Framer Motion for approved motion patterns only.
+- Use GSAP for approved motion patterns only, with `prefers-reduced-motion` respected.
 - Use `next/image` for optimized images when using Next.js.
 - Do not hardcode Windows asset paths in frontend code.
 - Use `/public/images/...` and `/public/icons/...` for browser assets.
@@ -116,16 +133,23 @@ Agents must not assume Linux-only paths when working in Laragon.
 
 ## 7. Infrastructure Options
 
-Acceptable deployment models:
+Current deployment (owner decision, 2026-10-25):
 
 ```txt
-Option A: Vercel/Netlify frontend + managed database
-Option B: VPS full-stack deployment with Node.js runtime
-Option C: Docker/Podman-ready deployment for controlled infrastructure
-Option D: Hybrid frontend hosting + backend API VPS
+DK LAO cPanel server: Node.js 22 systemd service behind an Apache proxy, PostgreSQL 16 on the same host, Cloudflare DNS
+Preview: https://preview.dklao.com
+Procedure: docs/deploy-checklist.md and DEPLOYMENT.md
 ```
 
-Agents must select the simplest option that satisfies the current phase.
+Possible later options, each needing the change control in §12 and owner approval:
+
+```txt
+VPS full-stack deployment with Node.js runtime
+Docker/Podman-ready deployment for controlled infrastructure
+Hybrid frontend hosting + backend API server
+```
+
+Agents must keep the simplest option that satisfies the current phase.
 
 ## 8. Phase-Based Infrastructure
 
