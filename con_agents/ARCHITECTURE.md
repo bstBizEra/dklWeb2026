@@ -14,28 +14,30 @@ Phase 2: Semi-ecommerce platform
 Phase 3: Full digital operations platform
 ```
 
-## 3. Recommended Stack
+## 3. Current Stack
 
 Frontend:
 
 ```txt
-Next.js, React, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
+Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui-style components on Radix UI, GSAP
 ```
 
 Backend:
 
 ```txt
-Next.js API/server actions for Phase 1
-Dedicated API layer for Phase 2/3 if needed
+Phase 1 (built): Next.js route handlers (POST /api/leads/quote) and Payload CMS 3 running inside the Next.js app
+Phase 2/3: extend Payload collections and endpoints first; a dedicated API layer only if Payload no longer fits
 ```
 
 Data:
 
 ```txt
-PostgreSQL preferred
-MySQL acceptable
-Prisma or Drizzle ORM
+PostgreSQL 16 through Payload's Postgres adapter
+Schema changes only through reviewed Payload migrations (src/payload/migrations, push: false)
+No second ORM or database layer next to Payload without owner approval
 ```
+
+The site renders from built-in content in `src/lib/data` when no database is configured; CMS loaders in `src/lib/cms` fall back to it.
 
 ## 4. Module Boundaries
 
@@ -81,23 +83,32 @@ Accounting integration
 Technician app
 ```
 
-## 7. Folder Structure Recommendation
+## 7. Folder Structure
 
 ```txt
 /dklao
-  /app or /pages
-  /components
-  /components/dklao
-  /lib
-  /lib/validation
-  /lib/api
-  /lib/data
+  /src/app/(site)            Public website
+  /src/app/(app)/app         Installable mobile web app (/app)
+  /src/app/(payload)         Payload admin (/admin) and API (/api/*)
+  /src/app/api/leads/quote   Quote request endpoint
+  /src/components/dklao      Website components
+  /src/components/app        Web app components
+  /src/components/ui         Base UI components
+  /src/lib/data              Built-in content and route registry
+  /src/lib/cms               CMS loaders with built-in fallback
+  /src/lib/leads             Lead pipeline (rate limit, guard, store, email, notify)
+  /src/lib/validation        Zod schemas
+  /src/payload               Collections, globals, access rules, migrations
   /public/images/logo
   /public/images/fav-icon
-  /public/icons/slogan
-  /public/images/products
+  /public/images/library
+  /public/icons
+  /scripts
   /con_agents
+  /docs
 ```
+
+Product catalog folders (for example `/public/images/products`) are added when the Phase 2 catalog is built.
 
 ## 8. Architecture QA
 
