@@ -75,7 +75,27 @@ jobs:
           ref: ${{ env.DEPLOY_SHA }}
           fetch-depth: 0 # the bundle carries the full history, so the server needs nothing else
 
+      - name: Check the deploy is set up
+        id: setup
+        env:
+          SSH_KEY: ${{ secrets.PREVIEW_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PREVIEW_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.PREVIEW_SSH_HOST }}
+        run: |
+          # Until the owner finishes docs/deploy-checklist.md section 3a, skip with a notice instead of
+          # failing, so main does not turn red. A labelled pull request or a manual run still fails loudly.
+          if [ -n "$SSH_KEY" ] && [ -n "$SSH_KNOWN_HOSTS" ] && [ -n "$SSH_HOST" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            echo "::notice::Preview deploy skipped: secrets are not set yet (docs/deploy-checklist.md section 3a)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Preview secrets are not set. See docs/deploy-checklist.md section 3a."
+            exit 1
+          fi
+
       - name: Bundle the commit
+        if: steps.setup.outputs.ready == 'true'
         run: |
           tag="preview-${GITHUB_RUN_NUMBER}-${DEPLOY_SHA::7}"
           git tag "$tag" "$DEPLOY_SHA"
@@ -84,16 +104,13 @@ jobs:
           echo "VERSION=$(node -p 'require("./package.json").version')" >> "$GITHUB_ENV"
 
       - name: Ship, build and restart on the server
+        if: steps.setup.outputs.ready == 'true'
         env:
           SSH_KEY: ${{ secrets.PREVIEW_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.PREVIEW_SSH_KNOWN_HOSTS }}
           SSH_HOST: ${{ secrets.PREVIEW_SSH_HOST }}
           SSH_PORT: ${{ secrets.PREVIEW_SSH_PORT }}
         run: |
-          if [ -z "$SSH_KEY" ] || [ -z "$SSH_KNOWN_HOSTS" ] || [ -z "$SSH_HOST" ]; then
-            echo "::error::Preview secrets are not set. See docs/deploy-checklist.md section 3a."
-            exit 1
-          fi
           install -d -m 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/preview_deploy
           chmod 600 ~/.ssh/preview_deploy
@@ -104,6 +121,7 @@ jobs:
             "dklao@${SSH_HOST}" "deploy ${TAG}" < "$RUNNER_TEMP/deploy.bundle"
 
       - name: Check the public preview
+        if: steps.setup.outputs.ready == 'true'
         run: |
           for attempt in 1 2 3 4 5 6; do
             page=$(curl -fsS https://preview.dklao.com/ || true)

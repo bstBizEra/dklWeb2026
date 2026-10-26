@@ -45,6 +45,13 @@ describe("deploy-preview workflow", () => {
     expect(workflow).toContain("favicon.ico?v=${VERSION}");
   });
 
+  it("skips a push to main with a notice until the secrets exist, but fails a requested deploy", () => {
+    expect(workflow).toContain('echo "ready=false" >> "$GITHUB_OUTPUT"');
+    expect(workflow).toContain('elif [ "$GITHUB_EVENT_NAME" = "push" ]; then');
+    expect(workflow).toContain("::error::Preview secrets are not set");
+    expect(workflow.match(/if: steps\.setup\.outputs\.ready == 'true'/g)?.length).toBe(3);
+  });
+
   it("leaves CI check-only", () => {
     expect(ci).toContain("it deploys nothing and holds no secrets");
     expect(ci).not.toMatch(/secrets\.[A-Z_]/);
