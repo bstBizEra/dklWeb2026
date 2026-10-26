@@ -2,6 +2,12 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [Unreleased]
+
+### Developer Tooling
+
+- **Codebase knowledge graph** (owner request: use Understand-Anything on the preview.dklao.com code). `.ua/knowledge-graph.json` maps the repository with [Understand-Anything](https://github.com/Egonex-AI/Understand-Anything) v2.9: 202 files analysed, 420 nodes (158 code files, 218 functions, 37 documents, 6 configs, 1 CI pipeline), 1,234 edges (imports, calls, tests, docs-to-code links), 10 architecture layers and a 15-step guided tour. Images, migration JSON snapshots and generated Payload types are excluded (`.ua/.understandignore`). Not loaded by the website; no version change. How to view and update it: `docs/knowledge-graph.md`. `.gitignore` skips the tool's local scratch files and `eslint.config.mjs` ignores `.ua/**`.
+
 ## [0.20.0] - 2026-10-26
 
 ### Minor Changed

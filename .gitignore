@@ -13,3 +13,9 @@ pnpm-debug.log*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Understand-Anything knowledge graph: commit .ua/, but not its local scratch files
+.ua/intermediate/
+.ua/tmp/
+.ua/.trash-*/
+.ua/diff-overlay.json
