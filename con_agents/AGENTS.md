@@ -134,7 +134,7 @@ Must not introduce random colors, inconsistent border radius, generic stock-phot
 
 ### 5.3 Frontend Agent
 
-Responsible for Next.js, React, Tailwind CSS, shadcn/ui, Framer Motion, component structure, page implementation, accessibility, and performance.
+Responsible for Next.js, React, Tailwind CSS, shadcn/ui, GSAP, component structure, page implementation, accessibility, and performance.
 
 Must build reusable components before creating one-off UI.
 
@@ -166,23 +166,24 @@ Must follow `SECURITY.md`, `TOKEN_MANAGEMENT.md`, and `ENVIRONMENT.md`.
 
 ## 6. Implementation Stack
 
-Recommended stack:
+Current stack (versions in `package.json`):
 
-- Next.js
+- Next.js (App Router)
 - React
 - TypeScript
 - Tailwind CSS
-- shadcn/ui
-- Framer Motion
+- shadcn/ui-style components on Radix UI
+- GSAP (`@gsap/react`) for motion, reduced-motion aware
 - React Hook Form
 - Zod validation
-- PostgreSQL or MySQL
-- Prisma or Drizzle ORM
-- Admin CMS or custom admin panel
-- Email/CRM integration
+- Payload CMS 3 inside the Next.js app (admin at `/admin`), with its Postgres adapter as the data layer
+- PostgreSQL
+- Nodemailer over SMTP for lead and CMS email; optional outbound webhook for lead notification
 - WhatsApp/Messenger contact integration
+- Vitest and Testing Library for tests
+- pnpm, Node.js 22
 
-Agents must not introduce a new framework without justification.
+Agents must not introduce a new framework, a second animation library, or a separate ORM or database layer next to Payload without justification and owner approval.
 
 ## 7. Core Website Pages
 
