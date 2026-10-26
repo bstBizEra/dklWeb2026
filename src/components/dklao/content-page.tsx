@@ -453,6 +453,14 @@ export async function ContentPage({ page, children, showClients = false }: Conte
         </Container>
       </section>
 
+      {route ? (
+        <div className="page-share border-b border-slate-100 bg-surface py-4">
+          <Container>
+            <SocialShare url={`${siteUrl}${route.href}`} title={page.h1} />
+          </Container>
+        </div>
+      ) : null}
+
       {children ? (
         <Section spacing="tight">
           <Container>
@@ -478,14 +486,6 @@ export async function ContentPage({ page, children, showClients = false }: Conte
       ))}
 
       {showClients ? <TrustedBy title="Our clients" /> : null}
-
-      {route ? (
-        <div className="page-share border-y border-slate-100 bg-surface py-6">
-          <Container>
-            <SocialShare url={`${siteUrl}${route.href}`} title={page.h1} />
-          </Container>
-        </div>
-      ) : null}
 
       {related.length >= 2 ? (
         <Section spacing="tight">

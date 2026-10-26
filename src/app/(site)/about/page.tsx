@@ -45,6 +45,11 @@ export default function AboutPage() {
       <SiteHeader />
       <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
       <AboutHero />
+      <div className="about-share border-b border-slate-100 bg-surface py-4">
+        <Container>
+          <SocialShare url={`${siteUrl}/about`} title={aboutSeo.shareTitle} />
+        </Container>
+      </div>
       <CompanySnapshot />
       <TrustedBy title="Our clients" />
       <AboutStory />
@@ -53,11 +58,6 @@ export default function AboutPage() {
       <WhyChooseDKLAO />
       <IndustriesServed />
       <ServicePromise />
-      <div className="about-share border-y border-slate-100 bg-surface py-6">
-        <Container>
-          <SocialShare url={`${siteUrl}/about`} title={aboutSeo.shareTitle} />
-        </Container>
-      </div>
       <AboutFinalCTA />
       </main>
       <IndustrialFooter />

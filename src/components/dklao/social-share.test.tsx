@@ -79,9 +79,9 @@ describe("social share", () => {
     expect(screen.getAllByRole("link")).toHaveLength(4);
   });
 
-  it("is on content pages and the About page", () => {
+  it("sits right below the hero on content pages and the About page", () => {
     const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), "utf8");
-    expect(read("src", "components", "dklao", "content-page.tsx")).toContain("<SocialShare");
-    expect(read("src", "app", "(site)", "about", "page.tsx")).toContain("<SocialShare");
+    expect(read("src", "components", "dklao", "content-page.tsx")).toMatch(/<\/section>\s*\{route \? \(\s*<div className="page-share/);
+    expect(read("src", "app", "(site)", "about", "page.tsx")).toMatch(/<AboutHero \/>\s*<div className="about-share/);
   });
 });
