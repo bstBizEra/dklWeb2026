@@ -2,6 +2,16 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.21.2] - 2026-10-27
+
+### Patch Changed
+
+- **Unknown URLs always answer 404 (no soft 404s).**
+  - Reason: the catch-all route `src/app/(site)/[...slug]/page.tsx` had `dynamicParams = true` with `revalidate = 60`, so Next.js rendered any unknown slug (such as `/no-such-page`), called `notFound()` and saved that not-found render to the on-disk page cache (`.next/server/app/no-such-page.html|.meta|.rsc|.segments`). A server process started later without a rebuild (for example a `dklao-site` restart on the preview server after a settings change) could read that entry and answer 200 with the error page, which search engines treat as a soft 404. Every made-up URL also added files to the disk.
+  - Fix: `dynamicParams = false`. Every page of this route comes from `generateStaticParams()` (published routes in `src/lib/data/routes.ts` with page data in `sitemap-pages.ts`); the CMS only edits a route's content and cannot add a route, so no valid page needs dynamic params. Unknown slugs now get a 404 before rendering and nothing is cached (Next.js 16 docs: `dynamicParams` false returns 404 for params not in `generateStaticParams`; Cache Components, where the option is unavailable, is not enabled).
+  - QA: new `server.test.ts` case starts two fresh servers one after the other against the same build, asks each for `/no-such-page` and `/no/such/page`, and checks both answer 404 and that no cache file is written. It failed before the fix (cache files written) and passes after it.
+  - Rollback: revert this release; no data, route or content changes.
+
 ## [0.21.1] - 2026-10-27
 
 ### Patch Changed
