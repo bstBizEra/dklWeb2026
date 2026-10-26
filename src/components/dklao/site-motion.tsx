@@ -59,21 +59,22 @@ export function SiteMotion() {
         (el) => el.getBoundingClientRect().top > window.innerHeight * 0.92 && !all.some((other) => other !== el && other.contains(el)),
       );
 
-      gsap.set(targets, { opacity: 0, y: 28 });
-      ScrollTrigger.batch(targets, {
-        start: "top 88%",
-        once: true,
-        onEnter: (batch) => {
-          // Reached by Tab: whatever holds the focus is shown at once instead of fading in under it.
-          const focused = batch.filter((el) => el.contains(document.activeElement));
+      // GSAP warns "target not found" for every tween given an empty list, so empty lists are skipped.
+      if (targets.length) {
+        gsap.set(targets, { opacity: 0, y: 28 });
+        ScrollTrigger.batch(targets, {
+          start: "top 88%",
+          once: true,
+          onEnter: (batch) => {
+            // Reached by Tab: whatever holds the focus is shown at once instead of fading in under it.
+            const focused = batch.filter((el) => el.contains(document.activeElement));
+            const rest = batch.filter((el) => !focused.includes(el));
 
-          gsap.set(focused, { opacity: 1, y: 0, overwrite: true });
-          gsap.to(
-            batch.filter((el) => !focused.includes(el)),
-            { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.04, overwrite: true },
-          );
-        },
-      });
+            if (focused.length) gsap.set(focused, { opacity: 1, y: 0, overwrite: true });
+            if (rest.length) gsap.to(rest, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.04, overwrite: true });
+          },
+        });
+      }
 
       for (const image of gsap.utils.toArray<HTMLElement>(parallaxTargets)) {
         gsap.fromTo(
