@@ -29,7 +29,7 @@ export function CTASection({
   return (
     <section className="bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(135deg,var(--dk-color-navy-950),var(--dk-color-navy-800))] bg-[length:48px_48px,48px_48px,cover] py-[66px] text-white">
       <Container className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-8 max-[780px]:grid-cols-1">
-        <div>
+        <div className="cta-section__copy">
           <IconBadge className="mb-[18px] bg-white/10 text-white">
             <ClipboardCheck size={24} aria-hidden="true" />
           </IconBadge>
@@ -38,7 +38,7 @@ export function CTASection({
           </h2>
           <p className="mt-3 mb-0 leading-[1.75] text-white/75">{copy}</p>
         </div>
-        <div className="flex flex-wrap gap-3 max-[780px]:grid">
+        <div className="cta-section__actions flex flex-wrap gap-3 max-[780px]:grid">
           <Button asChild variant="primary">
             <Link href={primaryHref}>
               {primaryLabel}

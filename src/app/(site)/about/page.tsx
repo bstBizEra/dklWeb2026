@@ -16,7 +16,7 @@ import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
 import { SocialShare } from "@/components/dklao/social-share";
 import { TrustedBy } from "@/components/dklao/trusted-by";
-import { Container } from "@/components/ui/section";
+import { Container, heroRise } from "@/components/ui/section";
 import { aboutSeo } from "@/lib/data/seo";
 import { shareImage } from "@/lib/data/share";
 
@@ -46,7 +46,7 @@ export default function AboutPage() {
       <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
       <AboutHero />
       <div className="about-share border-b border-slate-100 bg-surface py-4">
-        <Container>
+        <Container className={heroRise.after}>
           <SocialShare url={`${siteUrl}/about`} title={aboutSeo.shareTitle} />
         </Container>
       </div>

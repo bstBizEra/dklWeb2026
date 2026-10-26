@@ -3,6 +3,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { usePathname } from "next/navigation";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -30,6 +31,16 @@ export const revealTargets = [
   ".rental-highlight__panel",
   ".clean-warehouse__feature",
   ".quote-form",
+  ".page-detail__lead",
+  ".page-detail article",
+  ".page-detail__checklist",
+  ".cta-section__copy",
+  ".cta-section__actions",
+  ".anatomy__intro",
+  ".anatomy__diagram",
+  ".knowledge-preview__intro",
+  ".knowledge-preview__list",
+  ".home-share .dk-container",
 ].join(",");
 
 // Large photos that drift slightly against the scroll, for depth.
@@ -38,7 +49,11 @@ const parallaxTargets = ".about-story__collage img, .quote-section__asset img";
 // One site-wide motion layer, mounted once in the layout. Timing follows the 12 principles adapted for
 // the web: entrances ease out, staggers stay at 40ms, nothing user-triggered runs longer than 300ms (CSS),
 // and visitors who ask for reduced motion get the page at rest.
+// The layout stays mounted when a link opens another page, so everything here is set up again for each
+// pathname (the triggers of the previous page are reverted first); otherwise only the first page would move.
 export function SiteMotion() {
+  const pathname = usePathname();
+
   useGSAP(() => {
     const mm = gsap.matchMedia();
 
@@ -120,7 +135,7 @@ export function SiteMotion() {
       document.removeEventListener("focusin", showFocused);
       mm.revert();
     };
-  });
+  }, { dependencies: [pathname], revertOnUpdate: true });
 
   return null;
 }

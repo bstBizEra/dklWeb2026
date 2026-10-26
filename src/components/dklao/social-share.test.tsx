@@ -83,5 +83,6 @@ describe("social share", () => {
     const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), "utf8");
     expect(read("src", "components", "dklao", "content-page.tsx")).toMatch(/<\/section>\s*\{route \? \(\s*<div className="page-share/);
     expect(read("src", "app", "(site)", "about", "page.tsx")).toMatch(/<AboutHero \/>\s*<div className="about-share/);
+    expect(read("src", "app", "(site)", "page.tsx")).toMatch(/<MainHero [^>]*\/>\s*<div className="home-share/);
   });
 });

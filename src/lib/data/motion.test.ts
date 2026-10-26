@@ -99,3 +99,33 @@ describe("site motion", () => {
     expect(header).toContain("className=\"site-header ");
   });
 });
+
+describe("motion on every page", () => {
+  const section = read("src", "components", "ui", "section.tsx");
+  const content = read("src", "components", "dklao", "content-page.tsx");
+  const about = read("src", "components", "dklao", "about-sections.tsx");
+
+  it("sets the reveal up again whenever a link opens another page", () => {
+    expect(site).toContain("const pathname = usePathname()");
+    expect(site).toContain("{ dependencies: [pathname], revertOnUpdate: true }");
+  });
+
+  it("plays the page-hero entrance in under 700ms, 50ms apart, and not with reduced motion", () => {
+    const steps = [...section.matchAll(/animate-\[dk-rise_(\d+)ms_var\(--dk-motion-ease-premium\)(?:_(\d+)ms)?_both\] motion-reduce:animate-none/g)];
+    expect(steps).toHaveLength(5);
+    steps.forEach(([, duration, delay = "0"], index) => {
+      expect(Number(delay)).toBe(index * 50);
+      expect(Number(duration) + Number(delay)).toBeLessThan(700);
+    });
+    for (const part of ["eyebrow", "title", "lede", "actions"]) {
+      expect(content).toContain(`heroRise.${part}`);
+      expect(about).toContain(`heroRise.${part}`);
+    }
+  });
+
+  it("reveals the card details, the closing call to action and the homepage guides on scroll", () => {
+    for (const target of [".page-detail__lead", ".page-detail article", ".cta-section__copy", ".cta-section__actions", ".anatomy__diagram", ".knowledge-preview__list", ".home-share .dk-container"]) {
+      expect(site).toContain(`"${target}"`);
+    }
+  });
+});
