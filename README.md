@@ -2,6 +2,8 @@
 
 Premium industrial B2B website and semi-ecommerce platform for **DK LAO**, supporting forklift rental, new and used forklift sales, spare parts inquiry, maintenance service booking, warehouse solutions, and professional cleaning equipment across Laos.
 
+> **Current status (v0.20.1, local-preview):** Phase 1 lead-generation website built with Next.js 16 and Payload CMS 3. A private preview runs at https://preview.dklao.com. Sections 1–5, 9–11, 15–16 and 23–31 describe the product direction; sections 6–8, 12–14 and 17–22 describe the code as it is today. Version history: `con_agents/CHANGELOG.md`. Agent governance: `AGENTS.md` and `con_agents/`.
+
 ---
 
 ## 1. Project Overview
@@ -159,153 +161,62 @@ Industrial equipment usually requires consultation, quotation, availability conf
 
 ---
 
-## 6. Recommended Technology Stack
+## 6. Technology Stack
 
 ```txt
-Framework: Next.js
-Frontend: React
-Language: TypeScript
-Styling: Tailwind CSS
-UI Components: shadcn/ui
-Animation: Framer Motion
-Forms: React Hook Form + Zod
-Icons: Lucide React
-CMS Ready: Markdown / Headless CMS / Database later
-Deployment: Vercel, VPS, Docker, or Cloudflare-supported hosting
-````
+Framework:     Next.js 16 (App Router) on React 19
+Language:      TypeScript 6
+Styling:       Tailwind CSS 4, shadcn/ui-style components on Radix UI
+Animation:     GSAP 3 (@gsap/react), reduced-motion aware
+Forms:         React Hook Form + Zod 4
+Icons:         Lucide React, Simple Icons (social brands)
+CMS:           Payload CMS 3.80 inside the Next.js app (/admin), PostgreSQL 16, Lexical rich text
+Email:         Nodemailer over SMTP (lead emails and CMS emails)
+Tests:         Vitest 4 + Testing Library (jsdom)
+Package mgr:   pnpm 10.29.3
+Node.js:       22
+CI:            GitHub Actions (.github/workflows/ci.yml)
+Hosting:       DK LAO cPanel server (Apache proxy -> systemd Node service), Cloudflare DNS
+```
+
+The site still renders without a database: with `DATABASE_URL` empty it uses its built-in content from `src/lib/data`.
 
 ---
 
 ## 7. Repository Structure
 
 ```txt
-dklao-website/
-│
-├── app/
-│   ├── page.tsx
-│   ├── layout.tsx
-│   ├── globals.css
-│   │
-│   ├── forklift-rental/
-│   │   └── page.tsx
-│   │
-│   ├── forklift-sales/
-│   │   └── page.tsx
-│   │
-│   ├── used-equipment/
-│   │   └── page.tsx
-│   │
-│   ├── maintenance-service/
-│   │   └── page.tsx
-│   │
-│   ├── spare-parts/
-│   │   └── page.tsx
-│   │
-│   ├── warehouse-solutions/
-│   │   └── page.tsx
-│   │
-│   ├── cleaning-equipment/
-│   │   └── page.tsx
-│   │
-│   ├── industries/
-│   │   └── page.tsx
-│   │
-│   ├── knowledge-center/
-│   │   └── page.tsx
-│   │
-│   └── contact/
-│       └── page.tsx
-│
-├── components/
-│   ├── layout/
-│   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   └── MobileNav.tsx
-│   │
-│   ├── hero/
-│   │   ├── MainHero.tsx
-│   │   ├── RentalHero.tsx
-│   │   ├── SalesHero.tsx
-│   │   ├── ServiceHero.tsx
-│   │   └── CleaningHero.tsx
-│   │
-│   ├── sections/
-│   │   ├── SolutionCards.tsx
-│   │   ├── ProductCategoryGrid.tsx
-│   │   ├── RentalHighlight.tsx
-│   │   ├── UsedEquipmentStock.tsx
-│   │   ├── MaintenanceSection.tsx
-│   │   ├── SparePartsSection.tsx
-│   │   ├── CleaningEquipmentSection.tsx
-│   │   ├── WarehouseSolutionsSection.tsx
-│   │   ├── IndustriesServed.tsx
-│   │   ├── WhyDKLao.tsx
-│   │   └── CustomerLogos.tsx
-│   │
-│   ├── cards/
-│   │   ├── ProductCard.tsx
-│   │   ├── RentalFleetCard.tsx
-│   │   ├── ServiceCard.tsx
-│   │   ├── SparePartsCard.tsx
-│   │   └── IndustryCard.tsx
-│   │
-│   ├── forms/
-│   │   ├── QuoteRequestForm.tsx
-│   │   ├── RentalRequestForm.tsx
-│   │   ├── ServiceBookingForm.tsx
-│   │   └── SparePartsInquiryForm.tsx
-│   │
-│   ├── motion/
-│   │   ├── ForkliftMotion.tsx
-│   │   ├── LiftingAnimation.tsx
-│   │   ├── ProductCardTransition.tsx
-│   │   ├── ForkliftAnatomyInteractive.tsx
-│   │   └── CleanSweepEffect.tsx
-│   │
-│   └── ui/
-│       └── shadcn components
-│
-├── data/
-│   ├── navigation.ts
-│   ├── products.ts
-│   ├── rentalFleet.ts
-│   ├── services.ts
-│   ├── industries.ts
-│   ├── cleaningEquipment.ts
-│   └── seo.ts
-│
-├── lib/
-│   ├── constants.ts
-│   ├── utils.ts
-│   ├── validation.ts
-│   └── seo.ts
-│
-├── public/
-│   ├── images/
-│   │   ├── logo/
-│   │   ├── hero/
-│   │   ├── forklifts/
-│   │   ├── warehouse/
-│   │   ├── cleaning/
-│   │   └── spare-parts/
-│   │
-│   └── icons/
-│
-├── docs/
-│   ├── DESIGN.md
-│   ├── CONTENT.md
-│   ├── ARCHITECTURE.md
-│   ├── ROUTES.md
-│   ├── COMPONENTS.md
-│   ├── FORMS_AND_LEADS.md
-│   ├── QA_CHECKLIST.md
-│   ├── SECURITY.md
-│   └── DEPLOYMENT.md
-│
-├── tailwind.config.ts
-├── next.config.ts
-├── package.json
-├── README.md
+dklao/
+├── src/
+│   ├── app/
+│   │   ├── (site)/                 Public website: layout, home, /about, /contact, /request-quote,
+│   │   │                           /forklift-rental and a catch-all [...slug] for content pages
+│   │   ├── (app)/app/              Installable iPhone/Android web app at /app (own layout, noindex)
+│   │   ├── (payload)/              Payload CMS admin (/admin) and REST/GraphQL API (/api/*)
+│   │   ├── api/leads/quote/        Quote request endpoint (POST)
+│   │   ├── og/[id]/                Open Graph images
+│   │   ├── robots.ts, sitemap.ts
+│   ├── components/
+│   │   ├── dklao/                  Website sections: header, mega menu, mobile menu, hero, footer,
+│   │   │                           content page, quote form, CTA, trusted-by, motion
+│   │   ├── app/                    Web app UI: iOS-style views, tab bar, request form, share location
+│   │   └── ui/                     Base components (button, card, input, sheet, accordion, ...)
+│   ├── lib/
+│   │   ├── data/                   Built-in content and the route registry (routes.ts, sitemap-pages.ts, ...)
+│   │   ├── cms/                    Loaders that read Payload and fall back to built-in content
+│   │   ├── leads/                  Lead pipeline: rate limit, bot guard, store, email, webhook notify
+│   │   ├── validation/             Zod schemas for leads
+│   │   └── security-headers.ts, site-metadata.ts, utils.ts
+│   ├── payload/                    CMS collections (pages, articles, leads, users), globals
+│   │                               (navigation, site facts), access rules, migrations
+│   └── payload.config.ts
+├── public/                         Images (library, clients, hero, logo), favicon, app service worker
+├── scripts/                        version-status, check-links, seed-cms
+├── con_agents/                     Governance and control rules for agents (see AGENTS.md)
+├── docs/                           Plans and checklists (deploy, CMS, images, metrics, knowledge graph)
+├── .ua/                            Understand-Anything knowledge graph of this codebase
+├── server.mjs, app.js              Production server entry points
+├── VERSION.json, package.json
 └── .env.example
 ```
 
@@ -313,19 +224,27 @@ dklao-website/
 
 ## 8. Main Routes
 
-| Route                  | Purpose                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| `/`                    | Homepage and main conversion gateway                     |
-| `/forklift-rental`     | Short-term and long-term forklift rental                 |
-| `/forklift-sales`      | New forklift sales                                       |
-| `/used-equipment`      | Used and refurbished forklift listings                   |
-| `/maintenance-service` | Maintenance, repair, inspection, and preventive service  |
-| `/spare-parts`         | Spare parts and accessories inquiry                      |
-| `/warehouse-solutions` | Racking, shelving, warehouse equipment, safety solutions |
-| `/cleaning-equipment`  | Professional cleaning equipment catalog                  |
-| `/industries`          | Industry-specific solutions                              |
-| `/knowledge-center`    | Guides, articles, equipment education, SEO content       |
-| `/contact`             | Contact, quote request, map, and social channels         |
+The route registry is `src/lib/data/routes.ts`; the full route map is `con_agents/ROUTES.md`.
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Homepage and main conversion gateway |
+| `/about` | About DK LAO |
+| `/forklift-rental` (`/short-term`, `/long-term`) | Forklift rental |
+| `/forklift-sales` (`/new`, `/used`) | New and used forklift sales |
+| `/maintenance-service` | Maintenance, repair and preventive service |
+| `/spare-parts` | Spare parts matched by model and serial number |
+| `/batteries-chargers` | Batteries and chargers for electric forklifts |
+| `/warehouse-equipment` | Warehouse equipment and site survey |
+| `/material-handling` | Material handling equipment |
+| `/racking-shelving` | Racking and shelving |
+| `/cleaning-equipment` | Nilfisk professional cleaning equipment |
+| `/industries` and 6 industry pages | Solutions by industry (logistics, manufacturing, construction, food & beverage, retail, hospitality) |
+| `/knowledge-center` and articles | Guides and equipment education |
+| `/contact` | Contact DK LAO |
+| `/request-quote` | Central quote form; `?category=` preselects the need |
+| `/app` | Installable mobile web app (not indexed) |
+| `/admin` | Payload CMS admin (restricted) |
 
 ---
 
@@ -475,50 +394,21 @@ Motion should communicate operational value, not decoration.
 
 ## 12. Core Components
 
-### Layout Components
+Website components live in `src/components/dklao/`:
 
-* `Header`
-* `Footer`
-* `MobileNav`
-* `CTASection`
-* `PageHeader`
+* Layout: `SiteHeader`, `MegaMenu`, `MobileMenu`, `IndustrialFooter`, `FloatingContactActions`, `AppInstallBanner`
+* Hero and sections: `MainHero`, `QuickQuoteBar`, homepage sections, `ProductCategoryGrid`, `ServiceCard`, `TrustedBy`, `HomeProof`, About sections
+* Content pages: `ContentPage` renders every solution, industry and article page from `src/lib/data/sitemap-pages.ts` or the CMS
+* Leads: `QuoteRequestForm`, `CtaSection`
+* Motion: `SiteMotion`, `FooterMotion` (GSAP, reduced-motion aware), `AnatomyDiagram`
 
-### Hero Components
-
-* `MainHero`
-* `RentalHero`
-* `SalesHero`
-* `ServiceHero`
-* `CleaningHero`
-
-### Catalog Components
-
-* `ProductCategoryGrid`
-* `ProductCard`
-* `ProductFilterBar`
-* `ProductSpecTable`
-* `ComparisonCard`
-
-### Lead Components
-
-* `QuoteRequestForm`
-* `RentalRequestForm`
-* `ServiceBookingForm`
-* `SparePartsInquiryForm`
-* `ContactCard`
-* `FloatingContactButtons`
-
-### Motion Components
-
-* `ForkliftMotion`
-* `LiftingAnimation`
-* `ProductCardTransition`
-* `ForkliftAnatomyInteractive`
-* `CleanSweepEffect`
+The mobile web app has its own components in `src/components/app/`.
 
 ---
 
-## 13. Product Card Data Model
+## 13. Product Card Data Model (planned, Phase 2)
+
+Product listings with stock and specifications are not built yet. The intended card model:
 
 ```ts
 export type ProductCard = {
@@ -538,77 +428,26 @@ export type ProductCard = {
 
 ---
 
-## 14. Lead Form Types
+## 14. Lead Form
 
-### Quote Request Form
+Every request button leads to one central form at `/request-quote` (and `/app/request` in the web app). The `?category=` value preselects the need and sets the lead type:
 
-Fields:
+| `category` | Shown as | Lead type |
+| --- | --- | --- |
+| `rental` | Forklift rental | `RENTAL_INQUIRY` |
+| `new` | New forklift sales | `QUOTE_REQUEST` |
+| `used` | Used forklift inquiry | `USED_FORKLIFT_INQUIRY` |
+| `parts` | Spare parts | `SPARE_PARTS_INQUIRY` |
+| `service` | Maintenance service | `SERVICE_BOOKING` |
+| `warehouse` | Warehouse solutions | `QUOTE_REQUEST` |
+| `cleaning` | Cleaning equipment | `CLEANING_EQUIPMENT_RECOMMENDATION` |
+| `general` | General inquiry | `CONTACT_GENERAL` |
 
-* Company name
-* Contact person
-* Phone number
-* Email
-* Service type
-* Equipment category
-* Capacity requirement
-* Location
-* Message
+Fields: company name, contact person, phone, email (optional), equipment or service category, message. The source page is recorded.
 
----
+Submissions go to `POST /api/leads/quote`, which validates them with Zod (`src/lib/validation/leads.ts`), rate-limits per visitor, rejects bots through a hidden trap field, saves the lead in the CMS, emails it to DK LAO and optionally calls a webhook. See `con_agents/FORMS_AND_LEADS.md`.
 
-### Rental Request Form
-
-Fields:
-
-* Company name
-* Contact person
-* Phone number
-* Location
-* Rental start date
-* Rental end date
-* Rental period
-* Equipment type
-* Required load capacity
-* Required lift height
-* Indoor or outdoor usage
-* Operator required
-* Delivery required
-* Message
-
----
-
-### Service Booking Form
-
-Fields:
-
-* Company name
-* Contact person
-* Phone number
-* Equipment brand/model
-* Serial number
-* Service type
-* Problem description
-* Onsite or workshop service
-* Preferred date
-* Photo upload
-* Message
-
----
-
-### Spare Parts Inquiry Form
-
-Fields:
-
-* Company name
-* Contact person
-* Phone number
-* Equipment model
-* Serial number
-* Part type
-* Quantity
-* Urgency
-* Photo upload
-* Message
+Separate rental, service and spare-parts forms with extra fields (dates, serial numbers, photo upload) are a later option.
 
 ---
 
@@ -658,18 +497,23 @@ The website should support both **English and Lao** content.
 
 ## 17. Installation
 
+Requires Node.js 22 and pnpm 10.
+
 ```bash
-git clone <repository-url>
-cd dklao-website
-npm install
+git clone https://github.com/bstBizEra/dklWeb2026.git dklao
+cd dklao
+pnpm install
+cp .env.example .env.local
 ```
+
+Windows development path: `C:\laragon\www\dklao`.
 
 ---
 
 ## 18. Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Default local URL:
@@ -678,12 +522,14 @@ Default local URL:
 http://localhost:3000
 ```
 
+For the CMS locally, set `DATABASE_URL` and `PAYLOAD_SECRET`, then run `pnpm cms:migrate` and optionally `pnpm cms:seed` (see `docs/cms-local-setup.md`).
+
 ---
 
 ## 19. Build
 
 ```bash
-npm run build
+pnpm build
 ```
 
 ---
@@ -691,34 +537,40 @@ npm run build
 ## 20. Production Start
 
 ```bash
-npm run start
+pnpm start
 ```
+
+The server runs `server.mjs` (`app.js` loads it for hosts that `require()` the entry file). With `NODE_ENV=production`, pending CMS migrations are applied on start.
 
 ---
 
-## 21. Linting
+## 21. Quality Gates
+
+Run before every completed change (CI runs the same):
 
 ```bash
-npm run lint
+pnpm version:status
+pnpm test -- --run
+pnpm lint
+pnpm typecheck
+pnpm build
 ```
 
 ---
 
 ## 22. Environment Variables
 
-Create a `.env.local` file:
+Copy `.env.example` to `.env.local`; it documents every variable. Never commit real values.
 
-```env
-NEXT_PUBLIC_SITE_URL=https://www.dklao.com
-NEXT_PUBLIC_COMPANY_NAME="DK LAO"
-NEXT_PUBLIC_CONTACT_PHONE="+856 21 480 248"
-NEXT_PUBLIC_CONTACT_PHONE_SECONDARY="+856 21 480 249"
-NEXT_PUBLIC_MOBILE_PHONE="+856 20 2802 3338"
-NEXT_PUBLIC_FACEBOOK_URL="https://fb.me/DKLAOonline"
-NEXT_PUBLIC_GOOGLE_MAPS_URL=""
-NEXT_PUBLIC_WHATSAPP_NUMBER=""
-NEXT_PUBLIC_MESSENGER_URL=""
-```
+| Variable | Purpose |
+| --- | --- |
+| `APP_URL` | Canonical site address for metadata and sitemap |
+| `DATABASE_URL`, `DATABASE_POOL_MAX` | PostgreSQL for Payload CMS; empty = built-in content only |
+| `PAYLOAD_SECRET` | Signs CMS admin sessions (32+ random characters) |
+| `LEAD_RATE_LIMIT`, `LEAD_RATE_WINDOW_SECONDS` | Quote form rate limit |
+| `LEAD_NOTIFY_WEBHOOK_URL`, `LEAD_NOTIFY_WEBHOOK_SECRET`, `LEAD_NOTIFY_DETAILS` | Optional new-lead webhook |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Lead and CMS email |
+| `LEAD_NOTIFY_EMAIL` | Inbox for lead emails (default `info@dklao.com`) |
 
 ---
 
@@ -826,40 +678,26 @@ The website should include:
 
 ---
 
-## 28. Deployment Options
+## 28. Deployment
 
-Recommended deployment options:
-
-1. Vercel
-2. Cloudflare Pages
-3. VPS with Docker
-4. VPS with Node.js and reverse proxy
-5. Future integration with DK LAO backend platform
+The site, CMS and database run on DK LAO's own cPanel server (owner decision, 2026-10-25): a systemd Node service behind an Apache proxy, PostgreSQL 16 on the same host, Cloudflare DNS. The private preview is https://preview.dklao.com. Steps, server facts and open items: `docs/deploy-checklist.md`.
 
 ---
 
 ## 29. Development Governance
 
-This repository should maintain documentation under the `docs/` directory.
-
-Recommended control files:
+Agents and developers follow the control rules in `con_agents/`, starting with the root `AGENTS.md`, `con_agents/AGENTS.md` and `con_agents/AGENT_BOOTSTRAP.md`.
 
 ```txt
-DESIGN.md
-CONTENT.md
-ARCHITECTURE.md
-ROUTES.md
-COMPONENTS.md
-DATA_MODEL.md
-API_CONTRACTS.md
-FORMS_AND_LEADS.md
-QA_CHECKLIST.md
-SECURITY.md
-DEPLOYMENT.md
-CHANGELOG.md
+con_agents/
+  AGENTS.md  AGENT_BOOTSTRAP.md  ARCHITECTURE.md  ROUTES.md  COMPONENTS.md  CONTENT.md
+  DESIGNS.md  TOKEN.md  TOKENIZE.md  TOKEN_MANAGEMENT.md  ASSETS.md  DATA_MODEL.md
+  API_CONTRACTS.md  FORMS_AND_LEADS.md  QA_CHECKLIST.md  SECURITY.md  DEPLOYMENT.md
+  INFRA.md  ENVIRONMENT.md  OBSERVABILITY.md  TECHNOLOGY_SOFTWARE_INFRA.md
+  CHANGELOG.md  VERSIONING.md
 ```
 
-Each file should guide developers, designers, content writers, and future AI agents working on the DK LAO platform.
+Every change is recorded in `con_agents/CHANGELOG.md`; versions follow `con_agents/VERSIONING.md`. A navigable map of the code is in `.ua/knowledge-graph.json` (see `docs/knowledge-graph.md`).
 
 ---
 
@@ -888,6 +726,3 @@ It should help customers move from browsing to action faster by supporting:
 * Warehouse solution consultation
 
 The goal is to position DK LAO as a trusted one-stop industrial equipment partner in Laos.
-
-```
-```
