@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "status": "local-preview",
   "releaseDate": "2026-10-26",
-  "changeLevel": "minor",
-  "summary": "Website asks phone visitors to install the DK LAO app; favicon URLs carry the release version.",
+  "changeLevel": "patch",
+  "summary": "Codebase knowledge graph (Understand-Anything) added; VERSIONING.md current-version block corrected and now checked by pnpm version:status.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
