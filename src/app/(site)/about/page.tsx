@@ -14,9 +14,13 @@ import {
 import { FloatingContactActions } from "@/components/dklao/floating-contact-actions";
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
+import { SocialShare } from "@/components/dklao/social-share";
 import { TrustedBy } from "@/components/dklao/trusted-by";
+import { Container } from "@/components/ui/section";
 import { aboutSeo } from "@/lib/data/seo";
 import { shareImage } from "@/lib/data/share";
+
+const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
 
 // The footer reads site facts from the CMS, so refresh the page at most once a minute.
 export const revalidate = 60;
@@ -49,6 +53,11 @@ export default function AboutPage() {
       <WhyChooseDKLAO />
       <IndustriesServed />
       <ServicePromise />
+      <div className="about-share border-y border-slate-100 bg-surface py-6">
+        <Container>
+          <SocialShare url={`${siteUrl}/about`} title={aboutSeo.shareTitle} />
+        </Container>
+      </div>
       <AboutFinalCTA />
       </main>
       <IndustrialFooter />

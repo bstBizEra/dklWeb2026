@@ -7,6 +7,7 @@ import { CTASection } from "@/components/dklao/cta-section";
 import { FloatingContactActions } from "@/components/dklao/floating-contact-actions";
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
+import { SocialShare } from "@/components/dklao/social-share";
 import { TrustedBy } from "@/components/dklao/trusted-by";
 import { QuoteRequestForm } from "@/components/dklao/quote-request-form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -351,6 +352,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
   const trail = breadcrumbTrail(page.id);
   const related = relatedToShow(page.id, sections);
   const heroTopic = topicForPage(page.id);
+  const route = getRoute(page.id);
   const questions = sections
     .filter((section) => section.kind === "faq")
     .flatMap((section) => section.items.filter((item) => item.description));
@@ -476,6 +478,14 @@ export async function ContentPage({ page, children, showClients = false }: Conte
       ))}
 
       {showClients ? <TrustedBy title="Our clients" /> : null}
+
+      {route ? (
+        <div className="page-share border-y border-slate-100 bg-surface py-6">
+          <Container>
+            <SocialShare url={`${siteUrl}${route.href}`} title={page.h1} />
+          </Container>
+        </div>
+      ) : null}
 
       {related.length >= 2 ? (
         <Section spacing="tight">

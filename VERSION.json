@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.21.2",
+  "version": "0.21.3",
   "status": "local-preview",
   "releaseDate": "2026-10-27",
   "changeLevel": "patch",
-  "summary": "Unknown URLs always answer 404 and are no longer saved to the page cache.",
+  "summary": "Share buttons (Facebook, WhatsApp, LINE, X, copy link) on content pages and the About page.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
