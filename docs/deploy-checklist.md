@@ -73,6 +73,45 @@ These change the whole server, not only the dklao account.
       set `NODE_OPTIONS=--max-old-space-size=2048` or switch Next.js to `output: "standalone"`.
 - [ ] Never copy `.env.local` from a developer machine. Settings go in the env file (section 4).
 
+## 3a. Automatic preview deploys (GitHub Actions)
+
+`.github/workflows/deploy-preview.yml` deploys to preview.dklao.com: on every push to `main`, on a pull request
+labelled `deploy:preview` (and on each later push to it), or by hand (Actions > Deploy preview > Run workflow).
+It runs the checks, bundles the commit as tag `preview-<run>-<sha>`, and sends it over one SSH connection to
+`scripts/server/dklao-deploy-preview` on the server. That script builds as `dklao`, takes a `pg_dump` first when
+`src/payload/migrations` changed, restarts `dklao-site`, checks `http://127.0.0.1:3110/` answers, and rebuilds
+the previous version if anything fails. The deploy key can run nothing else. Manual deploys (section 3) still work.
+
+One-time setup (owner; root steps need the owner's approval on the day):
+
+- [ ] On the owner's PC, make a key used only for this: `ssh-keygen -t ed25519 -N "" -C github-actions-dklao-preview -f dklao_preview_deploy`.
+- [ ] As `dklao`: copy `scripts/server/dklao-deploy-preview` to `~/bin/dklao-deploy-preview`, `chmod 700`, and check
+      `command -v pnpm` works in a non-login shell (the script's `PATH` lists the usual places; add pnpm's if missing).
+- [ ] As `dklao`, add one line to `~/.ssh/authorized_keys` (mode 600), with the public key from `dklao_preview_deploy.pub`:
+      `restrict,command="/home/dklao/bin/dklao-deploy-preview" ssh-ed25519 AAAA... github-actions-dklao-preview`.
+      `restrict` turns off port forwarding, agent forwarding and terminals; `command=` means the key only deploys.
+- [ ] As root, let `dklao` restart only its own service: `/etc/sudoers.d/dklao-deploy` containing
+      `dklao ALL=(root) NOPASSWD: /usr/bin/systemctl restart dklao-site`, mode 440, checked with `visudo -cf /etc/sudoers.d/dklao-deploy`.
+- [ ] Firewall: the SSH port must accept connections from GitHub-hosted runners (their addresses change; see
+      `https://api.github.com/meta`, `actions`). If cPHulk or CSF limits SSH to known addresses, either allow those
+      ranges for this one account or run a self-hosted runner on a DK LAO machine instead.
+- [ ] GitHub > Settings > Environments > New environment `preview`: add the owner under **Required reviewers**
+      (each deploy then waits for approval), deployment branches: `main` and protected or selected branches as wanted.
+      Environment secrets:
+
+| Secret | Value |
+|---|---|
+| `PREVIEW_SSH_KEY` | The whole private key file `dklao_preview_deploy` |
+| `PREVIEW_SSH_HOST` | The SSH host name used today (`mail.dklao.com` or the server address) |
+| `PREVIEW_SSH_PORT` | The SSH port (leave unset for 22) |
+| `PREVIEW_SSH_KNOWN_HOSTS` | The host's line from the owner's own `~/.ssh/known_hosts` (already verified), or `ssh-keyscan -p <port> <host>` checked against the server's fingerprint |
+
+- [ ] Create the label `deploy:preview` (Issues > Labels). Adding it to a pull request deploys that pull request.
+- [ ] Delete `dklao_preview_deploy` from the PC once the secret is saved. To revoke: remove the line from
+      `authorized_keys` and the secret from GitHub.
+- [ ] First run: label a pull request or run the workflow by hand, approve it, and confirm the job ends with
+      "preview.dklao.com serves X.Y.Z". Logs on the server: `~/deploy-logs/build-preview-*.log`.
+
 ## 4. Run the app (systemd service behind Apache; owner decision 2026-10-25)
 
 cPanel's Application Manager was dropped: its saves did not reach the server and its npm dependency step

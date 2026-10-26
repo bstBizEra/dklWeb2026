@@ -14,6 +14,13 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
   - Business impact: a stronger first impression on desktop without hiding the main calls to action, which stay visible and usable until the hand-off.
   - QA: 13 new tests in `src/lib/data/scenes.test.ts` (245 total pass); lint, typecheck and build clean. Production build checked in Chromium at 1440x900 (pin, no console errors, keyboard return), 390x844 (no pin, no horizontal scroll) and with reduced motion (no pin, hero unchanged). Storyboard of the captured frames shared with the owner.
   - Rollback: revert this release; no data, route or content changes.
+- **Automatic preview deploys (CI/CD to preview.dklao.com)** (owner request: deploy the scene to the preview through CI/CD).
+  - Reason: the preview needed a manual SSH session per release; owner review of each scene should be one click.
+  - `.github/workflows/deploy-preview.yml`: on a push to `main`, a pull request from this repository labelled `deploy:preview` (and its later pushes), or a manual run. It runs version, test, lint and typecheck checks, bundles the commit as `preview-<run>-<sha>`, sends it over one SSH connection, then confirms preview.dklao.com serves the new version. One deploy at a time; forks never deploy; the job waits in the GitHub `preview` environment for the owner's approval when required reviewers are set.
+  - `scripts/server/dklao-deploy-preview` (installed as `~/bin/dklao-deploy-preview` for `dklao`): the only command the deploy key may run (`restrict,command=` in `authorized_keys`). Checks the requested tag, verifies the bundle, builds, dumps the database first when `src/payload/migrations` changed, restarts `dklao-site` through a sudoers rule that allows only that restart, checks the app answers on port 3110, and rebuilds and restarts the previous version if any step fails.
+  - `ci.yml` stays check-only and secret-free. Setup steps, secrets and revocation: `docs/deploy-checklist.md` §3a; `DEPLOYMENT.md` §5 updated.
+  - QA: the server script was run end to end in a sandbox clone with stubbed pnpm, sudo, curl and pg_dump: successful deploy, rejected command, failed build with rollback, failed health check with rollback, refused restart, migration change with dump, and failed dump aborting before restart. Tests in `src/lib/data/deploy-preview.test.ts`.
+  - Not done by the agent (needs the owner): the deploy key, the sudoers rule, the `authorized_keys` line, the GitHub `preview` environment and its secrets, and SSH access from GitHub's runners through the server firewall.
 
 ## [0.20.1] - 2026-10-26
 

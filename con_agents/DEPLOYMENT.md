@@ -53,7 +53,9 @@ Settings:    /home/dklao/.config/dklao-site.env (mode 600), never committed
 Migrations:  applied on start in production (prodMigrations)
 ```
 
-Step-by-step procedure, server facts and open items: `docs/deploy-checklist.md`. Moving to another hosting model (for example a VPS with Docker/Podman) requires the change control in `TECHNOLOGY_SOFTWARE_INFRA.md` §12 and owner approval.
+Preview deploys are automated: `.github/workflows/deploy-preview.yml` deploys `main`, any pull request labelled `deploy:preview`, or a branch run by hand, to preview.dklao.com. Each run waits for owner approval in the GitHub `preview` environment. It uses a deploy key limited to `scripts/server/dklao-deploy-preview` on the server (forced command), which backs up the database before new migrations and rolls back automatically on a failed build or health check. The live site (dklao.com) is still deployed by hand.
+
+Step-by-step procedure, server facts and open items: `docs/deploy-checklist.md` (automatic preview deploys: section 3a). Moving to another hosting model (for example a VPS with Docker/Podman) requires the change control in `TECHNOLOGY_SOFTWARE_INFRA.md` §12 and owner approval.
 
 ## 6. Rollback Rules
 
