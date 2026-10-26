@@ -5,6 +5,7 @@ import * as migration_20261022_151309_pages_sitemap_menu from './20261022_151309
 import * as migration_20261023_044132_social_links from './20261023_044132_social_links';
 import * as migration_20261023_050041_reference_clients from './20261023_050041_reference_clients';
 import * as migration_20261025_094137_card_sections from './20261025_094137_card_sections';
+import * as migration_20261026_050606_lao_localization from './20261026_050606_lao_localization';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261025_094137_card_sections.up,
     down: migration_20261025_094137_card_sections.down,
-    name: '20261025_094137_card_sections'
+    name: '20261025_094137_card_sections',
+  },
+  {
+    up: migration_20261026_050606_lao_localization.up,
+    down: migration_20261026_050606_lao_localization.down,
+    name: '20261026_050606_lao_localization'
   },
 ];

@@ -14,6 +14,8 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { localized } from "@/lib/i18n/localize";
+import { loHomepage } from "@/messages/lo/homepage";
 
 export type Cta = {
   label: string;
@@ -204,3 +206,9 @@ export const knowledgeArticles = [
     href: "/knowledge-center",
   },
 ];
+
+const homepageContent = { homepageCtas, quickQuoteActions, solutionCards, productCategories, industrySolutions, knowledgeArticles };
+export type HomepageContent = typeof homepageContent;
+
+// Home page data per locale. Lao text: src/messages/lo/homepage.ts.
+export const homepageFor = localized(homepageContent, loHomepage);

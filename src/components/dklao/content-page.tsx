@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import { Fragment, type ReactNode } from "react";
 import { ArrowDown, ArrowRight, CheckCircle2 } from "lucide-react";
 
@@ -21,11 +21,13 @@ import { breadcrumbTrail, getRoute, quoteHref, routeIntent } from "@/lib/data/ro
 import { leadIntents } from "@/lib/leads/intents";
 import { isOwnPhoto, libraryImage, topicForCard, topicForPage, type LibraryTopic } from "@/lib/data/library";
 import { cn } from "@/lib/utils";
+import { localizeHref, type Locale } from "@/lib/i18n";
 
 const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
 
 type ContentPageProps = {
   page: PageContent;
+  locale: Locale;
   // Rendered between the hero and the content sections, e.g. a form.
   children?: ReactNode;
   // Show the reference clients (from the site facts) after the content sections.
@@ -123,7 +125,7 @@ type DetailItem = ResolvedSection["items"][number] & { details: ItemDetails; anc
 // A card's own editorial section under the cards. Left (stays in view on desktop): photo, title, opening
 // paragraph, key figures and a quote action. Right: topics under their own headings, then a practical
 // checklist. Alternating bands keep consecutive sections apart.
-function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string; shaded: boolean }) {
+function CardDetail({ item, pageId, shaded, locale }: { item: DetailItem; pageId: string; shaded: boolean; locale: Locale }) {
   const topic = topicForCard(item, pageId);
   const { lead, facts = [], topics, checklist } = item.details;
 
@@ -166,7 +168,7 @@ function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string
             {item.href ? (
               <Button asChild variant="light">
                 <Link href={item.href}>
-                  {(item.routeId && getRoute(item.routeId)?.label) || item.title} page
+                  {(item.routeId && getRoute(item.routeId, locale)?.label) || item.title} page
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
               </Button>
@@ -346,10 +348,10 @@ function SectionBody({ section, pageId }: { section: ResolvedSection; pageId: st
   );
 }
 
-export async function ContentPage({ page, children, showClients = false }: ContentPageProps) {
-  const sections = visibleSections(page, await getSiteFacts());
-  const trail = breadcrumbTrail(page.id);
-  const related = relatedToShow(page.id, sections);
+export async function ContentPage({ page, locale, children, showClients = false }: ContentPageProps) {
+  const sections = visibleSections(page, await getSiteFacts(locale));
+  const trail = breadcrumbTrail(page.id, locale);
+  const related = relatedToShow(page.id, sections, locale);
   const heroTopic = topicForPage(page.id);
   const questions = sections
     .filter((section) => section.kind === "faq")
@@ -363,7 +365,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
             "@type": "ListItem",
             position: index + 1,
             name: route.label,
-            item: `${siteUrl}${route.href}`,
+            item: `${siteUrl}${localizeHref(route.href, locale)}`,
           })),
         }
       : null,
@@ -382,7 +384,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
 
   return (
     <div className="min-h-screen overflow-x-clip">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
       <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
 
       {trail.length > 2 ? (
@@ -470,12 +472,12 @@ export async function ContentPage({ page, children, showClients = false }: Conte
           {section.items
             .filter((item): item is DetailItem => Boolean(item.details && item.anchor))
             .map((item, index) => (
-              <CardDetail key={item.anchor} item={item} pageId={page.id} shaded={index % 2 === 0} />
+              <CardDetail key={item.anchor} item={item} pageId={page.id} shaded={index % 2 === 0} locale={locale} />
             ))}
         </Fragment>
       ))}
 
-      {showClients ? <TrustedBy title="Our clients" /> : null}
+      {showClients ? <TrustedBy title="Our clients" locale={locale} /> : null}
 
       {related.length >= 2 ? (
         <Section spacing="tight">
@@ -508,7 +510,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
       ) : null}
 
       </main>
-      <IndustrialFooter />
+      <IndustrialFooter locale={locale} />
       <FloatingContactActions />
     </div>
   );

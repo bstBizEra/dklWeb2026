@@ -1,18 +1,12 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import { ArrowRight, CheckCircle2, ClipboardCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container, Eyebrow, IconBadge, Section, SectionCopy, SectionHeader, SectionTitle } from "@/components/ui/section";
-import {
-  aboutHeroCtas,
-  aboutSolutions,
-  aboutTrustPoints,
-  companySnapshot,
-  servedIndustries,
-  servicePromiseSteps,
-} from "@/lib/data/about";
+import { aboutFor } from "@/lib/data/about";
+import type { Locale } from "@/lib/i18n";
 import { CTASection } from "./cta-section";
 
 // Section surfaces. The class names about-* that remain are hooks for the scroll motion (site-motion.tsx).
@@ -26,7 +20,8 @@ const brandStripe =
 const cardTitle = "mt-[18px] mb-0 text-[1.15rem] font-[750] leading-[1.18] text-navy-950";
 const cardCopy = "leading-[1.66] text-slate-700";
 
-export function AboutHero() {
+export function AboutHero({ locale }: { locale: Locale }) {
+  const { aboutHeroCtas } = aboutFor(locale);
   return (
     <section
       className={`relative overflow-hidden bg-[linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),radial-gradient(circle_at_78%_24%,rgba(0,97,175,0.36),transparent_30%),radial-gradient(circle_at_88%_86%,rgba(217,26,33,0.22),transparent_30%),linear-gradient(135deg,var(--dk-color-navy-950),var(--dk-color-navy-800))] bg-[size:48px_48px,48px_48px,cover,cover,cover] pt-[74px] pb-[82px] text-white max-[780px]:pt-[46px] max-[780px]:pb-14 ${brandStripe}`}
@@ -70,7 +65,8 @@ export function AboutHero() {
   );
 }
 
-export function CompanySnapshot() {
+export function CompanySnapshot({ locale }: { locale: Locale }) {
+  const { companySnapshot } = aboutFor(locale);
   return (
     <Section className="bg-surface" aria-labelledby="company-snapshot-title">
       <Container>
@@ -187,7 +183,8 @@ export function VisionCommitment() {
   );
 }
 
-export function AboutWhatWeDo() {
+export function AboutWhatWeDo({ locale }: { locale: Locale }) {
+  const { aboutSolutions } = aboutFor(locale);
   return (
     <Section className={paperGrid} id="about-solutions">
       <Container>
@@ -227,7 +224,8 @@ export function AboutWhatWeDo() {
   );
 }
 
-export function WhyChooseDKLAO() {
+export function WhyChooseDKLAO({ locale }: { locale: Locale }) {
+  const { aboutTrustPoints } = aboutFor(locale);
   return (
     <Section className="bg-surface">
       <Container>
@@ -254,7 +252,8 @@ export function WhyChooseDKLAO() {
   );
 }
 
-export function IndustriesServed() {
+export function IndustriesServed({ locale }: { locale: Locale }) {
+  const { servedIndustries } = aboutFor(locale);
   return (
     <Section className={`${navyGrid} ${brandStripe}`}>
       <Container>
@@ -292,7 +291,8 @@ export function IndustriesServed() {
   );
 }
 
-export function ServicePromise() {
+export function ServicePromise({ locale }: { locale: Locale }) {
+  const { servicePromiseSteps } = aboutFor(locale);
   return (
     <Section className={paperGrid}>
       <Container>

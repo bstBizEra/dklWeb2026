@@ -15,30 +15,34 @@ import { ProductCategoryGrid } from "@/components/dklao/product-category-grid";
 import { QuickQuoteBar } from "@/components/dklao/quick-quote-bar";
 import { SiteHeader } from "@/components/dklao/site-header";
 import { TrustedBy } from "@/components/dklao/trusted-by";
-import { homepageCtas, productCategories, quickQuoteActions } from "@/lib/data/homepage";
+import { homepageFor } from "@/lib/data/homepage";
+import { localeParam } from "@/lib/i18n";
 
 // The footer reads site facts from the CMS, so refresh the page at most once a minute.
 export const revalidate = 60;
 
-export default function Home() {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await localeParam(params);
+  const { homepageCtas, productCategories, quickQuoteActions } = homepageFor(locale);
+
   return (
     <div className="min-h-screen overflow-x-clip">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
       <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
       <MainHero ctas={homepageCtas} />
-      <HomeProof />
-      <TrustedBy />
+      <HomeProof locale={locale} />
+      <TrustedBy locale={locale} />
       <QuickQuoteBar actions={quickQuoteActions} />
-      <SolutionOverview />
+      <SolutionOverview locale={locale} />
       <RentalHighlight />
       <ProductCategoryGrid categories={productCategories} />
       <ForkliftAnatomyInteractive />
-      <IndustriesAndTrustSection />
-      <KnowledgeCenterPreview />
+      <IndustriesAndTrustSection locale={locale} />
+      <KnowledgeCenterPreview locale={locale} />
       <QuoteSection />
       <FinalHomepageCTA />
       </main>
-      <IndustrialFooter />
+      <IndustrialFooter locale={locale} />
       <FloatingContactActions />
     </div>
   );

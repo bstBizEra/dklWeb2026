@@ -1,11 +1,12 @@
 import { getSiteFacts } from "@/lib/cms/site-facts";
 import { siteFooterMetadata } from "@/lib/site-metadata";
 import { Container } from "@/components/ui/section";
+import type { Locale } from "@/lib/i18n";
 
 // Three plain facts under the hero. Each comes from the owner-confirmed site facts or the founding year,
 // and an unconfirmed fact is simply not shown.
-export async function HomeProof() {
-  const facts = await getSiteFacts();
+export async function HomeProof({ locale }: { locale: Locale }) {
+  const facts = await getSiteFacts(locale);
   const items = [
     { figure: String(siteFooterMetadata.foundedYear), label: "Serving businesses in Laos since" },
     facts.hours ? { figure: "24/7", label: "AI agents and human advisors work together to reply" } : null,

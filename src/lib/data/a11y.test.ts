@@ -11,9 +11,9 @@ import { describe, expect, it } from "vitest";
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), "src", ...parts), "utf8").replace(/\r\n/g, "\n");
 
 const shells = [
-  ["app", "(site)", "page.tsx"],
-  ["app", "(site)", "about", "page.tsx"],
-  ["app", "(site)", "not-found.tsx"],
+  ["app", "(site)", "[locale]", "page.tsx"],
+  ["app", "(site)", "[locale]", "about", "page.tsx"],
+  ["app", "(site)", "[locale]", "not-found.tsx"],
   ["components", "dklao", "content-page.tsx"],
 ];
 
@@ -21,10 +21,10 @@ describe("landmarks and skip link", () => {
   it("keeps the header and footer outside <main>, so they are the banner and contentinfo and the skip link skips the header", () => {
     for (const parts of shells) {
       const source = read(...parts);
-      const header = source.indexOf("<SiteHeader />");
+      const header = source.indexOf("<SiteHeader locale={locale} />");
       const main = source.indexOf('<main id="main-content" tabIndex={-1}');
       const mainEnd = source.indexOf("</main>");
-      const footer = source.indexOf("<IndustrialFooter />");
+      const footer = source.indexOf("<IndustrialFooter locale={locale} />");
 
       expect(header, parts.join("/")).toBeGreaterThan(-1);
       expect(main, parts.join("/")).toBeGreaterThan(header);

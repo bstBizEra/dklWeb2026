@@ -27,6 +27,15 @@ export default buildConfig({
   collections: [Users, Pages, Articles, Leads],
   globals: [SiteFacts, Navigation],
   editor: lexicalEditor(),
+  // English and Lao. Lao pages ask for locale "lo"; a Lao field left empty shows the English text.
+  localization: {
+    locales: [
+      { code: "en", label: "English" },
+      { code: "lo", label: "ລາວ" },
+    ],
+    defaultLocale: "en",
+    fallback: true,
+  },
   secret: process.env.PAYLOAD_SECRET ?? "",
   graphQL: { disable: true },
   // Password reset and invite emails, over the same SMTP account as lead email (see lib/leads/email.ts).

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import {
   ArrowRight,
   ClipboardCheck,
@@ -9,11 +9,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Container, Eyebrow, Section, SectionCopy, SectionHeader, SectionTitle } from "@/components/ui/section";
-import {
-  industrySolutions,
-  knowledgeArticles,
-  solutionCards,
-} from "@/lib/data/homepage";
+import { homepageFor } from "@/lib/data/homepage";
+import type { Locale } from "@/lib/i18n";
 import { AnatomyDiagram } from "./anatomy-diagram";
 import { CTASection } from "./cta-section";
 import { QuoteRequestForm } from "./quote-request-form";
@@ -25,7 +22,8 @@ const paperGrid =
 const cardGrid = "grid grid-cols-4 gap-[18px] max-[1120px]:grid-cols-2 max-[780px]:grid-cols-1";
 const tile = "rounded-[22px] border border-slate-300/80 bg-card shadow-card";
 
-export function SolutionOverview() {
+export function SolutionOverview({ locale }: { locale: Locale }) {
+  const { solutionCards } = homepageFor(locale);
   return (
     <Section id="solutions">
       <Container>
@@ -105,7 +103,8 @@ export function ForkliftAnatomyInteractive() {
   );
 }
 
-export function IndustriesAndTrustSection() {
+export function IndustriesAndTrustSection({ locale }: { locale: Locale }) {
+  const { industrySolutions } = homepageFor(locale);
   return (
     <Section>
       <Container>
@@ -124,7 +123,8 @@ export function IndustriesAndTrustSection() {
   );
 }
 
-export function KnowledgeCenterPreview() {
+export function KnowledgeCenterPreview({ locale }: { locale: Locale }) {
+  const { knowledgeArticles } = homepageFor(locale);
   return (
     <Section spacing="tight" className={paperGrid}>
       <Container className="grid grid-cols-[minmax(0,0.8fr)_minmax(360px,1fr)] items-start gap-12 max-[1120px]:grid-cols-1">

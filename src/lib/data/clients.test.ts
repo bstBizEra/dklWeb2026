@@ -47,17 +47,17 @@ describe("reference clients", () => {
   });
 
   it("is also shown on the About and Rental pages under the short heading \"Our clients\"", () => {
-    const about = readFileSync(join(process.cwd(), "src", "app", "(site)", "about", "page.tsx"), "utf8");
-    const rental = readFileSync(join(process.cwd(), "src", "app", "(site)", "forklift-rental", "page.tsx"), "utf8");
+    const about = readFileSync(join(process.cwd(), "src", "app", "(site)", "[locale]", "about", "page.tsx"), "utf8");
+    const rental = readFileSync(join(process.cwd(), "src", "app", "(site)", "[locale]", "forklift-rental", "page.tsx"), "utf8");
     const content = readFileSync(join(process.cwd(), "src", "components", "dklao", "content-page.tsx"), "utf8");
 
-    expect(about).toContain('<TrustedBy title="Our clients" />');
-    expect(about.indexOf("<TrustedBy")).toBeGreaterThan(about.indexOf("<CompanySnapshot />"));
+    expect(about).toContain('<TrustedBy title="Our clients" locale={locale} />');
+    expect(about.indexOf("<TrustedBy")).toBeGreaterThan(about.indexOf("<CompanySnapshot locale={locale} />"));
     expect(rental).toContain("showClients");
-    expect(content).toContain('<TrustedBy title="Our clients" />');
+    expect(content).toContain('<TrustedBy title="Our clients" locale={locale} />');
     // Only the rental page asks for it; other content pages do not repeat the clients.
     for (const page of ["contact", "request-quote"]) {
-      expect(readFileSync(join(process.cwd(), "src", "app", "(site)", page, "page.tsx"), "utf8")).not.toContain("showClients");
+      expect(readFileSync(join(process.cwd(), "src", "app", "(site)", "[locale]", page, "page.tsx"), "utf8")).not.toContain("showClients");
     }
   });
 
@@ -69,10 +69,10 @@ describe("reference clients", () => {
   });
 
   it("is shown on the home page right after the proof strip, logos named in their alt text", () => {
-    const page = readFileSync(join(process.cwd(), "src", "app", "(site)", "page.tsx"), "utf8");
+    const page = readFileSync(join(process.cwd(), "src", "app", "(site)", "[locale]", "page.tsx"), "utf8");
     const component = readFileSync(join(process.cwd(), "src", "components", "dklao", "trusted-by.tsx"), "utf8");
 
-    expect(page.indexOf("<TrustedBy />")).toBeGreaterThan(page.indexOf("<HomeProof />"));
+    expect(page.indexOf("<TrustedBy locale={locale} />")).toBeGreaterThan(page.indexOf("<HomeProof locale={locale} />"));
     expect(component).toContain("return null");
     expect(component).toContain("alt={name}");
   });

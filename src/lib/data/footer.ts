@@ -1,4 +1,7 @@
 import { getRoute, publishedRoutes, type SiteRoute } from "@/lib/data/routes";
+import type { Locale } from "@/lib/i18n";
+import { localized } from "@/lib/i18n/localize";
+import { loFooter } from "@/messages/lo/footer";
 
 export type FooterLink = { id: string; href: string; label: string; published: boolean };
 export type FooterGroup = { title: string; links: FooterLink[] };
@@ -30,14 +33,19 @@ const groupSpec: { title: string; ids: string[] }[] = [
   { title: "Company & guides", ids: ["about", "industries", "knowledge", "article"] },
 ];
 
-export function footerGroups(): FooterGroup[] {
+// Footer wording per locale (labels by route id, group titles by position). Lao text: src/messages/lo/footer.ts.
+export type FooterText = { labels: Record<string, string>; groupTitles: string[] };
+export const footerTextFor = localized<FooterText>({ labels: footerLabels, groupTitles: groupSpec.map((group) => group.title) }, loFooter);
+
+export function footerGroups(locale: Locale = "en"): FooterGroup[] {
+  const text = footerTextFor(locale);
   return groupSpec
-    .map((group) => ({
-      title: group.title,
+    .map((group, index) => ({
+      title: text.groupTitles[index],
       links: group.ids
-        .map(getRoute)
+        .map((id) => getRoute(id, locale))
         .filter((route): route is SiteRoute => route !== undefined && route.published)
-        .map((route) => ({ id: route.id, href: route.href, published: route.published, label: footerLabels[route.id] ?? route.label })),
+        .map((route) => ({ id: route.id, href: route.href, published: route.published, label: text.labels[route.id] ?? route.label })),
     }))
     .filter((group) => group.links.length > 0);
 }

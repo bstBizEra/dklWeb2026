@@ -39,7 +39,7 @@
   --color-slate-300: var(--dk-color-slate-300);
   --color-slate-100: var(--dk-color-slate-100);
 
-  --font-sans: Inter, "Noto Sans Lao", Roboto, Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Inter, var(--font-lao, "Noto Sans Lao"), Roboto, Arial, ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: var(--dk-radius-xs);
   --radius-md: var(--dk-radius-sm);
@@ -206,7 +206,7 @@ body {
   background: var(--dk-color-surface);
   color: var(--dk-color-navy-950);
   font-family:
-    Inter, "Noto Sans Lao", Roboto, Arial, ui-sans-serif, system-ui,
+    Inter, var(--font-lao, "Noto Sans Lao"), Roboto, Arial, ui-sans-serif, system-ui,
     sans-serif;
   letter-spacing: 0;
 }
