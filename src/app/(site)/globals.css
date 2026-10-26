@@ -123,35 +123,49 @@
   --ring: var(--dk-color-brand-blue);
 }
 
-@keyframes hero-reveal-left {
+/* Hero forklift: drives in from the right, runs a little past its mark and settles back, like a truck braking. */
+@keyframes hero-drive-in {
   from {
-    transform: translateX(0);
+    opacity: 0;
+    transform: translateX(42%);
+  }
+
+  14% {
+    opacity: 1;
+  }
+
+  80% {
+    transform: translateX(-1.6%);
   }
 
   to {
-    transform: translateX(-112%);
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-@keyframes hero-reveal-right {
+@keyframes hero-shadow-in {
   from {
-    transform: translateX(0);
+    opacity: 0;
+    transform: scaleX(0.55);
   }
 
   to {
-    transform: translateX(112%);
+    opacity: 1;
+    transform: scaleX(1);
   }
 }
 
-@keyframes hero-image-settle {
+/* Hero racking: fades in and travels less than the truck, so it reads as further away. */
+@keyframes hero-depth-in {
   from {
-    filter: saturate(0.7) brightness(0.84);
-    transform: scale(1.035) translateX(-18px);
+    opacity: 0;
+    transform: translateX(6%);
   }
 
   to {
-    filter: saturate(1) brightness(1);
-    transform: scale(1) translateX(0);
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

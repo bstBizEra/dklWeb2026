@@ -79,19 +79,35 @@ describe("scene 01: Lift-off", () => {
   });
 
   it("names its beats with timeline labels", () => {
-    for (const label of ["raise", "grid", "handoff"]) expect(liftOff).toContain(`addLabel("${label}"`);
+    for (const label of ["grid", "handoff"]) expect(liftOff).toContain(`addLabel("${label}"`);
   });
 
   it("moves wrappers, not the image or copy that carry CSS load animations", () => {
-    for (const part of ["copy", "frame", "photo", "grid", "gauge", "gauge-track", "dim", "stripe"]) {
+    for (const part of ["copy", "stage", "racking", "truck", "grid", "dim", "stripe"]) {
       expect(hero).toContain(`data-lift="${part}"`);
     }
-    // The image keeps its CSS settle animation; GSAP moves the wrapper around it.
-    expect(hero).toMatch(/data-lift="photo"[^>]*>\s*<Image/);
+    // The truck and the racking keep their CSS load animations on an inner layer; GSAP moves the wrapper.
+    // On one element, the CSS animation (held by its fill mode) would override GSAP's inline transform.
+    expect(hero).toMatch(/data-lift="truck"[^>]*>\s*(?:\{\/\*[\s\S]*?\*\/\}\s*)?<div[^>]*animate-\[hero-drive-in/);
+    expect(hero).toMatch(/data-lift="racking"[^>]*>\s*<span[^>]*animate-\[hero-depth-in/);
+    for (const [, attrs] of hero.matchAll(/<\w+\s+data-lift="[^"]+"([^>]*)>/g)) expect(attrs).not.toContain("animate-[");
   });
 
-  it("keeps the hero complete without the scene: gauge hidden, dim clear, copy and buttons visible", () => {
-    expect(hero).toMatch(/data-lift="gauge-track"[\s\S]*?opacity-0/);
+  it("carries the pallet on the forks without lifting it, and shows no lift gauge (owner decision)", () => {
+    expect(hero).toMatch(/data-lift="truck"[\s\S]*?<PalletLoad \/>/);
+    for (const gone of ["carriage", "gauge", "clip-path"]) {
+      expect(hero).not.toContain(gone);
+      expect(liftOff).not.toContain(gone);
+    }
+  });
+
+  it("drives the truck in on load only when motion is allowed", () => {
+    for (const name of ["hero-drive-in", "hero-shadow-in", "hero-depth-in"]) {
+      expect(hero).toMatch(new RegExp(`animate-\\[${name}[^"]*motion-reduce:animate-none`));
+    }
+  });
+
+  it("keeps the hero complete without the scene: dim clear, copy and buttons visible", () => {
     expect(hero).toMatch(/data-lift="dim"[^>]*opacity-0/);
     expect(hero).not.toMatch(/data-lift="copy"[^>]*opacity-0/);
     expect(hero).toContain("priority");

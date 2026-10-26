@@ -7,27 +7,27 @@ import { sceneDebug, scenePins, sceneTiming } from "@/lib/motion/scene-config";
 
 import { useScene } from "./use-scene";
 
-// Scene 01, "Lift-off": the homepage's opening shot. The hero holds the screen for a short scroll while
-// the forklift photo is raised in its frame, as if on its own forks, and a lift gauge on the frame fills;
-// the blueprint grid drifts behind it; then the copy rises away, the hero darkens and the brand stripe
-// thickens into the proof band below. Scroll-linked: scrolling back up lowers the forklift again.
+// Scene 01, "Lift-off": the homepage's opening shot. The forklift has driven in with a pallet of cartons
+// (a CSS load animation in main-hero.tsx). The hero then holds the screen for a short scroll while the
+// racking and the blueprint grid drift behind at their own slower speeds, which gives the depth; then the
+// truck rolls forward, the copy rises away, the hero darkens and the brand stripe thickens into the proof
+// band below. Scroll-linked: scrolling back up reverses it.
 //
-// The parts it moves are marked with data-lift in main-hero.tsx. They are wrappers, never the image or
-// text that carry CSS load animations, because a CSS animation would override GSAP's inline transform.
+// The parts it moves are marked with data-lift in main-hero.tsx. They are wrappers, never the elements
+// that carry CSS load animations, because a CSS animation would override GSAP's inline transform.
 export function LiftOffScene({ children, ...props }: ComponentProps<"section">) {
   const ref = useRef<HTMLElement>(null);
 
   useScene(ref, ({ desktop }, root) => {
     const part = (name: string) => root.querySelectorAll<HTMLElement>(`[data-lift="${name}"]`);
-    const photo = part("photo");
 
-    // Phones and short screens: no pin, only a gentle drift of the photo against the scroll.
+    // Phones and short screens: no pin, only a gentle drift of the racking behind the truck.
     if (!desktop) {
       gsap.fromTo(
-        photo,
-        { scale: 1.06, yPercent: -2 },
+        part("racking"),
+        { yPercent: -3 },
         {
-          yPercent: 2,
+          yPercent: 3,
           ease: "none", // scroll-linked position, not timed motion
           scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: sceneTiming.scrub },
         },
@@ -40,10 +40,6 @@ export function LiftOffScene({ children, ...props }: ComponentProps<"section">) 
     // While pinned, the hero fills the screen below the header, so no empty page shows beneath it.
     // Removed again when the scene stops (reduced motion switched on, or a resize down to phone width).
     root.dataset.pinned = "true";
-
-    // The gauge only exists while the scene runs; without motion the frame shows the photo alone.
-    gsap.set(part("gauge-track"), { opacity: 1 });
-    gsap.set(part("gauge"), { scaleY: 0, transformOrigin: "50% 100%" });
 
     const timeline = gsap.timeline({
       defaults: { ease: "none" }, // scrubbed: the scrollbar is the playhead
@@ -60,13 +56,13 @@ export function LiftOffScene({ children, ...props }: ComponentProps<"section">) 
     });
 
     timeline
-      .addLabel("raise", 0)
-      .to(part("frame"), { y: -44, duration: 0.45 }, "raise")
-      .to(photo, { scale: 1.12, yPercent: -5, duration: 0.45 }, "raise")
-      .to(part("gauge"), { scaleY: 1, duration: 0.45 }, "raise")
-      .addLabel("grid", 0.2)
+      .addLabel("grid", 0)
+      // Depth: the grid and the racking drift at different speeds, both slower than the truck.
       .to(part("grid"), { yPercent: -4, duration: 0.8 }, "grid")
+      .to(part("racking"), { yPercent: -7, xPercent: 3, duration: 0.8 }, "grid")
       .addLabel("handoff", 0.6)
+      // The truck rolls forward, towards the viewer, as the scene hands over to the page.
+      .to(part("truck"), { xPercent: -9, scale: 1.08, duration: 0.4 }, "handoff")
       .to(part("copy"), { opacity: 0, y: -40, duration: 0.4 }, "handoff")
       .to(part("dim"), { opacity: 1, duration: 0.4 }, "handoff")
       .to(part("stripe"), { scaleY: 2.5, duration: 0.4 }, "handoff");
