@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { readLimitedText } from "@/lib/http/read-body";
 import { emailNewLead } from "@/lib/leads/email";
 import { isBotSubmission, limiterFor, maxBodyBytes, withoutHoneypot } from "@/lib/leads/guard";
 import { notifyNewLead } from "@/lib/leads/notify";
@@ -48,17 +49,17 @@ export async function POST(request: Request): Promise<NextResponse<QuoteLeadResp
     );
   }
 
-  // 2. Read the body with a size cap.
-  const raw = await request.text();
+  // 2. Read the body with a size cap in bytes, stopping as soon as it is passed (lib/http/read-body.ts).
+  const raw = await readLimitedText(request, maxBodyBytes);
 
-  if (raw.length > maxBodyBytes) {
+  if (!raw.ok) {
     return validationError([{ path: ["body"], message: "Request is too large" }]);
   }
 
   let body: unknown;
 
   try {
-    body = JSON.parse(raw);
+    body = JSON.parse(raw.text);
   } catch {
     return validationError([{ path: ["body"], message: "Request body must be valid JSON" }]);
   }

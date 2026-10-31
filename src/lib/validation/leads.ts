@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+// Zod 4 compiles fast validators with new Function() when it can, and first probes for that with a caught
+// new Function(""). The site's Content-Security-Policy allows no eval, so in the browser every form page
+// filed a CSP violation report for that probe (the forms still worked: Zod falls back). jitless skips the
+// probe and the compiled path; for forms of a dozen fields the difference in speed is not measurable.
+// Set here because every form and the quote route import this module before parsing anything.
+z.config({ jitless: true });
+
 export const leadStatusSchema = z.enum([
   "NEW",
   "CONTACTED",

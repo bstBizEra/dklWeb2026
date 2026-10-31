@@ -107,3 +107,31 @@ const cachedPage = cache(loadPage);
 export async function getPageContent(fallback: PageContent): Promise<PageContent> {
   return (await cachedPage(fallback.id)) ?? fallback;
 }
+
+// When each published CMS page was last changed, by route id, for the sitemap. Built-in pages have no
+// reliable date, so they are simply absent: an honest missing lastmod is better than "now" on every build,
+// which search engines learn to ignore. Without a database, or on any error, the map is empty.
+export async function getPageDates(): Promise<Map<string, Date>> {
+  if (!cmsEnabled()) return new Map();
+
+  try {
+    const cms = await getCms();
+    const result = await cms.find({
+      collection: "pages",
+      where: { _status: { equals: "published" } },
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+    });
+    const dates = new Map<string, Date>();
+    for (const doc of result.docs as unknown as Doc[]) {
+      const id = str(doc.routeId);
+      const updated = str(doc.updatedAt);
+      const date = updated ? new Date(updated) : undefined;
+      if (id && date && !Number.isNaN(date.getTime())) dates.set(id, date);
+    }
+    return dates;
+  } catch {
+    return new Map();
+  }
+}

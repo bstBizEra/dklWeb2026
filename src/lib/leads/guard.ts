@@ -58,4 +58,5 @@ export function withoutHoneypot<T extends object>(data: T): Omit<T, typeof honey
   return copy as Omit<T, typeof honeypotField>;
 }
 
+// Bytes, not characters. A full request in Lao (3 bytes per character) stays far below this.
 export const maxBodyBytes = 20_000;

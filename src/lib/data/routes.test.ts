@@ -34,9 +34,9 @@ describe("route registry", () => {
     }
   });
 
-  it("keeps unpublished routes out of the header, related links and sitemap", () => {
+  it("keeps unpublished routes out of the header, related links and sitemap", async () => {
     const unpublished = routes.filter((route) => !route.published).map((route) => route.href);
-    const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname);
+    const sitemapPaths = (await sitemap()).map((entry) => new URL(entry.url).pathname);
 
     expect(navRoutes().every((route) => route.published)).toBe(true);
     expect(relatedRoutes("rental").every((route) => route.published)).toBe(true);

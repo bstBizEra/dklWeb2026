@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.21.3",
+  "version": "0.22.0",
   "status": "local-preview",
   "releaseDate": "2026-10-31",
-  "changeLevel": "patch",
-  "summary": "Quote-form hardening: no shared-bucket lockout, visible and importable fallback leads, startup check for the CMS secret.",
+  "changeLevel": "minor",
+  "summary": "Content-Security-Policy in report-only mode with a report endpoint, byte-limited request bodies, and sitemap dates from the CMS.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

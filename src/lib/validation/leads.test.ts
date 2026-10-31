@@ -42,3 +42,11 @@ describe("quoteRequestSchema", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("Content-Security-Policy compatibility", () => {
+  it("runs Zod without eval, so form pages file no CSP report (no new Function probe)", async () => {
+    const { z } = await import("zod");
+    await import("./leads");
+    expect(z.config().jitless).toBe(true);
+  });
+});

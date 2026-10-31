@@ -2,6 +2,24 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.22.0] - 2026-10-31
+
+### Minor Changed
+
+- **Content-Security-Policy, step 1: report-only** (owner request: "implement items 4-6", codebase review item 4).
+  - Reason: the site had no CSP, which left the admin and the lead forms without a second line of defence against injected scripts.
+  - Policy (`src/lib/security-headers.ts`): own origin only for scripts, styles, images, fonts, connections, workers and frames; `object-src 'none'`; `frame-ancestors`, `base-uri` and `form-action` `'self'`; no `unsafe-eval` in production (added only for `next dev`). `'unsafe-inline'` stays for scripts (Next.js page data, the JSON-LD and `/app` platform scripts) and styles (GSAP), because nonces would make every page render per request. Sent as `Content-Security-Policy-Report-Only` (`cspMode`), so nothing can break yet. It covers `/admin` too, so its reports show what Payload's admin would need.
+  - New `POST /api/csp-report` (`src/lib/csp-report.ts`): reads both report formats, logs `[csp] <directive> blocked <origin> on <path>` once per distinct violation per process, never query strings or script samples; 16 KB cap, 20 reports per address per minute, always 204.
+  - Found and fixed while testing: Zod 4 probes `new Function("")` in the browser, so every page with a form (`/`, `/contact`, `/request-quote`, `/app/request`) filed an eval violation. The forms would have kept working under enforcement (Zod catches it), but every view would have filed a false report. `z.config({ jitless: true })` in `src/lib/validation/leads.ts` removes the probe; test in `leads.test.ts`.
+  - Found while testing: with both `report-uri` and `report-to`, Chromium ignores `report-uri` and uses the batched Reporting API, which delivered nothing within 65 seconds (headless Chromium, minimal reproduction); `report-uri` alone arrived at once. The policy therefore uses `report-uri` only and sends no `Reporting-Endpoints` header.
+  - QA: production build in headless Chromium, 13 paths (home, about, contact, quote, rental, used sales, an industry page, knowledge center, a 404, `/app`, `/app/request`, `/app/services`, `/app/offline`) at 1440x900 and 390x844, scrolled: no CSP messages and no page errors, and the hero's GSAP scene still moves. A deliberate cross-origin image on `/about` reached the endpoint and logged exactly `[csp] img-src blocked https://example.com on /about` (the `?visitor=` query was dropped). Not checked: `/admin`, which needs a database; its reports will come from the preview.
+  - Next step (a release of its own): review the `[csp]` lines from the preview, including `/admin`, then set `cspMode` to `"enforce"`.
+- **Request bodies are capped in bytes while they are read** (review item 5). `request.text()` read the whole body before the 20,000 check, and the check counted characters, not bytes. `src/lib/http/read-body.ts` refuses a declared `Content-Length` over the cap without reading and cuts a streamed body off as soon as it passes the cap (tests: Lao text counted in bytes, a character split across chunks, a lying `Content-Length`, at most 3 chunks pulled for a 100-byte cap). Used by the quote route and the CSP endpoint. The API answer is unchanged (400 `VALIDATION_ERROR`).
+- **Sitemap dates are real** (review item 6). Every entry carried `lastModified` set to the build time, a signal search engines learn to ignore. Now a page carries the CMS row's `updatedAt` when it has a published CMS row (`getPageDates` in `src/lib/cms/pages.ts`), and no `lastModified` otherwise. The sitemap is regenerated at most hourly on the running server (`revalidate = 3600`), because the build runs without the database settings.
+  - Not done: rebuilding the `.ua/` knowledge graph. It needs the Understand-Anything `/understand` Claude Code plugin, which was not available in this session; the graph is generated output and was not edited by hand. Run `/understand` (see `docs/knowledge-graph.md`) after this merges.
+  - QA: 22 new tests (298 total, all pass); lint and typecheck clean; build passes.
+  - Rollback: revert this release. No data or migration changes; removing `/api/csp-report` only stops the reports.
+
 ## [0.21.3] - 2026-10-31
 
 ### Patch Changed
