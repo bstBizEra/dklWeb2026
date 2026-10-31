@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+# DK LAO deploy, run on the server as the dklao user through an SSH forced command. One script, two targets;
+# the target comes from the forced command, never from the caller (docs/deploy-checklist.md 3a and 3b):
+#   restrict,command="/home/dklao/bin/dklao-deploy preview"    ssh-ed25519 AAAA... github-actions-dklao-preview
+#   restrict,command="/home/dklao/bin/dklao-deploy production" ssh-ed25519 AAAA... github-actions-dklao-production
+# Each key can therefore deploy its own target only. The workflow sends
+#   ssh dklao@host "deploy <target>-<run>-<sha>" < bundle
+# and this script saves the bundle, checks out its tag, installs and builds, restarts the target's service and
+# checks that the new build is served. If the build or the check fails, it rebuilds and restarts the previous
+# version.
+#
+# Targets:
+#   preview     built-in settings (the preview instance: ~/dklao-app, port 3110, dklao-site).
+#   production  no built-in settings: it refuses to run until ~/.config/dklao-deploy-production.conf sets
+#               APP, PORT, ENV_FILE and RESTART_REQUEST. It always dumps the database first.
+# Either target's settings can be overridden in ~/.config/dklao-deploy-<target>.conf (KEY=value lines; only
+# the keys below are accepted; ~/ is expanded). If production runs on the preview instance itself (the same
+# APP), its file must say SHARED_WITH_PREVIEW=yes, and then preview deploys are refused, so pushes to main can
+# never reach the live site.
+set -euo pipefail
+umask 077
+
+# The account's own tools first (~/bin/pnpm, docs/deploy-checklist.md 3a), then cPanel's Node.js.
+export PATH="$HOME/bin:/opt/cpanel/ea-nodejs22/bin:/usr/local/bin:$HOME/.local/share/pnpm:/usr/bin:/bin"
+export NEXT_TELEMETRY_DISABLED=1
+
+target="${1:-preview}"
+BUNDLES="$HOME/deploy-bundles"
+LOGS="$HOME/deploy-logs"
+KEEP_BUNDLES=5
+MAX_BUNDLE_BYTES=209715200 # 200 MB
+
+case "$target" in
+  preview)
+    APP="$HOME/dklao-app"; PORT=3110; ENV_FILE="$HOME/.config/dklao-site.env"
+    RESTART_REQUEST="$HOME/.deploy/restart-request"; BACKUP_ALWAYS=no ;;
+  production)
+    APP=""; PORT=""; ENV_FILE=""; RESTART_REQUEST=""; BACKUP_ALWAYS=yes ;;
+  *)
+    echo "unknown target: $target" >&2; exit 2 ;;
+esac
+SHARED_WITH_PREVIEW=no
+
+# Reads KEY=value settings. Only known keys; anything else stops the deploy.
+read_settings() {
+  local file="$1" key value
+  [[ -f "$file" ]] || return 0
+  while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    [[ -z "$key" || "$key" == \#* ]] && continue
+    value="${value%\"}"; value="${value#\"}"; value="${value/#\~\//$HOME/}"
+    case "$key" in
+      APP | PORT | ENV_FILE | RESTART_REQUEST | BACKUP_ALWAYS | SHARED_WITH_PREVIEW) printf -v "$key" '%s' "$value" ;;
+      *) echo "unknown setting $key in $file" >&2; exit 4 ;;
+    esac
+  done < "$file"
+}
+read_settings "$HOME/.config/dklao-deploy-$target.conf"
+
+if [[ "$target" == "production" ]]; then
+  if [[ -z "$APP" || -z "$PORT" || -z "$ENV_FILE" || -z "$RESTART_REQUEST" ]]; then
+    echo "production is not configured: set APP, PORT, ENV_FILE and RESTART_REQUEST in ~/.config/dklao-deploy-production.conf" >&2
+    exit 4
+  fi
+  if [[ "$APP" == "$HOME/dklao-app" && "$SHARED_WITH_PREVIEW" != "yes" ]]; then
+    echo "production APP is the preview instance; set SHARED_WITH_PREVIEW=yes to confirm (preview deploys then stop)" >&2
+    exit 4
+  fi
+else
+  # Production shares this instance: the preview target is closed so main can never deploy to the live site.
+  production_shared=no
+  ( SHARED_WITH_PREVIEW=no; read_settings "$HOME/.config/dklao-deploy-production.conf"; [[ "$SHARED_WITH_PREVIEW" == "yes" ]] ) && production_shared=yes
+  if [[ "$production_shared" == "yes" ]]; then
+    echo "preview deploys are closed: production runs on this instance (SHARED_WITH_PREVIEW=yes)" >&2
+    exit 5
+  fi
+fi
+[[ "$PORT" =~ ^[0-9]+$ ]] || { echo "PORT must be a number" >&2; exit 4; }
+
+read -r action tag extra <<<"${SSH_ORIGINAL_COMMAND:-}" || true
+if [[ "${action:-}" != "deploy" || -n "${extra:-}" || ! "${tag:-}" =~ ^${target}-[0-9]+-[0-9a-f]{7,40}$ ]]; then
+  echo "usage: deploy ${target}-<run>-<sha>" >&2
+  exit 2
+fi
+
+command -v pnpm >/dev/null || { echo "pnpm not found on PATH ($PATH)" >&2; exit 3; }
+mkdir -p "$BUNDLES" "$LOGS"
+
+bundle="$BUNDLES/$tag.bundle"
+head -c "$MAX_BUNDLE_BYTES" > "$bundle"
+cd "$APP"
+git bundle verify --quiet "$bundle"
+
+previous="$(git describe --tags --always)"
+echo "previous=$previous" > "$LOGS/$tag.previous"
+git fetch --quiet "$bundle" "refs/tags/$tag:refs/tags/$tag"
+
+# Each step is chained: inside an if condition bash ignores set -e.
+build() {
+  git checkout --quiet --force "$1" && pnpm install --frozen-lockfile && pnpm build
+}
+
+healthy() {
+  # The site must answer 200 with the build just made: every page carries Next's random build ID (escaped,
+  # as \"b\":\"<id>\"), so an old process that has not restarted yet never passes.
+  local code="" page id
+  id="$(cat "$APP/.next/BUILD_ID")"
+  for _ in $(seq 1 30); do
+    sleep 2
+    page="$(curl -s -w '\n%{http_code}' "http://127.0.0.1:$PORT/" || true)"
+    code="${page##*$'\n'}"
+    [[ "$code" == "200" && "$page" == *"$id"* ]] && return 0
+  done
+  echo "health check: last answer $code, build $id not served" >&2
+  return 1
+}
+
+backup_database() {
+  # Migrations run when the service starts and cannot be undone by a code rollback, so a release that
+  # changes src/payload/migrations gets a database dump first; production gets one on every release.
+  # No dump, no restart.
+  if [[ "$BACKUP_ALWAYS" != "yes" ]] && git diff --quiet "$previous" "$tag" -- src/payload/migrations; then
+    return 0
+  fi
+  local url dump
+  url="$(grep -m1 '^DATABASE_URL=' "$ENV_FILE" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')"
+  [[ -n "$url" ]] || { echo "DATABASE_URL not found in $ENV_FILE" >&2; return 1; }
+  dump="$HOME/backups/$target-before-$tag.sql"
+  mkdir -p "$HOME/backups" && pg_dump --dbname="$url" > "$dump" || { echo "database dump failed" >&2; return 1; }
+  echo "database saved to $dump"
+}
+
+restart() {
+  # dklao's SSH shell is cPanel's jailshell (nosuid), where sudo cannot work. Writing this file starts the
+  # target's root path unit, which restarts that target's service and nothing else (checklist 3a, 3b).
+  printf '%s %s\n' "$tag" "$(date -u +%FT%TZ)" > "$RESTART_REQUEST" ||
+    { echo "restart request failed: check $RESTART_REQUEST and its path unit (docs/deploy-checklist.md 3a/3b)" >&2; return 1; }
+}
+
+echo "deploy $tag to $target (running: $previous)"
+if ! build "$tag" > "$LOGS/build-$tag.log" 2>&1; then
+  echo "build of $tag failed; rolling back to $previous. Last lines of $LOGS/build-$tag.log:" >&2
+  tail -n 40 "$LOGS/build-$tag.log" >&2
+elif backup_database && restart && healthy; then
+  echo "deployed $tag"
+  # Keep the newest bundles only.
+  ls -1t "$BUNDLES"/"$target"-*.bundle 2>/dev/null | tail -n +"$((KEEP_BUNDLES + 1))" | xargs -r rm -f --
+  exit 0
+else
+  echo "$tag was built but not brought up; rolling back to $previous" >&2
+fi
+
+if build "$previous" > "$LOGS/rollback-$tag.log" 2>&1 && restart && healthy; then
+  echo "rolled back to $previous" >&2
+else
+  echo "ROLLBACK FAILED: see $LOGS/rollback-$tag.log; the site needs attention" >&2
+fi
+exit 1

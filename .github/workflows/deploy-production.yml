@@ -1,0 +1,145 @@
+# Deploys a released version of main to the live site (www.dklao.com) on the DK LAO cPanel server.
+# Setup, secrets and the server side: docs/deploy-checklist.md section 3b. Preview deploys stay in
+# deploy-preview.yml; CI (ci.yml) stays check-only.
+#
+# When it runs: only by hand (Actions > Deploy production > Run workflow), from main, naming the version to
+# release. The run checks that main is at that version, runs every gate including the build, then waits for
+# approval in the "production" environment before anything reaches the server.
+#
+# The code travels as a git bundle over one SSH connection. The production deploy key may run nothing but
+# `~/bin/dklao-deploy production` on the server (a forced command), which dumps the database, builds,
+# restarts and rolls back.
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, as in package.json (for example 0.23.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# One production deploy at a time, and never cancelled halfway. Separate from the preview queue.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: Checks before release
+    # Production deploys come from main only, whatever branch the run was started on.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      sha: ${{ steps.release.outputs.sha }}
+    env:
+      PAYLOAD_SECRET: ci-build-only-not-a-secret-0000000000000000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Main is at the requested version
+        id: release
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          if ! printf '%s' "$REQUESTED" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version must look like 1.2.3, got: $REQUESTED"; exit 1
+          fi
+          actual="$(node -p 'require("./package.json").version')"
+          if [ "$actual" != "$REQUESTED" ]; then
+            echo "::error::main is at $actual, not $REQUESTED. Merge the release first, or ask for $actual."; exit 1
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Version records agree
+        run: pnpm version:status
+      - name: Test
+        run: pnpm test -- --run
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build
+
+  deploy:
+    name: Deploy to www.dklao.com
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL || 'https://www.dklao.com' }}
+    env:
+      DEPLOY_SHA: ${{ needs.verify.outputs.sha }}
+      VERSION: ${{ inputs.version }}
+      SITE_URL: ${{ vars.PRODUCTION_URL || 'https://www.dklao.com' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+          fetch-depth: 0 # the bundle carries the full history, so the server needs nothing else
+
+      - name: Check the deploy is set up
+        env:
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+        run: |
+          # A production deploy is always asked for by a person: missing secrets fail loudly.
+          if [ -z "$SSH_KEY" ] || [ -z "$SSH_KNOWN_HOSTS" ] || [ -z "$SSH_HOST" ]; then
+            echo "::error::Production secrets are not set. See docs/deploy-checklist.md section 3b."; exit 1
+          fi
+
+      - name: Bundle the release
+        run: |
+          tag="production-${GITHUB_RUN_NUMBER}-${DEPLOY_SHA::7}"
+          git tag "$tag" "$DEPLOY_SHA"
+          git bundle create "$RUNNER_TEMP/deploy.bundle" "refs/tags/$tag"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+
+      - name: Ship, build and restart on the server
+        env:
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/production_deploy
+          chmod 600 ~/.ssh/production_deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The server's forced command reads the bundle from stdin and prints its progress.
+          ssh -i ~/.ssh/production_deploy -p "${SSH_PORT:-22}" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 \
+            "dklao@${SSH_HOST}" "deploy ${TAG}" < "$RUNNER_TEMP/deploy.bundle"
+
+      - name: Check the live site
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            page=$(curl -fsS "${SITE_URL}/" || true)
+            if printf '%s' "$page" | grep -q "favicon.ico?v=${VERSION}"; then
+              echo "${SITE_URL} serves ${VERSION} (${TAG})"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::${SITE_URL} did not serve ${VERSION} after the deploy."
+          exit 1
+
+      - name: Remove the key from the runner
+        if: always()
+        run: rm -f ~/.ssh/production_deploy

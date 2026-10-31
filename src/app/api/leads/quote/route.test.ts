@@ -15,6 +15,8 @@ const emailNewLead = vi.fn();
 vi.mock("@/lib/leads/store", () => ({ storeLead: (lead: unknown) => storeLead(lead) }));
 vi.mock("@/lib/leads/notify", () => ({ notifyNewLead: (lead: unknown) => notifyNewLead(lead) }));
 vi.mock("@/lib/leads/email", () => ({ emailNewLead: (lead: unknown) => emailNewLead(lead) }));
+const raiseAlert = vi.fn(async () => "throttled");
+vi.mock("@/lib/ops/alert", () => ({ raiseAlert: (...args: unknown[]) => raiseAlert(...(args as [])) }));
 
 const { POST } = await import("./route");
 
@@ -39,6 +41,9 @@ function post(body: unknown, ip = "203.0.113.10", raw?: string) {
 beforeEach(() => {
   vi.stubEnv("LEAD_RATE_LIMIT", "3");
   vi.stubEnv("LEAD_RATE_WINDOW_SECONDS", "600");
+  // Count in memory here; the database store has its own tests (rate-store*.test.ts, guard.test.ts).
+  vi.stubEnv("LEAD_RATE_STORE", "memory");
+  raiseAlert.mockClear();
   resetLeadLimiter();
   storeLead.mockReset().mockImplementation(async (lead: object) => ({ ...lead, leadId: "DKL-777", recordId: 9 }));
   notifyNewLead.mockReset().mockResolvedValue("sent");
@@ -191,5 +196,44 @@ describe("POST /api/leads/quote", () => {
 
     expect(storeLead.mock.calls[0][0]).not.toHaveProperty("homepageUrl");
     expect(notifyNewLead.mock.calls[0][0]).not.toHaveProperty("homepageUrl");
+  });
+});
+
+describe("ops alerts from the quote endpoint", () => {
+  it("raises none when everything works", async () => {
+    await post(good, "203.0.113.60");
+    expect(raiseAlert).not.toHaveBeenCalled();
+  });
+
+  it("raises one per failed delivery path, with the lead reference only", async () => {
+    emailNewLead.mockResolvedValue("failed");
+    notifyNewLead.mockResolvedValue("failed");
+    await post(good, "203.0.113.61");
+
+    expect(raiseAlert).toHaveBeenCalledWith("lead.email_failed", { leadId: "DKL-777" });
+    expect(raiseAlert).toHaveBeenCalledWith("lead.webhook_failed", { leadId: "DKL-777" });
+  });
+
+  it("does not alert for a channel that is simply not configured", async () => {
+    emailNewLead.mockResolvedValue("skipped");
+    notifyNewLead.mockResolvedValue("skipped");
+    await post(good, "203.0.113.62");
+    expect(raiseAlert).not.toHaveBeenCalled();
+  });
+
+  it("raises a warning when the lead is only in the fallback file", async () => {
+    storeLead.mockImplementation(async (lead: object) => ({ ...lead, leadId: "DKL-888", notInCms: true }));
+    await post(good, "203.0.113.63");
+    expect(raiseAlert).toHaveBeenCalledWith("lead.not_in_cms", { leadId: "DKL-888" });
+  });
+
+  it("raises a critical alert when every path failed", async () => {
+    storeLead.mockRejectedValue(new Error("disk full"));
+    emailNewLead.mockResolvedValue("failed");
+    notifyNewLead.mockResolvedValue("skipped");
+    const response = await post(good, "203.0.113.64");
+
+    expect(response.status).toBe(500);
+    expect(raiseAlert).toHaveBeenCalledWith("lead.all_failed", { leadId: expect.stringMatching(/^DKL-/) });
   });
 });

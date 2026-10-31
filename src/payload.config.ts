@@ -36,7 +36,14 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   db: postgresAdapter({
     // Serverless hosting opens many short-lived connections: keep each instance small (set 1 to 3 on Vercel).
-    pool: { connectionString: process.env.DATABASE_URL, max: Number(process.env.DATABASE_POOL_MAX ?? 10) },
+    // connectionTimeoutMillis: a query waits at most this long for a connection instead of forever, so a
+    // database outage turns into a quick error the lead pipeline can fall back from.
+    pool: {
+      connectionString: process.env.DATABASE_URL,
+      max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+      connectionTimeoutMillis: Number(process.env.DATABASE_CONNECT_TIMEOUT_MS ?? 5000),
+      idleTimeoutMillis: 30_000,
+    },
     push: false, // schema changes go through reviewed migrations only
     migrationDir: path.resolve(dirname, "payload/migrations"),
     // In production the app applies any pending migrations when it starts, with the DATABASE_URL from the

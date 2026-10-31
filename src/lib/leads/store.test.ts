@@ -63,4 +63,41 @@ describe("storeLead", () => {
     vi.doUnmock("@payload-config");
     await rm(dir, { recursive: true, force: true });
   });
+
+  it("falls back to the file, with the same reference, when the database stops answering", async () => {
+    // A database that went away mid-connection: the save never settles.
+    vi.doMock("payload", () => ({ getPayload: async () => ({ db: {}, create: () => new Promise(() => {}) }) }));
+    vi.doMock("@payload-config", () => ({ default: {} }));
+    vi.stubEnv("DATABASE_URL", "postgres://127.0.0.1:1/none");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dir = await mkdtemp(path.join(tmpdir(), "dkl-"));
+    vi.spyOn(process, "cwd").mockReturnValue(dir);
+
+    const started = Date.now();
+    const stored = await storeLead(sample, 50);
+
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(stored.notInCms).toBe(true);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("database save failed (SaveTimeout)"));
+    const saved = JSON.parse((await readFile(path.join(dir, "data", "leads-local.jsonl"), "utf8")).trim());
+    expect(saved.leadId).toBe(stored.leadId);
+    vi.doUnmock("payload");
+    vi.doUnmock("@payload-config");
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("gives the database row the reference chosen before saving", async () => {
+    const create = vi.fn(async ({ data }: { data: { leadId: string } }) => ({ id: 7, leadId: data.leadId }));
+    vi.doMock("payload", () => ({ getPayload: async () => ({ db: {}, create }) }));
+    vi.doMock("@payload-config", () => ({ default: {} }));
+    vi.stubEnv("DATABASE_URL", "postgres://127.0.0.1:1/none");
+
+    const stored = await storeLead(sample);
+
+    expect(stored.leadId).toMatch(/^DKL-[0-9a-f-]{36}$/);
+    expect(create.mock.calls[0][0].data.leadId).toBe(stored.leadId);
+    expect(stored.recordId).toBe(7);
+    vi.doUnmock("payload");
+    vi.doUnmock("@payload-config");
+  });
 });

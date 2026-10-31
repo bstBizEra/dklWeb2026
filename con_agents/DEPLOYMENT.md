@@ -53,9 +53,11 @@ Settings:    /home/dklao/.config/dklao-site.env (mode 600), never committed
 Migrations:  applied on start in production (prodMigrations)
 ```
 
-Preview deploys are automated: `.github/workflows/deploy-preview.yml` deploys `main`, any pull request labelled `deploy:preview`, or a branch run by hand, to preview.dklao.com. Each run waits for owner approval in the GitHub `preview` environment. It uses a deploy key limited to `scripts/server/dklao-deploy-preview` on the server (forced command), which backs up the database before new migrations and rolls back automatically on a failed build or health check. The live site (dklao.com) is still deployed by hand.
+Preview deploys are automated: `.github/workflows/deploy-preview.yml` deploys `main`, any pull request labelled `deploy:preview`, or a branch run by hand, to preview.dklao.com. Each run waits for owner approval in the GitHub `preview` environment. It uses a deploy key limited to `scripts/server/dklao-deploy preview` on the server (forced command), which backs up the database before new migrations and rolls back automatically on a failed build or health check.
 
-Step-by-step procedure, server facts and open items: `docs/deploy-checklist.md` (automatic preview deploys: section 3a). Moving to another hosting model (for example a VPS with Docker/Podman) requires the change control in `TECHNOLOGY_SOFTWARE_INFRA.md` §12 and owner approval.
+Production deploys (since 0.23.0): `.github/workflows/deploy-production.yml`, started by hand from `main` with the version to release. It checks that `main` is at that version, runs every gate including the build, waits for owner approval in the GitHub `production` environment, and deploys through a separate key limited to `dklao-deploy production`, which dumps the database before every release. The script refuses production until the server has a production settings file, and refuses preview deploys if production shares the preview instance, so pushes to `main` can never reach the live site. Choosing a separate production instance (recommended) or the shared one: `docs/deploy-checklist.md` section 3b.
+
+Step-by-step procedure, server facts and open items: `docs/deploy-checklist.md` (automatic preview deploys: section 3a; production deploys: section 3b; alerts: section 9). Moving to another hosting model (for example a VPS with Docker/Podman) requires the change control in `TECHNOLOGY_SOFTWARE_INFRA.md` §12 and owner approval.
 
 ## 6. Rollback Rules
 

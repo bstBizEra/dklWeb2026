@@ -25,22 +25,30 @@ export type NotifyResult = "sent" | "skipped" | "failed";
 
 const localHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
-export function readNotifyConfig(env: Record<string, string | undefined> = process.env): NotifyConfig | null {
-  const raw = env.LEAD_NOTIFY_WEBHOOK_URL?.trim();
-  if (!raw) return null;
+// A webhook address is accepted only over https (http only for this machine) and without credentials in
+// it. Shared with the ops alert webhook (lib/ops/alert.ts).
+export function safeWebhookUrl(raw: string | undefined): string | null {
+  const value = raw?.trim();
+  if (!value) return null;
 
   let url: URL;
   try {
-    url = new URL(raw);
+    url = new URL(value);
   } catch {
     return null;
   }
 
   const secure = url.protocol === "https:" || (url.protocol === "http:" && localHosts.has(url.hostname));
   if (!secure || url.username || url.password) return null;
+  return url.toString();
+}
+
+export function readNotifyConfig(env: Record<string, string | undefined> = process.env): NotifyConfig | null {
+  const url = safeWebhookUrl(env.LEAD_NOTIFY_WEBHOOK_URL);
+  if (!url) return null;
 
   return {
-    url: url.toString(),
+    url,
     secret: env.LEAD_NOTIFY_WEBHOOK_SECRET?.trim() || undefined,
     details: env.LEAD_NOTIFY_DETAILS === "full" ? "full" : "summary",
     timeoutMs: 4000,
