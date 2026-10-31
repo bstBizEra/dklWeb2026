@@ -79,6 +79,15 @@ describe("notification content", () => {
   });
 });
 
+describe("fallback leads", () => {
+  it("tells the receiver when a lead is not in the CMS", () => {
+    const body = buildNotification({ ...lead, notInCms: true }, { details: "summary", appUrl: "https://www.dklao.com" });
+    expect(body.notInCms).toBe(true);
+    expect(body.text).toContain("NOT IN THE CMS YET");
+    expect(buildNotification(lead, { details: "summary", appUrl: "https://www.dklao.com" })).not.toHaveProperty("notInCms");
+  });
+});
+
 describe("sending", () => {
   it("skips quietly when not configured", async () => {
     const send = vi.fn();

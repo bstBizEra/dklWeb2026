@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { emailNewLead } from "@/lib/leads/email";
-import { isBotSubmission, leadLimiter, maxBodyBytes, withoutHoneypot } from "@/lib/leads/guard";
+import { isBotSubmission, limiterFor, maxBodyBytes, withoutHoneypot } from "@/lib/leads/guard";
 import { notifyNewLead } from "@/lib/leads/notify";
 import { clientKey } from "@/lib/leads/rate-limit";
 import { storeLead } from "@/lib/leads/store";
@@ -29,8 +29,10 @@ function validationError(details: unknown[]): NextResponse<QuoteLeadResponse> {
 }
 
 export async function POST(request: Request): Promise<NextResponse<QuoteLeadResponse>> {
-  // 1. Per-address limit first, so a flood is stopped before any work is done.
-  const limit = leadLimiter().check(clientKey(request));
+  // 1. Per-address limit first, so a flood is stopped before any work is done. Requests without a usable
+  // address share one larger budget instead of the per-address one (see limiterFor).
+  const key = clientKey(request);
+  const limit = limiterFor(key).check(key);
 
   if (!limit.allowed) {
     return NextResponse.json(

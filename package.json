@@ -1,6 +1,6 @@
 {
   "name": "dklao",
-  "version": "0.21.2",
+  "version": "0.21.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,7 +17,8 @@
     "cms:importmap": "payload generate:importmap",
     "cms:migrate:create": "payload migrate:create",
     "cms:migrate": "payload migrate",
-    "cms:seed": "payload run scripts/seed-cms.ts"
+    "cms:seed": "payload run scripts/seed-cms.ts",
+    "cms:import-fallback-leads": "payload run scripts/import-fallback-leads.ts"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",

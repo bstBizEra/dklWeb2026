@@ -143,6 +143,32 @@ describe("POST /api/leads/quote", () => {
     expect((await post(good, "198.51.100.2")).status).toBe(200);
   });
 
+  it("does not close the form for everyone when the proxy sends no address", async () => {
+    vi.stubEnv("LEAD_SHARED_RATE_LIMIT", "10");
+    const anonymous = () =>
+      POST(new Request("http://localhost/api/leads/quote", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(good) }));
+
+    // Well past the per-address limit of 3, still accepted: the shared bucket has its own budget.
+    for (let i = 0; i < 10; i++) expect((await anonymous()).status).toBe(200);
+    // It is still a ceiling.
+    expect((await anonymous()).status).toBe(429);
+    // Visitors with an address keep their own budgets.
+    expect((await post(good, "198.51.100.9")).status).toBe(200);
+  });
+
+  it("warns once in production when requests arrive without an address", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const anonymous = () =>
+      POST(new Request("http://localhost/api/leads/quote", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(good) }));
+
+    await anonymous();
+    await anonymous();
+
+    expect(warn.mock.calls.filter(([line]) => String(line).includes("X-Real-IP"))).toHaveLength(1);
+    warn.mockRestore();
+  });
+
   it("rejects invalid input with 400 and saves nothing", async () => {
     const bodies = [{}, { ...good, message: "hi" }, { ...good, phone: "abc" }, { ...good, email: "nope" }];
 

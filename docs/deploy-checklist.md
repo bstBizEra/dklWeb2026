@@ -152,11 +152,12 @@ fails on the pnpm layout. The app runs outside cPanel instead. Backups of every 
 | `APP_URL` | `https://www.dklao.com` |
 | `DATABASE_URL` | `postgres://dklao_app:<percent-encoded password>@127.0.0.1:5432/dklao_dklApp` |
 | `DATABASE_POOL_MAX` | `5` |
-| `PAYLOAD_SECRET` | New random 32 bytes (see `.env.example`), different from any developer machine |
+| `PAYLOAD_SECRET` | New random 32 bytes (see `.env.example`), different from any developer machine. Since 0.21.3 the service refuses to start (exit 1, reason in the journal) when it is shorter than 32 characters |
 | `SMTP_HOST`, `SMTP_PORT` | `mail.dklao.com`, `465` |
 | `SMTP_USER`, `SMTP_PASS` | `notify@dklao.com` and its mailbox password (owner choice, 2026-10-25; `website@dklao.com` does not exist) |
 | `LEAD_NOTIFY_EMAIL` | `info@dklao.com` |
 | `LEAD_RATE_LIMIT`, `LEAD_RATE_WINDOW_SECONDS` | Optional. Defaults 5 requests per 600 seconds per address |
+| `LEAD_SHARED_RATE_LIMIT` | Optional. Default 60 per window for requests without `X-Real-IP`. A `[leads] ... without a usable X-Real-IP` line in the journal means the proxy stopped passing the address: fix the proxy |
 | `LEAD_NOTIFY_WEBHOOK_URL` and its secret | Optional, only if a WhatsApp or chat automation is added |
 
 - [x] Filled 2026-10-25 at the owner's request without anyone seeing a password: the server generated a new
@@ -215,8 +216,12 @@ Test on a temporary address first: `preview.dklao.com` (done 2026-10-26). Cloudf
 - Database: restore the `pg_dump` taken before the migration
   (`psql -U dklao_app -h 127.0.0.1 dklao_dklApp < ~/backups/dklao_dklApp-<date>.sql`) or the nightly cPanel
   backup. Migrations are forward-only; do not edit a migration that has run.
-- Leads that arrived while the database was down are in `~/dklao-app/data/leads-local.jsonl` and in the
-  info@dklao.com inbox.
+- Leads that arrived while the database was down are in `~/dklao-app/data/leads-local.jsonl` (mode 600) and in
+  the info@dklao.com inbox, where their subject starts with `[NOT IN CMS]`; the journal has a
+  `[leads] FALLBACK <leadId>` line for each. Once the database is back, import them into `/admin`, keeping
+  their references, with `pnpm cms:import-fallback-leads` in `~/dklao-app` with the site's settings loaded.
+  It skips leads already in the CMS, so it is safe to run again, and never edits the file. When it reports
+  no failures and no invalid lines, move the file out of the app folder (for example to `~/backups/`).
 
 ## 9. Not covered yet
 

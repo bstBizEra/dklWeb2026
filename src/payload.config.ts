@@ -14,6 +14,7 @@ import { Navigation } from "./payload/globals/navigation";
 import { SiteFacts } from "./payload/globals/site-facts";
 import { migrations } from "./payload/migrations";
 import { payloadEmailOptions } from "./lib/leads/email";
+import { payloadSecret } from "./lib/payload-secret";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const emailOptions = payloadEmailOptions();
@@ -27,7 +28,8 @@ export default buildConfig({
   collections: [Users, Pages, Articles, Leads],
   globals: [SiteFacts, Navigation],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET ?? "",
+  // Throws at startup when a production server with a database has no proper secret (lib/payload-secret.ts).
+  secret: payloadSecret(),
   graphQL: { disable: true },
   // Password reset and invite emails, over the same SMTP account as lead email (see lib/leads/email.ts).
   ...(emailOptions ? { email: nodemailerAdapter(emailOptions) } : {}),

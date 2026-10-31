@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-import type { NotifiableLead, NotifyResult } from "@/lib/leads/notify";
+import { notInCmsNote, type NotifiableLead, type NotifyResult } from "@/lib/leads/notify";
 
 // New-lead email to DK LAO's own inbox, sent over SMTP. The mailbox and the SMTP account come from
 // environment variables, so no password lives in the repository. The email carries the full request,
@@ -45,10 +45,13 @@ export function readEmailConfig(env: Record<string, string | undefined> = proces
 const oneLine = (value: string) => value.replace(/[\r\n]+/g, " ").trim();
 
 export function buildLeadEmail(lead: NotifiableLead, config: Pick<EmailConfig, "from" | "to">, now: Date = new Date()) {
-  const subject = oneLine(`New ${lead.equipmentOrServiceCategory} request from ${lead.companyName} (${lead.leadId})`);
+  const subject = oneLine(
+    `${lead.notInCms ? "[NOT IN CMS] " : ""}New ${lead.equipmentOrServiceCategory} request from ${lead.companyName} (${lead.leadId})`,
+  );
   const text = [
     `New request from the DK LAO website.`,
     ``,
+    ...(lead.notInCms ? [notInCmsNote, ``] : []),
     `Reference:  ${lead.leadId}`,
     `Category:   ${lead.equipmentOrServiceCategory}`,
     `Company:    ${lead.companyName}`,

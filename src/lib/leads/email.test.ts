@@ -71,6 +71,13 @@ describe("lead email", () => {
     expect(message.text).toContain("call or WhatsApp");
   });
 
+  it("flags a lead that is only in the server's fallback file", () => {
+    const message = buildLeadEmail({ ...lead, notInCms: true }, { from: "web@dklao.com", to: ["info@dklao.com"] });
+    expect(message.subject).toMatch(/^\[NOT IN CMS\] New Forklift rental request/);
+    expect(message.text).toContain("pnpm cms:import-fallback-leads");
+    expect(buildLeadEmail(lead, { from: "web@dklao.com", to: ["info@dklao.com"] }).text).not.toContain("NOT IN THE CMS");
+  });
+
   it("keeps visitor text on one line in the subject, so it cannot add headers", () => {
     const message = buildLeadEmail({ ...lead, companyName: "Acme\r\nBcc: victim@example.com" }, { from: "web@dklao.com", to: ["info@dklao.com"] });
     expect(message.subject).not.toMatch(/[\r\n]/);

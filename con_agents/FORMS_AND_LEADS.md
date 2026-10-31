@@ -108,10 +108,13 @@ Thank you. Your request has been received. DK LAO will review your requirement a
 Both forms (the website `QuoteRequestForm` on every page that shows it, and the phone app's quote and
 service form at `/app/request`) post to `POST /api/leads/quote`, which:
 
-1. Rate-limits per address and drops bot submissions (hidden `homepageUrl` field) with a normal thank-you.
+1. Rate-limits per address (requests without a usable `X-Real-IP` share a larger budget,
+   `LEAD_SHARED_RATE_LIMIT`, so they cannot lock out every visitor) and drops bot submissions (hidden `homepageUrl` field) with a normal thank-you.
 2. Validates with `quoteRequestSchema`; field problems come back per field and are shown on the field.
 3. Saves the lead: Payload `leads` collection when `DATABASE_URL` is set, otherwise `data/leads-local.jsonl`.
-   If the database cannot be reached, the lead is saved to the local file instead of being lost.
+   If the database cannot be reached, the lead is saved to the local file instead of being lost (mode 600),
+   logged as `[leads] FALLBACK <leadId>`, and flagged in the email subject (`[NOT IN CMS]`) and the webhook
+   (`notInCms: true`). `pnpm cms:import-fallback-leads` moves such leads into the CMS with their references.
 4. Emails the full request to `LEAD_NOTIFY_EMAIL` (default `info@dklao.com`) over SMTP
    (`src/lib/leads/email.ts`), with Reply-To set to the visitor's email when given, and calls the optional
    webhook (`src/lib/leads/notify.ts`). Neither ever fails the request on its own.
