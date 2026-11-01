@@ -212,7 +212,7 @@ export function RequestForm({ initialMode, initialCategory }: { initialMode: Mod
 
   if (status.state === "sent") {
     return (
-      <div className="grid gap-7">
+      <div className="grid grid-cols-1 gap-7">
         <section role="status" className="grid justify-items-center gap-2 rounded-[14px] bg-ios-cell px-5 py-8 text-center android:rounded-[28px] android:bg-md-surface-low">
           <CheckCircle2 className="size-14 text-ios-green" aria-hidden="true" />
           <p className="m-0 text-[22px] leading-7 font-bold">Request sent</p>
@@ -259,7 +259,9 @@ export function RequestForm({ initialMode, initialCategory }: { initialMode: Mod
   const input = "min-w-0 flex-1 border-0 bg-transparent py-[11px] text-[17px] text-ios-label outline-none placeholder:text-ios-secondary android:py-1 android:text-[16px] android:leading-6 android:tracking-[0.5px] android:text-md-on-surface android:placeholder:text-md-on-surface-variant";
 
   return (
-    <form ref={formRef} noValidate onSubmit={submit} className="grid gap-7" aria-label={mode === "service" ? "Book a service" : "Request a quote"}>
+    // grid-cols-1 caps the column at the screen width (minmax(0, 1fr)). With an auto column, the widest
+    // select's option text set the width and the form overflowed a 390px phone by 27px (found 2026-11-01).
+    <form ref={formRef} noValidate onSubmit={submit} className="grid grid-cols-1 gap-7" aria-label={mode === "service" ? "Book a service" : "Request a quote"}>
       <div role="radiogroup" aria-label="Request type" className="grid grid-cols-2 rounded-[9px] bg-ios-fill p-0.5 android:overflow-hidden android:rounded-full android:border android:border-md-outline android:bg-transparent android:p-0">
         {(["quote", "service"] as const).map((option) => (
           <button
