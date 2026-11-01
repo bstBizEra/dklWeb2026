@@ -1,5 +1,5 @@
 // Link check. Run with: pnpm links:check [base-url] [--skip-external]
-// Crawls every page reachable from "/" and "/app" on a running site (default http://127.0.0.1:3000; start
+// Crawls every page reachable from "/" and "/app" on a running site (default http://127.0.0.1:3001; start
 // it with `pnpm build && pnpm start` first) and checks each link found:
 //   - internal pages return 200 (redirects are reported too),
 //   - "#anchor" links point at an id on the target page,
@@ -8,7 +8,7 @@
 // Exits 1 when anything fails, so it can gate a release. External checks read status codes only: some
 // sites (Facebook, X) answer 200 with a login page.
 const args = process.argv.slice(2);
-const base = (args.find((arg) => !arg.startsWith("--")) ?? process.env.LINKS_BASE ?? "http://127.0.0.1:3000").replace(/\/$/, "");
+const base = (args.find((arg) => !arg.startsWith("--")) ?? process.env.LINKS_BASE ?? "http://127.0.0.1:3001").replace(/\/$/, "");
 const skipExternal = args.includes("--skip-external");
 const fileLink = /\.(webp|png|jpe?g|svg|pdf|ico|xml|txt|webmanifest|js|css)$/i;
 const skipCrawl = (path) => path.startsWith("/admin") || path.startsWith("/api");

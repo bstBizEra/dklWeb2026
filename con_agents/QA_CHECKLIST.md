@@ -88,8 +88,8 @@ navigation, cards, footers or contact facts.
 
 ```powershell
 pnpm build
-pnpm start                                  # in its own terminal, serves http://127.0.0.1:3000
-pnpm links:check                            # checks http://127.0.0.1:3000
+pnpm start                                  # in its own terminal, serves http://127.0.0.1:3001
+pnpm links:check                            # checks http://127.0.0.1:3001
 pnpm links:check https://snare-snowsuit-obnoxious.ngrok-free.dev   # another running copy
 pnpm links:check --skip-external            # offline: internal links and anchors only
 ```
@@ -125,5 +125,5 @@ pnpm verify
 $env:TEST_DATABASE_URL="postgresql://USER:PASSWORD@127.0.0.1:5433/dklao_ci_empty"; pnpm verify
 ```
 
-Then check the built site at `http://localhost:3000/` (`pnpm start`) for any visible change.
+Then check the built site at `http://localhost:3001/` (`pnpm start`) for any visible change.
 

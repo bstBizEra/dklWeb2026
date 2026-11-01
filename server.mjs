@@ -2,7 +2,7 @@
 // file and gives it the port to listen on, so the built Next.js app (pages, API and /admin) is served
 // through a small HTTP server here. Build first with `pnpm build`.
 //
-// Local check: `node server.mjs` serves http://127.0.0.1:3000 (or PORT / HOSTNAME from the environment).
+// Local check: `node server.mjs` serves http://127.0.0.1:3001 (or PORT / HOSTNAME from the environment).
 // Under Passenger the port and host are handled by Passenger itself.
 import { createServer } from "node:http";
 import { dirname } from "node:path";
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 import next from "next";
 
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 3001);
 const hostname = process.env.HOSTNAME || "127.0.0.1";
 
 const app = next({ dev: false, dir: dirname(fileURLToPath(import.meta.url)), hostname, port });

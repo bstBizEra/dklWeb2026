@@ -7,7 +7,7 @@ This file controls deployment workflow, environment separation, build checks, re
 ## 2. Environment Strategy
 
 ```txt
-local       Developer machine (http://localhost:3000)
+local       Developer machine (http://localhost:3001)
 preview     Private owner-review site at https://preview.dklao.com on the DK LAO cPanel server
 production  Live DK LAO website/platform at https://dklao.com (switch still pending owner approval)
 ```

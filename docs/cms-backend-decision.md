@@ -55,7 +55,7 @@ Fact to watch: Payload was acquired by Figma in June 2025 and stayed MIT.
 
 | Piece | Role | Decision | Watch out |
 |---|---|---|---|
-| Local (Laragon, pnpm) | Build and test | Yes, with a local Postgres or a free Supabase dev project | Port 3000 per AGENTS.md |
+| Local (Laragon, pnpm) | Build and test | Yes, with a local Postgres or a free Supabase dev project | Port 3001 per AGENTS.md |
 | GitHub `bstBizEra/dklWeb2026` | Source, CI (test, lint, typecheck, build), preview branches | Yes, already set up | `main` stays protected |
 | Vercel | Hosting, preview deployments | Yes, **Pro plan for production**: Hobby is non-commercial only | A company website is commercial |
 | Supabase | Postgres and file storage | Yes, **Pro plan (USD 25 a month) for production**: Free projects pause after one week of inactivity | Pick the Singapore region, closest to Laos |

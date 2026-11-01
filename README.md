@@ -519,7 +519,7 @@ pnpm dev
 Default local URL:
 
 ```txt
-http://localhost:3000
+http://localhost:3001
 ```
 
 For the CMS locally, set `DATABASE_URL` and `PAYLOAD_SECRET`, then run `pnpm cms:migrate` and optionally `pnpm cms:seed` (see `docs/cms-local-setup.md`).
