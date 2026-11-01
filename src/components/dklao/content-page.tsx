@@ -14,7 +14,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container, Eyebrow, Section, SectionHeader } from "@/components/ui/section";
-import { relatedToShow, visibleSections, type ItemDetails, type PageContent, type ResolvedSection } from "@/lib/data/pages";
+import {
+  contactPage,
+  forkliftRentalPage,
+  relatedToShow,
+  requestQuotePage,
+  visibleSections,
+  withPhotoTitles,
+  type ItemDetails,
+  type PageContent,
+  type ResolvedSection,
+} from "@/lib/data/pages";
+import { sitemapPages } from "@/lib/data/sitemap-pages";
 import { getSiteFacts } from "@/lib/cms/site-facts";
 import { jsonLd } from "@/lib/data/json-ld";
 import { breadcrumbTrail, getRoute, quoteHref, routeIntent } from "@/lib/data/routes";
@@ -355,8 +366,15 @@ function SectionBody({ section, pageId, t, form }: { section: ResolvedSection; p
   );
 }
 
+// The built-in English pages, by id: a Lao page (built in or from the CMS) takes its card photos from these.
+const englishPages: Record<string, PageContent> = {
+  ...sitemapPages,
+  ...Object.fromEntries([forkliftRentalPage, requestQuotePage, contactPage].map((english) => [english.id, english])),
+};
+
 export async function ContentPage({ page, locale, children, showClients = false }: ContentPageProps) {
-  const sections = visibleSections(page, await getSiteFacts(locale));
+  const pageWithPhotos = locale === "en" ? page : withPhotoTitles(page, englishPages[page.id]);
+  const sections = visibleSections(pageWithPhotos, await getSiteFacts(locale));
   const trail = breadcrumbTrail(page.id, locale);
   const related = relatedToShow(page.id, sections, locale);
   const messages = getMessages(locale);

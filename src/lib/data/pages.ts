@@ -42,6 +42,8 @@ export type PageItem = {
   fact?: FactKey;
   // Draft wording the owner has not confirmed yet. Hidden on the site until this is cleared.
   needsConfirmation?: boolean;
+  // The English card's title on a translated page, set by withPhotoTitles: the photo is matched on it.
+  photoTitle?: string;
 };
 
 export type SectionKind = "cards" | "steps" | "table" | "faq" | "list" | "stats" | "chips" | "text" | "form";
@@ -76,7 +78,7 @@ export type PageContent = {
 };
 
 export type ResolvedSection = Omit<PageSection, "items" | "needsConfirmation"> & {
-  items: { title: string; description?: string; href?: string; details?: ItemDetails; anchor?: string; routeId?: string }[];
+  items: { title: string; description?: string; href?: string; details?: ItemDetails; anchor?: string; routeId?: string; photoTitle?: string }[];
 };
 
 export function visibleSections(
@@ -119,8 +121,12 @@ export function visibleSections(
             description: description ?? undefined,
             href: route && isPublishedRoute(route.id) ? route.href : undefined,
             routeId: item.routeId,
-            // A detail section only for cards, and only when its content is complete.
-            ...(section.kind === "cards" && isCompleteDetails(item.details) ? { details: item.details, anchor: detailAnchor(item.title) } : {}),
+            photoTitle: item.photoTitle,
+            // A detail section only for cards, and only when its content is complete. The anchor comes from
+            // the English title: a Lao title has no Latin letters and gave every section "detail-".
+            ...(section.kind === "cards" && isCompleteDetails(item.details)
+              ? { details: item.details, anchor: detailAnchor(item.photoTitle ?? item.title) }
+              : {}),
           },
         ];
       }),
@@ -190,6 +196,20 @@ export function localizePage(page: PageContent, locale: Locale): PageContent {
     lao.set(page, merged);
   }
   return merged;
+}
+
+// Card photos are matched on the English card title (library.ts). A translated page, built in or from the
+// CMS, keeps each card's English photo: an item gets the title of the item at the same place on the English
+// page (translations follow the English order). The English page itself is returned unchanged.
+export function withPhotoTitles(page: PageContent, english: PageContent | undefined): PageContent {
+  if (!english || page === english) return page;
+  return {
+    ...page,
+    sections: page.sections.map((section, s) => ({
+      ...section,
+      items: section.items.map((item, i) => ({ ...item, photoTitle: english.sections[s]?.items[i]?.title })),
+    })),
+  };
 }
 
 export const requestQuotePage: PageContent = {
