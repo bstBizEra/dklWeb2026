@@ -733,6 +733,26 @@ export const sitemapPageList: PageContent[] = [
           },
         ],
       },
+      // Ported from feature/services-all-products (maintenance checklist). General guidance on what a
+      // check covers, not a promise of service terms (maintenanceTerms is not confirmed).
+      {
+        kind: "list",
+        title: "What a maintenance check covers",
+        intro: "A full preventive maintenance check usually goes through these points. The technician confirms which apply to your machine.",
+        items: [
+          { title: "Safety equipment", description: "Seat belt, horn, lights and beacon, overhead guard, load backrest." },
+          { title: "Battery and charger", description: "Charge level, terminals, electrolyte level on lead-acid batteries, charger output, cables." },
+          { title: "Engine and fuel", description: "Engine oil, coolant, air filter, fuel lines, exhaust." },
+          { title: "Electric motor", description: "Brushes, wiring insulation, controller temperature, drive motor noise, regenerative braking." },
+          { title: "Brakes", description: "Service brake travel and hold, parking brake, brake fluid, drum or disc wear, pedals." },
+          { title: "Chassis and frame", description: "Cracks, counterweight bolts, steps and handrails, operator compartment, nameplate." },
+          { title: "Mast and forks", description: "Mast channels and lubrication, lift chains, fork thickness and twist, fork tips, carriage rollers." },
+          { title: "Tyres", description: "Tread depth, sidewalls, pressure on pneumatic tyres, rims and hubs, wheel nut torque." },
+          { title: "Hydraulics", description: "Fluid level, cylinder seals, hoses, pump pressure, tilt cylinders." },
+          { title: "Paint and labels", description: "Rust and corrosion, safety decals, warning labels, capacity plate." },
+          { title: "Cleaning and test run", description: "Operator area, grease points, cleaning after service, a final test of every function." },
+        ],
+      },
       {
         kind: "form",
         title: "Book a service visit",

@@ -22,6 +22,29 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
     - File upload, which comes in a later stage.
   - Checked in the browser: the cards use the confirmed phone, WhatsApp `…3355` and address. Choosing maintenance hides the equipment questions. A test inquiry returned a reference and was saved as a NEW `CONTACT_GENERAL` lead with its extra lines; the test line was removed afterwards. `/lo/contact` shows Lao text while sending English values.
   - Tests: `src/lib/validation/contact.test.ts`, `src/app/api/contact/route.test.ts`.
+- **Port of `feature/services-all-products`, stage 2: maintenance service page.** This branch's `/maintenance-service` already covered the feature page's service types, process, FAQ and service promise, so only the new parts were ported.
+  - `POST /api/leads/service` runs on the shared pipeline. `src/lib/validation/service.ts` asks for:
+    - service type and equipment;
+    - brand, with optional model and serial number;
+    - site location and urgency (normal, urgent or machine stopped);
+    - an optional preferred date and whether a quotation is needed first;
+    - a description of up to 500 characters.
+
+    It files a `SERVICE_BOOKING` lead whose category is the service type, with the answers as labelled lines. A test checks that the longest message fits in 1200 characters.
+  - The page's form section now shows the service booking form (`service-booking-form.tsx`) in place of the generic quote form, in English and Lao (`serviceForm` messages).
+  - New section, "What a maintenance check covers": the feature branch's 11-group checklist, worded as general guidance rather than a service promise. It is in English and in the Lao page data, before the booking form.
+  - Not ported, on purpose:
+    - Onsite service, the in-house workshop and the "site visit?" question. Both services are still marked needsConfirmation, so they are not offered as service types either.
+    - The "rental with complete maintenance support included" claim (`maintenanceTerms` is not confirmed).
+    - The service tracks for rental, warehouse and parts, which belong to their own pages.
+    - The anatomy diagram and sub-navigation.
+    - Photo upload, which comes in a later stage.
+  - For the owner: the page's existing hero text still says "at your site or in our workshop", although those services are not confirmed. This was not changed here.
+  - Checked in the browser:
+    - The checklist and booking form show in English and Lao, and the booking form replaces the quote form.
+    - The service types offered are only the confirmed ones.
+    - A test booking returned a reference and was saved as a NEW `SERVICE_BOOKING` lead; the test line was removed.
+  - Tests: `src/lib/validation/service.test.ts`, `src/app/api/leads/service/route.test.ts`, `src/lib/data/maintenance-page.test.ts`.
 
 - **Lao language merged in, with a 🇬🇧 EN / 🇱🇦 ລາວ flag toggle** (owner request 2026-11-01: "add Lao Translation, Lao/Eng Flag toggle"; merged locally from `motor/i18n/lao-translation`, TASK-012, which was never merged to `main` and had no changelog entry). What the merge brings: Lao pages under `/lo/...` (English stays unprefixed; `/en/...` redirects 308 to it) through `src/proxy.ts`, site routes moved under `src/app/(site)/[locale]/`, `src/messages/en.ts` / `lo.ts` with Lao text, Lao CMS fields (Payload `localization`, migration `20261026_050606_lao_localization`, run before `20261031_120000_lead_rate_limits`), the sitemap listing every page in both languages with hreflang links, and Lao text for the phone app (`src/components/app/screens.tsx`, `src/messages/lo/mobile-app.ts`). Conflicts resolved by keeping both sides: the sitemap keeps the CMS lastModified dates, the app request form keeps `grid-cols-1`, `leads.ts` keeps `z.config({ jitless: true })`, and `payload.config.ts` keeps `payloadSecret()`.
   - **Flags.** `src/components/i18n/flag.tsx` draws the UK and Lao flags as inline SVG (Windows shows flag emoji as the letters "GB" / "LA"); the website header toggle and the app's top-bar switch show each flag before "EN" / "ລາວ". The text stays, so each button's name is still the language, and the flags are `aria-hidden`.

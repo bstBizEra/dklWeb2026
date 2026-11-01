@@ -9,6 +9,7 @@ import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
 import { TrustedBy } from "@/components/dklao/trusted-by";
 import { QuoteRequestForm } from "@/components/dklao/quote-request-form";
+import { ServiceBookingForm } from "@/components/dklao/service-booking-form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -218,7 +219,8 @@ function CardDetail({ item, pageId, shaded, locale, t }: { item: DetailItem; pag
   );
 }
 
-function SectionBody({ section, pageId, t, form }: { section: ResolvedSection; pageId: string; t: Labels; form: Messages["quoteForm"] }) {
+function SectionBody({ section, pageId, t, messages }: { section: ResolvedSection; pageId: string; t: Labels; messages: Messages }) {
+  const form = messages.quoteForm;
   if (section.kind === "list") {
     // On the page surface, not in a box: a short title over its explanation, marked by an orange square.
     return (
@@ -280,6 +282,14 @@ function SectionBody({ section, pageId, t, form }: { section: ResolvedSection; p
   }
 
   if (section.kind === "form") {
+    // The maintenance page books a service with its own form (ported from feature/services-all-products).
+    if (pageId === "maintenance") {
+      return (
+        <div className="max-w-[820px]">
+          <ServiceBookingForm labels={messages.serviceForm} contact={messages.contactForm} shared={form} />
+        </div>
+      );
+    }
     const intent = leadIntents[routeIntent(pageId) ?? "general"];
     return (
       <div className="max-w-[820px]">
@@ -493,7 +503,7 @@ export async function ContentPage({ page, locale, children, showClients = false 
           <Section spacing="tight">
             <Container>
               <SectionHeader title={section.title} copy={section.intro} />
-              <SectionBody section={section} pageId={page.id} t={t} form={messages.quoteForm} />
+              <SectionBody section={section} pageId={page.id} t={t} messages={messages} />
             </Container>
           </Section>
           {section.items
