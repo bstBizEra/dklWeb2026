@@ -27,7 +27,7 @@ export const Navigation: GlobalConfig = {
       type: "array",
       labels: { singular: "Menu item", plural: "Menu items" },
       fields: [
-        { name: "label", type: "text", required: true, validate: noConfirmMarker },
+        { name: "label", type: "text", required: true, localized: true, validate: noConfirmMarker },
         routeId(false),
         {
           name: "children",
@@ -35,9 +35,9 @@ export const Navigation: GlobalConfig = {
           type: "array",
           admin: { description: "Add links to turn this item into a dropdown. The page above is then ignored." },
           fields: [
-            { name: "label", type: "text", required: true, validate: noConfirmMarker },
+            { name: "label", type: "text", required: true, localized: true, validate: noConfirmMarker },
             routeId(true),
-            { name: "description", type: "text", validate: noConfirmMarker },
+            { name: "description", type: "text", localized: true, validate: noConfirmMarker },
           ],
         },
       ],

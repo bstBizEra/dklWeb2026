@@ -1,6 +1,7 @@
 // Generated from the DK LAO content sitemap (16 pages). Edit copy in the CMS admin, or regenerate from the sitemap.
 // Items marked needsConfirmation hold draft wording the owner has not confirmed: they stay hidden on the site.
-import type { PageContent } from "@/lib/data/pages";
+import { localizePage, type PageContent } from "@/lib/data/pages";
+import type { Locale } from "@/lib/i18n";
 import { industryPageList } from "@/lib/data/industry-pages";
 import { quoteHref } from "@/lib/data/routes";
 
@@ -1929,3 +1930,7 @@ export const sitemapPageList: PageContent[] = [
 export const sitemapPages: Record<string, PageContent> = Object.fromEntries(
   sitemapPageList.map((page) => [page.id, page]),
 );
+
+// The sitemap pages in one locale (Lao text: src/messages/lo/sitemap-pages.ts and industry-pages.ts).
+export const sitemapPagesFor = (locale: Locale): Record<string, PageContent> =>
+  locale === "en" ? sitemapPages : Object.fromEntries(sitemapPageList.map((page) => [page.id, localizePage(page, locale)]));

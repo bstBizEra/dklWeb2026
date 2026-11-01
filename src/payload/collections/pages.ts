@@ -9,7 +9,9 @@ import { isOwner, isOwnerOrEditor, publishedOrStaff } from "../access";
 const text = (name: string, extra: Partial<Field> = {}): Field =>
   ({ name, type: "text", validate: noConfirmMarker, ...extra }) as Field;
 const area = (name: string, extra: Partial<Field> = {}): Field =>
-  ({ name, type: "textarea", validate: noConfirmMarker, ...extra }) as Field;
+  ({ name, type: "textarea", validate: noConfirmMarker, localized: true, ...extra }) as Field;
+// Visible text: one value per locale (English and Lao). Ids, links, kinds and facts are shared.
+const words = (name: string, extra: Partial<Field> = {}): Field => text(name, { localized: true, ...extra } as Partial<Field>);
 
 const knownRoute = (value: unknown): true | string =>
   !value || (typeof value === "string" && getRoute(value)) ? true : "Unknown route id. Use an id from the route registry.";
@@ -18,7 +20,7 @@ const link = (name: string, label: string): Field => ({
   name,
   label,
   type: "group",
-  fields: [text("label"), text("href")],
+  fields: [words("label"), text("href")],
 });
 
 // One row per public page, shaped like the built-in PageContent so the site can swap sources.
@@ -42,12 +44,12 @@ export const Pages: CollectionConfig = {
       validate: (value: unknown) => (typeof value === "string" && getRoute(value) ? true : "Use an id from the route registry, for example rental, contact or quote."),
       admin: { description: "Route registry id. It decides which URL shows this page." },
     } as Partial<Field>),
-    text("metaTitle", { required: true, admin: { description: "Search title, up to 60 characters including the site suffix." } } as Partial<Field>),
+    words("metaTitle", { required: true, admin: { description: "Search title, up to 60 characters including the site suffix." } } as Partial<Field>),
     area("metaDescription", { required: true, admin: { description: "Search description, up to 155 characters." } } as Partial<Field>),
-    text("eyebrow"),
-    text("h1", { required: true }),
+    words("eyebrow"),
+    words("h1", { required: true } as Partial<Field>),
     area("intro"),
-    { name: "ctas", type: "array", labels: { singular: "Button", plural: "Buttons" }, fields: [text("label", { required: true } as Partial<Field>), text("href", { required: true } as Partial<Field>)] },
+    { name: "ctas", type: "array", labels: { singular: "Button", plural: "Buttons" }, fields: [words("label", { required: true } as Partial<Field>), text("href", { required: true } as Partial<Field>)] },
     {
       name: "sections",
       type: "array",
@@ -61,7 +63,7 @@ export const Pages: CollectionConfig = {
           options: sectionKinds.map((value) => ({ label: value, value })),
           admin: { description: "How the section looks: cards, steps, table, faq, list, stats, chips, text or form." },
         },
-        text("title", { required: true } as Partial<Field>),
+        words("title", { required: true } as Partial<Field>),
         area("intro"),
         area("body", { admin: { description: "Paragraph for text sections.", condition: (_data: unknown, siblingData: { kind?: string }) => siblingData?.kind === "text" } } as Partial<Field>),
         {
@@ -74,7 +76,7 @@ export const Pages: CollectionConfig = {
           name: "items",
           type: "array",
           fields: [
-            text("title", { required: true } as Partial<Field>),
+            words("title", { required: true } as Partial<Field>),
             area("description", { admin: { description: "Ignored when a fact is chosen." } } as Partial<Field>),
             text("routeId", { validate: knownRoute, admin: { description: "Optional link. Shown only when that page is published." } } as Partial<Field>),
             {
@@ -114,21 +116,21 @@ export const Pages: CollectionConfig = {
                   maxRows: 3,
                   labels: { singular: "Figure", plural: "Figures" },
                   admin: { description: "Optional. Only figures you can back up, for example \"200–250 h\" with \"typical service interval\"." },
-                  fields: [text("value", { required: true } as Partial<Field>), text("label", { required: true } as Partial<Field>)],
+                  fields: [words("value", { required: true } as Partial<Field>), words("label", { required: true } as Partial<Field>)],
                 },
                 {
                   name: "topics",
                   type: "array",
                   labels: { singular: "Topic", plural: "Topics" },
                   admin: { description: "Two or more. Give each its own heading, written for this service." },
-                  fields: [text("heading", { required: true } as Partial<Field>), area("body", { required: true } as Partial<Field>)],
+                  fields: [words("heading", { required: true } as Partial<Field>), area("body", { required: true } as Partial<Field>)],
                 },
-                text("checklistHeading", { label: "Checklist heading", admin: { description: "Optional, for example \"Signs it is time for a service\"." } } as Partial<Field>),
+                words("checklistHeading", { label: "Checklist heading", admin: { description: "Optional, for example \"Signs it is time for a service\"." } } as Partial<Field>),
                 {
                   name: "checklist",
                   type: "array",
                   labels: { singular: "Point", plural: "Points" },
-                  fields: [text("point", { required: true } as Partial<Field>)],
+                  fields: [words("point", { required: true } as Partial<Field>)],
                 },
               ],
             },
@@ -140,7 +142,7 @@ export const Pages: CollectionConfig = {
       name: "closing",
       type: "group",
       label: "Closing call to action",
-      fields: [text("title"), area("copy"), link("primary", "Primary button"), link("secondary", "Secondary button")],
+      fields: [words("title"), area("copy"), link("primary", "Primary button"), link("secondary", "Secondary button")],
     },
   ],
 };

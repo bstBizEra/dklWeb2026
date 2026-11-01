@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { en, type Messages } from "@/messages/en";
+
 // Zod 4 compiles fast validators with new Function() when it can, and first probes for that with a caught
 // new Function(""). The site's Content-Security-Policy allows no eval, so in the browser every form page
 // filed a CSP violation report for that probe (the forms still worked: Zod falls back). jitless skips the
@@ -29,34 +31,38 @@ export const leadTypeSchema = z.enum([
   "CONTACT_GENERAL",
 ]);
 
-const optionalEmail = z.preprocess(
-  (value) => (value === "" ? undefined : value),
-  z.email("Enter an email like name@company.com, or leave it empty").optional(),
-);
+type ValidationMessages = Messages["quoteForm"]["validation"];
 
-export const quoteRequestSchema = z.object({
-  leadType: leadTypeSchema.default("QUOTE_REQUEST"),
-  companyName: z.string().trim().min(2, "Enter your company or organisation name").max(120),
-  contactPerson: z.string().trim().min(2, "Enter the name of the person we should contact").max(120),
-  phone: z
-    .string()
-    .trim()
-    .min(6, "Enter a phone number with at least 6 digits")
-    .max(40)
-    .regex(/^[+()\d\s.-]+$/, "Use digits, spaces and + ( ) - only, for example +856 20 5555 1234"),
-  email: optionalEmail,
-  equipmentOrServiceCategory: z
-    .string()
-    .trim()
-    .min(2, "Equipment or service category is required")
-    .max(120),
-  message: z.string().trim().min(10, "Describe your requirement in at least 10 characters").max(1200, "Keep the requirement under 1,200 characters"),
-  sourcePage: z.string().trim().min(1).max(200).default("/"),
-  submissionTimestamp: z.string().datetime().default(() => new Date().toISOString()),
-  status: leadStatusSchema.default("NEW"),
-  // Hidden trap field. Real visitors never fill it; the route treats a filled value as a bot.
-  homepageUrl: z.string().max(200).optional(),
-});
+// The quote request rules. The form builds them with the visitor's language; the API route and every
+// other caller use quoteRequestSchema, which carries the English messages.
+export function quoteRequestSchemaFor(m: ValidationMessages = en.quoteForm.validation) {
+  const optionalEmail = z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.email(m.email).optional(),
+  );
+
+  return z.object({
+    leadType: leadTypeSchema.default("QUOTE_REQUEST"),
+    companyName: z.string().trim().min(2, m.companyName).max(120),
+    contactPerson: z.string().trim().min(2, m.contactPerson).max(120),
+    phone: z
+      .string()
+      .trim()
+      .min(6, m.phoneMin)
+      .max(40)
+      .regex(/^[+()\d\s.-]+$/, m.phoneFormat),
+    email: optionalEmail,
+    equipmentOrServiceCategory: z.string().trim().min(2, m.category).max(120),
+    message: z.string().trim().min(10, m.messageMin).max(1200, m.messageMax),
+    sourcePage: z.string().trim().min(1).max(200).default("/"),
+    submissionTimestamp: z.string().datetime().default(() => new Date().toISOString()),
+    status: leadStatusSchema.default("NEW"),
+    // Hidden trap field. Real visitors never fill it; the route treats a filled value as a bot.
+    homepageUrl: z.string().max(200).optional(),
+  });
+}
+
+export const quoteRequestSchema = quoteRequestSchemaFor();
 
 export type QuoteRequestInput = z.input<typeof quoteRequestSchema>;
 export type QuoteRequest = z.output<typeof quoteRequestSchema>;

@@ -1,14 +1,16 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import { ArrowRight } from "lucide-react";
 
 import { LiftOffScene } from "@/components/dklao/scenes/lift-off";
 import { Button } from "@/components/ui/button";
 import { Container, Eyebrow } from "@/components/ui/section";
 import type { Cta } from "@/lib/data/homepage";
+import type { Messages } from "@/messages";
 
 type MainHeroProps = {
   ctas: Cta[];
+  labels: Messages["home"]["hero"];
 };
 
 // The forklift is one transparent cut-out (698 by 483px).
@@ -54,7 +56,7 @@ const rise = {
 // The hero is scene 01 of the homepage scroll story ("Lift-off", scenes/lift-off.tsx). Everything marked
 // data-lift is moved by that scene while the hero is pinned; at rest, and with reduced motion, the hero
 // looks exactly as it does without the scene.
-export function MainHero({ ctas }: MainHeroProps) {
+export function MainHero({ ctas, labels: t }: MainHeroProps) {
   return (
     // Navy gradient, with the blueprint grid and the brand stripe as their own layers so the scene can move them.
     <LiftOffScene className="relative isolate grid min-h-[500px] items-center data-[pinned=true]:min-h-[calc(100svh-78px)] bg-[linear-gradient(135deg,var(--dk-color-navy-950),var(--dk-color-navy-900)_56%,var(--dk-color-navy-800))] pt-6 pb-9 text-white max-[780px]:min-h-0 max-[780px]:pb-[30px]">
@@ -67,19 +69,16 @@ export function MainHero({ ctas }: MainHeroProps) {
 
       <Container className="grid grid-cols-1 items-center gap-[42px] min-[1121px]:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] max-[780px]:gap-[18px]">
         <div data-lift="copy" className="grid gap-[18px] max-[780px]:gap-3">
-          <Eyebrow className={`tracking-[0.06em] ${rise.eyebrow}`}>Lifting, Moving, Cleaning &amp; Growing Your Business</Eyebrow>
+          <Eyebrow className={`tracking-[0.06em] ${rise.eyebrow}`}>{t.eyebrow}</Eyebrow>
           <h1
             className={`m-0 max-w-[820px] text-[clamp(2.2rem,3.7vw,3.15rem)] leading-none font-black tracking-[-0.035em] text-balance max-[560px]:text-[clamp(1.85rem,8.2vw,2.15rem)] ${rise.title}`}
           >
-            Forklift Rental, Sales &amp; Service in Laos
+            {t.title}
           </h1>
-          <p className={`m-0 max-w-[34ch] text-[1.15rem] leading-[1.6] text-white/78 ${rise.lede}`}>
-            Rent, buy and maintain forklifts. Source spare parts. Equip your
-            warehouse. One DK LAO team across Laos.
-          </p>
+          <p className={`m-0 max-w-[34ch] text-[1.15rem] leading-[1.6] text-white/78 ${rise.lede}`}>{t.copy}</p>
           <div
             className={`mt-1.5 flex flex-wrap gap-3.5 max-[780px]:mt-0.5 max-[780px]:grid max-[780px]:grid-cols-2 max-[780px]:gap-2.5 ${rise.actions}`}
-            aria-label="Primary actions"
+            aria-label={t.actionsLabel}
           >
             {ctas.slice(0, 2).map((cta) => (
               <Button

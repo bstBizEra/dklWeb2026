@@ -18,7 +18,7 @@ describe("sitemap", () => {
     getPageDates.mockResolvedValue(new Map());
     const entries = await sitemap();
 
-    expect(entries).toHaveLength(publishedRoutes().length);
+    expect(entries).toHaveLength(publishedRoutes().length * 2); // English and Lao
     expect(entries.every((entry) => entry.lastModified === undefined)).toBe(true);
   });
 
@@ -28,7 +28,8 @@ describe("sitemap", () => {
     const entries = await sitemap();
 
     expect(entries.find((entry) => entry.url.endsWith("/about"))?.lastModified).toEqual(changed);
-    expect(entries.filter((entry) => entry.lastModified)).toHaveLength(1);
+    expect(entries.find((entry) => entry.url.endsWith("/lo/about"))?.lastModified).toEqual(changed);
+    expect(entries.filter((entry) => entry.lastModified)).toHaveLength(2);
   });
 
   it("is rebuilt on the running server, where the CMS is reachable", () => {

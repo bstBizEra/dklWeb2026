@@ -1,0 +1,262 @@
+// Interface wording shared by every page (header, menus, footer, 404, language toggle) and the section
+// headings, labels and form text written into the site components. Page content lives in src/lib/data and
+// its Lao overrides in src/messages/lo/. lo.ts must carry every key below: the type checks it.
+export const en = {
+  skipToContent: "Skip to main content",
+  header: {
+    navLabel: "DK LAO primary navigation",
+    homeLabel: "DK LAO home",
+    requestQuote: "Request a Quote",
+    mainMenu: "Main menu",
+  },
+  mobileMenu: {
+    open: "Open navigation menu",
+    title: "Menu",
+    description: "Pages on the DK LAO website",
+    navLabel: "Mobile menu",
+    close: "Close menu",
+  },
+  language: {
+    label: "Language",
+    en: "EN",
+    lo: "ລາວ",
+    enName: "English",
+    loName: "Lao",
+  },
+  notFound: {
+    metaTitle: "Page not found",
+    metaDescription:
+      "The page you are looking for is not available yet. Explore DK LAO forklift rental, sales, spare parts, maintenance, and cleaning equipment workflows.",
+    eyebrow: "Error 404",
+    title: "This page is not available",
+    copy: "The page may have moved or is not published yet. You can return to the homepage or send a request and a DK LAO advisor will route it to the right workflow.",
+    home: "Back to Home",
+    quote: "Request a Quote",
+    popular: "Popular destinations",
+  },
+  floatingActions: {
+    label: "Quick contact actions",
+    quote: "Request a DK LAO quote",
+    contact: "Contact DK LAO advisor",
+  },
+  appBanner: {
+    label: "Install the DK LAO app",
+    title: "Get the DK LAO app",
+    copy: "Quotes, service and directions from your home screen.",
+    install: "Install",
+    close: "Close",
+  },
+  footer: {
+    talkToUs: "Talk to us",
+    leadActions: "Footer lead actions",
+    siteSurvey: "Schedule Site Survey",
+    advisor: "Talk to a DK LAO Advisor",
+    requestQuote: "Request a Quote",
+    channels: "Footer contact channels",
+    social: "Footer social links",
+    // Put before each link group's title in its nav label: "Footer: Equipment".
+    groupPrefix: "Footer:",
+    copyrightPrefix: "Copyright © DK LAO",
+    since: "Since",
+    developedBy: "Develop by:",
+  },
+  trustedBy: {
+    title: "Trusted by businesses and public bodies in Laos",
+    short: "Our clients",
+  },
+  home: {
+    hero: {
+      eyebrow: "Lifting, Moving, Cleaning & Growing Your Business",
+      title: "Forklift Rental, Sales & Service in Laos",
+      copy: "Rent, buy and maintain forklifts. Source spare parts. Equip your warehouse. One DK LAO team across Laos.",
+      actionsLabel: "Primary actions",
+      visualLabel: "DK LAO forklift hero visual",
+      imageAlt: "Modern orange DK LAO forklift hero visual",
+    },
+    proof: {
+      label: "DK LAO at a glance",
+      since: "Serving businesses in Laos since",
+      replies: "AI agents and human advisors work together to reply",
+      baseFigure: "Vientiane",
+      base: "Our base, with customers served online across Laos",
+    },
+    quickQuote: { eyebrow: "Start here", title: "What do you need today?" },
+    solutions: {
+      eyebrow: "What we do",
+      title: "Rent, buy, service and supply in one place",
+      copy: "One team for your forklifts and warehouse: choose what you need and we reply with a quotation.",
+    },
+    rental: {
+      eyebrow: "Forklift rental",
+      title: "Forklift rental for a week, a season or years",
+      copy: "Tell us the load, lift height, site and dates. We match the truck and send a rental quotation.",
+      askPrice: "Ask for Rental Price",
+      requestQuote: "Request a Quote",
+      // Same order as the icons in homepage-sections.tsx: capacity, site, period.
+      facts: [
+        { label: "Capacity", value: "On request" },
+        { label: "Indoor or outdoor", value: "Site matched" },
+        { label: "Rental period", value: "Flexible" },
+      ],
+    },
+    categories: {
+      eyebrow: "Equipment",
+      title: "Browse by equipment need",
+      copy: "Tell us what you move and where. We recommend the equipment and send a quotation.",
+    },
+    anatomy: {
+      eyebrow: "Equipment matching",
+      title: "Know the forklift, ask the right questions",
+      copy: "Every recommendation starts from the same parts of the truck. See what we check before we quote.",
+      imageAlt:
+        "DK LAO forklift anatomy reference showing labeled parts including mast, lift chains, tilt cylinder, load backrest, carriage, forks, safety beacon, overhead guard, operator seat, steering wheel, control levers, hydraulic hoses, engine compartment, counterweight, fuel tank or battery compartment, service access panel, rear steering wheels, front drive wheels, and hydraulic cylinders.",
+    },
+    industries: {
+      eyebrow: "Industries",
+      title: "Equipment for the way your operation works",
+      copy: "Pick your industry to see what slows it down and the equipment that fixes it.",
+    },
+    knowledge: {
+      eyebrow: "Knowledge center",
+      title: "Short guides before you ask for a quote",
+      copy: "What to prepare for a rental request, how to match a spare part and how to choose a floor scrubber.",
+    },
+    quote: {
+      eyebrow: "Request a quote",
+      title: "Tell us what you need",
+      copy: "One short form for rental, sales, service, parts, warehouse or cleaning. An advisor replies with a recommendation and a quotation.",
+      logoAlt: "DK LAO vertical logo",
+      pricing: "Quotation-based pricing. Availability on request.",
+    },
+    final: {
+      title: "Ready when you are",
+      copy: "Send your request any time. An advisor replies with the next step.",
+      primary: "Request a Quote",
+      secondary: "Talk to a DK LAO Advisor",
+    },
+  },
+  about: {
+    hero: {
+      eyebrow: "About DK LAO",
+      title: "Your Forklift and Warehouse Equipment Partner in Laos",
+      copy: "Sales, rental, service, parts, warehouse equipment and cleaning machines, supported by one local team.",
+      visualLabel: "DK LAO forklift and warehouse support",
+      imageAlt: "Forklift prepared for DK LAO industrial equipment support",
+    },
+    snapshot: {
+      eyebrow: "Company snapshot",
+      title: "Established support for lifting, moving, storing, cleaning, and servicing",
+      copy: "DK LAO is organized around practical business needs: equipment supply, rental flexibility, maintenance support, parts availability, warehouse productivity, and professional facility cleaning.",
+    },
+    story: {
+      eyebrow: "Our story",
+      title: "A service-driven industrial equipment company for business operations",
+      copy: "DK LAO is focused on material handling, warehouse operations, forklift solutions, spare parts, after-sales service, rental, and professional cleaning equipment.",
+      p1: "Since 2010, DK LAO has supported businesses that need practical solutions for lifting, moving, stacking, storing, cleaning, and operating more efficiently. The role is not only to supply equipment, but to help customers improve productivity, reduce downtime, manage operational cost, and keep their business moving.",
+      p2: "DK LAO serves logistics, warehousing, manufacturing, construction, retail, distribution, hospitality, food and beverage, industrial facilities, and institutional operations.",
+      collageLabel: "DK LAO service areas",
+      image1Alt: "Forklift and material handling equipment",
+      image2Alt: "Forklift parts and service reference",
+      caption: "Sales, rental, service, parts, warehouse, and cleaning support",
+    },
+    vision: {
+      eyebrow: "Our vision",
+      title: "Practical solutions for warehouse and material handling productivity",
+      copy: "DK LAO aims to become a long-term industrial equipment partner for businesses in Laos by delivering reliable products, professional service, and operational support that helps customers work safer, faster, and more efficiently.",
+    },
+    commitment: {
+      eyebrow: "Our commitment",
+      title: "The right equipment, supported by the right service",
+      copy: "DK LAO helps customers choose equipment and service solutions for real business needs through reliable supply, technical recommendation, responsive after-sales service, maintenance support, flexible rental options, and professional cleaning equipment.",
+    },
+    whatWeDo: {
+      eyebrow: "What we do",
+      title: "Six ways we support your operation",
+      copy: "Rental, sales, service, parts, warehouse and cleaning, from one team.",
+    },
+    why: {
+      eyebrow: "Why businesses choose DK LAO",
+      title: "Operational support beyond equipment supply",
+      copy: "DK LAO helps customers move from requirement to quotation, delivery, service, and long-term support.",
+    },
+    industries: {
+      eyebrow: "Industries we serve",
+      title: "Equipment for the way your industry works",
+      copy: "Each industry has its own loads, sites, safety rules and budget. We recommend around yours.",
+      explore: "Explore Industry",
+    },
+    promise: {
+      eyebrow: "Our service promise",
+      title: "Every recommendation starts by understanding your operation",
+      copy: "From your first message to service after delivery, the same team looks after you.",
+    },
+    final: {
+      title: "Let's Power Your Operation Together",
+      copy: "Tell us what your business needs. DK LAO will help recommend the right forklift, rental plan, warehouse solution, spare parts, maintenance package, or professional cleaning equipment.",
+      primary: "Request a Quote",
+      secondary: "Talk to a DK LAO Advisor",
+    },
+  },
+  // content-page.tsx fills in {title}, {label} and {n}.
+  contentPage: {
+    breadcrumb: "Breadcrumb",
+    readMore: "Read more",
+    readMoreAbout: "Read more about {title}",
+    viewPage: "View page",
+    viewPageOf: "View page: {title}",
+    viewDetails: "View details",
+    viewOf: "View details: {title}",
+    step: "Step {n}",
+    related: "Related solutions",
+    requestQuote: "Request a Quote",
+    pageLink: "{label} page",
+  },
+  quoteForm: {
+    eyebrow: "Central quote request",
+    title: "Tell DK LAO what your operation needs",
+    copy: "Share the equipment or service category, site context, and contact details so the right advisor can review your request.",
+    trap: "Leave this field empty",
+    companyName: "Company or organisation",
+    contactPerson: "Contact person",
+    phone: "Phone number",
+    email: "Email",
+    optional: "(optional)",
+    category: "Equipment or service category",
+    message: "Requirement details",
+    messageHint: "Load, lift height, site and timing, for example: 2.5 t forklift, 4.5 m lift, 3 months, warehouse in Vientiane.",
+    offline: "You are offline. Your details are still here: send again when you are back online, or call or WhatsApp DK LAO.",
+    sendFailed: "Your request could not be sent. Please try again, or call or WhatsApp DK LAO.",
+    checkFields: "Please check the highlighted fields.",
+    // Empty in English: the form shows the server's own thank-you message. Lao has its own.
+    received: "",
+    reference: "Your reference:",
+    // Server errors by error code. A code not listed shows the server's own (English) message.
+    serverErrors: {} as Record<string, string>,
+    sending: "Sending Request",
+    submit: "Request a Quote",
+    // What the category list shows. The value sent is always the English category in src/lib/leads/intents.ts.
+    categories: {
+      rental: "Forklift rental",
+      new: "New forklift sales",
+      used: "Used forklift inquiry",
+      parts: "Spare parts",
+      service: "Maintenance service",
+      warehouse: "Warehouse solutions",
+      cleaning: "Cleaning equipment",
+      general: "General inquiry",
+    },
+    // Field errors, used by src/lib/validation/leads.ts.
+    validation: {
+      email: "Enter an email like name@company.com, or leave it empty",
+      companyName: "Enter your company or organisation name",
+      contactPerson: "Enter the name of the person we should contact",
+      phoneMin: "Enter a phone number with at least 6 digits",
+      phoneFormat: "Use digits, spaces and + ( ) - only, for example +856 20 5555 1234",
+      category: "Equipment or service category is required",
+      messageMin: "Describe your requirement in at least 10 characters",
+      messageMax: "Keep the requirement under 1,200 characters",
+    },
+  },
+};
+
+export type Messages = typeof en;

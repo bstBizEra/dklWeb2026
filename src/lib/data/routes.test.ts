@@ -28,7 +28,7 @@ describe("route registry", () => {
   it("publishes a route only when its page exists: a file under src/app/(site) or built-in sitemap page data", () => {
     for (const route of publishedRoutes()) {
       const folder = route.href === "/" ? "" : route.href;
-      const hasFile = existsSync(join(process.cwd(), "src", "app", "(site)", folder, "page.tsx"));
+      const hasFile = existsSync(join(process.cwd(), "src", "app", "(site)", "[locale]", folder, "page.tsx"));
 
       expect(hasFile || route.id in sitemapPages, route.href).toBe(true);
     }

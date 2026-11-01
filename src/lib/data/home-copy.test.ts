@@ -7,6 +7,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { en } from "@/messages/en";
+
 import { relatedToShow, visibleSections } from "./pages";
 import { sitemapPages } from "./sitemap-pages";
 import { siteFacts } from "./site-facts";
@@ -19,6 +21,8 @@ const sources = [
   read("src", "components", "dklao", "about-sections.tsx"),
   read("src", "lib", "data", "homepage.ts"),
   read("src", "lib", "data", "about.ts"),
+  JSON.stringify(en.home),
+  JSON.stringify(en.about),
 ].join("\n");
 
 describe("Home and About copy", () => {
@@ -40,7 +44,8 @@ describe("Home and About copy", () => {
     const about = read("src", "components", "dklao", "about-sections.tsx");
     const cta = about.slice(about.indexOf("export function AboutFinalCTA"));
 
-    expect(cta).toContain('secondaryLabel="Talk to a DK LAO Advisor"');
+    expect(cta).toContain("secondaryLabel={t.secondary}");
+    expect(en.about.final.secondary).toBe("Talk to a DK LAO Advisor");
     expect(cta).not.toContain("tertiaryLabel");
   });
 

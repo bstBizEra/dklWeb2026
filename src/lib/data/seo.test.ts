@@ -59,8 +59,8 @@ describe("search titles and descriptions", () => {
   });
 
   it("reads Home and About metadata from one module, with no long text left in the pages", () => {
-    const layout = read("src", "app", "(site)", "layout.tsx");
-    const about = read("src", "app", "(site)", "about", "page.tsx");
+    const layout = read("src", "app", "(site)", "[locale]", "layout.tsx");
+    const about = read("src", "app", "(site)", "[locale]", "about", "page.tsx");
 
     expect(layout).toContain("homeSeo");
     expect(about).toContain("aboutSeo");

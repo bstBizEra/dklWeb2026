@@ -11,7 +11,7 @@ const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts),
 
 describe("app install banner", () => {
   it("is on every website page and opens the app's install card", () => {
-    expect(read("src", "app", "(site)", "layout.tsx")).toContain("<AppInstallBanner />");
+    expect(read("src", "app", "(site)", "[locale]", "layout.tsx")).toContain("<AppInstallBanner labels={getMessages(locale).appBanner} />");
     expect(read("src", "components", "dklao", "app-install-banner.tsx")).toContain('href="/app?install"');
     const helpers = read("src", "components", "app", "app-helpers.tsx");
     expect(helpers).toContain('.has("install")');
@@ -26,7 +26,7 @@ describe("app install banner", () => {
 
 describe("favicon", () => {
   it("adds the release version to every icon URL", () => {
-    const layout = read("src", "app", "(site)", "layout.tsx");
+    const layout = read("src", "app", "(site)", "[locale]", "layout.tsx");
     expect(layout).toContain("const iconVersion = siteFooterMetadata.version");
     for (const icon of ["/favicon.ico", "/images/fav-icon/FAV-Icon.png"]) expect(layout).toContain(`${icon}?v=\${iconVersion}`);
   });

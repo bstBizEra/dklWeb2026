@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import { Mail, MapPin, Phone, type LucideIcon } from "lucide-react";
 import { siFacebook, siWhatsapp, siX, siYoutube, type SimpleIcon } from "simple-icons";
 
@@ -9,6 +9,7 @@ import { getSiteFacts } from "@/lib/cms/site-facts";
 import { footerGroups, orderFooterChannels } from "@/lib/data/footer";
 import { contactChannels, type ContactChannel } from "@/lib/data/site-facts";
 import { siteFooterMetadata } from "@/lib/site-metadata";
+import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import { FooterMotion } from "./footer-motion";
@@ -43,12 +44,12 @@ const pressable = "transition-[transform,background-color,border-color] duration
 const pressableChip = "transition-[background-color,border-color] duration-150 ease-premium active:scale-[0.98] motion-reduce:transition-none";
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-orange";
 
-export async function IndustrialFooter() {
-  const facts = await getSiteFacts();
+export async function IndustrialFooter({ locale }: { locale: Locale }) {
+  const facts = await getSiteFacts(locale);
   const channels = contactChannels(facts);
   const chips = orderFooterChannels(channels.filter((channel) => !socialLabels.has(channel.label)));
   const social = channels.filter((channel) => socialLabels.has(channel.label));
-  const groups = footerGroups();
+  const groups = footerGroups(locale);
 
   return (
     <FooterMotion>

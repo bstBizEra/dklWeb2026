@@ -1,6 +1,7 @@
 import { cache } from "react";
 
-import { defaultNavigation, resolveNavigation, type NavItem, type ResolvedNavItem } from "@/lib/data/navigation";
+import { navigationFor, resolveNavigation, type NavItem, type ResolvedNavItem } from "@/lib/data/navigation";
+import type { Locale } from "@/lib/i18n";
 
 import { cmsEnabled, getCms } from "./client";
 
@@ -24,12 +25,13 @@ export function navFromDoc(doc: Doc | null | undefined): NavItem[] {
   });
 }
 
-async function loadNavigation(): Promise<ResolvedNavItem[]> {
+async function loadNavigation(locale: Locale = "en"): Promise<ResolvedNavItem[]> {
+  const { defaultNavigation } = navigationFor(locale);
   if (!cmsEnabled()) return resolveNavigation(defaultNavigation);
 
   try {
     const cms = await getCms();
-    const doc = await cms.findGlobal({ slug: "navigation", overrideAccess: true });
+    const doc = await cms.findGlobal({ slug: "navigation", overrideAccess: true, locale, fallbackLocale: "en" });
     const items = navFromDoc(doc as unknown as Doc);
     return resolveNavigation(items.length > 0 ? items : defaultNavigation);
   } catch {

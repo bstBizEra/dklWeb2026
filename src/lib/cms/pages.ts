@@ -6,6 +6,8 @@ import { fromDetailsRow, type DetailsRow } from "./details-backfill";
 import { factKeys, type FactKey } from "@/lib/data/site-facts";
 import { hasConfirmMarker } from "@/lib/data/confirm";
 
+import type { Locale } from "@/lib/i18n";
+
 import { cmsEnabled, getCms } from "./client";
 
 type Doc = Record<string, unknown>;
@@ -83,7 +85,8 @@ export function pageFromDoc(doc: Doc): PageContent | null {
 }
 
 // The published CMS page wins. Without a database, or without a published row, the built-in page is used.
-async function loadPage(fallbackId: string): Promise<PageContent | null> {
+// Text fields are localized in the CMS: a Lao field left empty shows the English text (fallbackLocale).
+async function loadPage(fallbackId: string, locale: Locale): Promise<PageContent | null> {
   if (!cmsEnabled()) return null;
 
   try {
@@ -91,6 +94,8 @@ async function loadPage(fallbackId: string): Promise<PageContent | null> {
     const result = await cms.find({
       collection: "pages",
       where: { routeId: { equals: fallbackId }, _status: { equals: "published" } },
+      locale,
+      fallbackLocale: "en",
       limit: 1,
       depth: 0,
       overrideAccess: true,
@@ -104,8 +109,9 @@ async function loadPage(fallbackId: string): Promise<PageContent | null> {
 
 const cachedPage = cache(loadPage);
 
-export async function getPageContent(fallback: PageContent): Promise<PageContent> {
-  return (await cachedPage(fallback.id)) ?? fallback;
+// `fallback` is the built-in page already in `locale` (see localizePage).
+export async function getPageContent(fallback: PageContent, locale: Locale = "en"): Promise<PageContent> {
+  return (await cachedPage(fallback.id, locale)) ?? fallback;
 }
 
 // When each published CMS page was last changed, by route id, for the sitemap. Built-in pages have no

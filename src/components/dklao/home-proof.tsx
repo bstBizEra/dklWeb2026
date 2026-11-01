@@ -1,19 +1,22 @@
 import { getSiteFacts } from "@/lib/cms/site-facts";
 import { siteFooterMetadata } from "@/lib/site-metadata";
 import { Container } from "@/components/ui/section";
+import type { Locale } from "@/lib/i18n";
+import { getMessages } from "@/messages";
 
 // Three plain facts under the hero. Each comes from the owner-confirmed site facts or the founding year,
 // and an unconfirmed fact is simply not shown.
-export async function HomeProof() {
-  const facts = await getSiteFacts();
+export async function HomeProof({ locale }: { locale: Locale }) {
+  const facts = await getSiteFacts(locale);
+  const t = getMessages(locale).home.proof;
   const items = [
-    { figure: String(siteFooterMetadata.foundedYear), label: "Serving businesses in Laos since" },
-    facts.hours ? { figure: "24/7", label: "AI agents and human advisors work together to reply" } : null,
-    facts.serviceAreas ? { figure: "Vientiane", label: "Our base, with customers served online across Laos" } : null,
+    { figure: String(siteFooterMetadata.foundedYear), label: t.since },
+    facts.hours ? { figure: "24/7", label: t.replies } : null,
+    facts.serviceAreas ? { figure: t.baseFigure, label: t.base } : null,
   ].filter((item): item is { figure: string; label: string } => item !== null);
 
   return (
-    <section className="relative z-[4] bg-navy-900 text-white" aria-label="DK LAO at a glance">
+    <section className="relative z-[4] bg-navy-900 text-white" aria-label={t.label}>
       <Container asChild>
         <dl className="home-proof__grid my-0 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
           {items.map((item, index) => (

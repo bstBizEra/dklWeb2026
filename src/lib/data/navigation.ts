@@ -12,6 +12,8 @@ import type { LucideIcon } from "lucide-react";
 
 import { libraryImage } from "@/lib/data/library";
 import { getRoute, isPublishedRoute, quoteHref } from "@/lib/data/routes";
+import { localized } from "@/lib/i18n/localize";
+import { loNavigation } from "@/messages/lo/navigation";
 
 export type NavLink = { label: string; routeId: string; description?: string };
 export type NavItem = { label: string; routeId?: string; children?: NavLink[] };
@@ -67,12 +69,13 @@ const solutionInfo: Record<string, { icon: LucideIcon; group: (typeof menuGroups
 };
 
 // Shared by the desktop mega menu and the phone menu, so both list the same groups in the same order.
-export function groupMenuLinks(links: ResolvedNavLink[]): MenuGroup[] {
-  return menuGroups.flatMap((group) => {
+// `titles` are the group titles in the page's language (navigationFor(locale).menuGroupTitles).
+export function groupMenuLinks(links: ResolvedNavLink[], titles: string[] = menuGroups.map((group) => group.title)): MenuGroup[] {
+  return menuGroups.flatMap((group, index) => {
     const groupLinks = links
       .filter((link) => (solutionInfo[link.href]?.group ?? "equipment") === group.id)
       .map((link) => ({ ...link, icon: solutionInfo[link.href]?.icon ?? ArrowRight }));
-    return groupLinks.length > 0 ? [{ title: group.title, links: groupLinks }] : [];
+    return groupLinks.length > 0 ? [{ title: titles[index], links: groupLinks }] : [];
   });
 }
 
@@ -103,3 +106,11 @@ export function resolveNavigation(items: NavItem[] = defaultNavigation): Resolve
     return route && isPublishedRoute(route.id) ? [{ label: item.label, href: route.href }] : [];
   });
 }
+
+// Built-in menu, menu group titles and promo card per locale. Lao text: src/messages/lo/navigation.ts.
+// The CMS menu (Navigation global) is localized in the CMS itself.
+export type NavigationText = { defaultNavigation: NavItem[]; menuGroupTitles: string[]; solutionsPromo: MenuPromo };
+export const navigationFor = localized<NavigationText>(
+  { defaultNavigation, menuGroupTitles: menuGroups.map((group) => group.title), solutionsPromo },
+  loNavigation,
+);

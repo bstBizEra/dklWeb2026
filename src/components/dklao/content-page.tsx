@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import { Fragment, type ReactNode } from "react";
 import { ArrowDown, ArrowRight, CheckCircle2 } from "lucide-react";
 
@@ -21,11 +21,17 @@ import { breadcrumbTrail, getRoute, quoteHref, routeIntent } from "@/lib/data/ro
 import { leadIntents } from "@/lib/leads/intents";
 import { isOwnPhoto, libraryImage, topicForCard, topicForPage, type LibraryTopic } from "@/lib/data/library";
 import { cn } from "@/lib/utils";
+import { localizeHref, type Locale } from "@/lib/i18n";
+import { getMessages, type Messages } from "@/messages";
+import { fill } from "@/messages/app-en";
+
+type Labels = Messages["contentPage"];
 
 const siteUrl = process.env.APP_URL ?? "https://www.dklao.com";
 
 type ContentPageProps = {
   page: PageContent;
+  locale: Locale;
   // Rendered between the hero and the content sections, e.g. a form.
   children?: ReactNode;
   // Show the reference clients (from the site facts) after the content sections.
@@ -79,12 +85,14 @@ function LinkCard({
   href,
   topic,
   anchor,
+  t,
 }: {
   title: string;
   description?: string;
   href?: string;
   topic?: LibraryTopic;
   anchor?: string;
+  t: Labels;
 }) {
   return (
     <Card className={cn(cardClass, "page-card--media group overflow-hidden")}>
@@ -94,23 +102,23 @@ function LinkCard({
       {href && anchor ? (
         // A card with its own section and its own page offers both.
         <div className="mt-auto flex flex-wrap gap-x-5 gap-y-1">
-          <a className={cn(linkClass, "mt-0")} href={`#${anchor}`} aria-label={`Read more about ${title}`}>
-            Read more
+          <a className={cn(linkClass, "mt-0")} href={`#${anchor}`} aria-label={fill(t.readMoreAbout, { title })}>
+            {t.readMore}
             <ArrowDown size={16} aria-hidden="true" />
           </a>
-          <Link className={cn(linkClass, "mt-0")} href={href} aria-label={`View page: ${title}`}>
-            View page
+          <Link className={cn(linkClass, "mt-0")} href={href} aria-label={fill(t.viewPageOf, { title })}>
+            {t.viewPage}
             <ArrowRight size={16} aria-hidden="true" className="transition-transform duration-[260ms] group-hover:translate-x-1 motion-reduce:transition-none" />
           </Link>
         </div>
       ) : href ? (
-        <Link className={linkClass} href={href} aria-label={`View details: ${title}`}>
-          View details
+        <Link className={linkClass} href={href} aria-label={fill(t.viewOf, { title })}>
+          {t.viewDetails}
           <ArrowRight size={16} aria-hidden="true" className="transition-transform duration-[260ms] group-hover:translate-x-1 motion-reduce:transition-none" />
         </Link>
       ) : anchor ? (
-        <a className={linkClass} href={`#${anchor}`} aria-label={`Read more about ${title}`}>
-          Read more
+        <a className={linkClass} href={`#${anchor}`} aria-label={fill(t.readMoreAbout, { title })}>
+          {t.readMore}
           <ArrowDown size={16} aria-hidden="true" className="transition-transform duration-[260ms] group-hover:translate-y-0.5 motion-reduce:transition-none" />
         </a>
       ) : null}
@@ -123,7 +131,7 @@ type DetailItem = ResolvedSection["items"][number] & { details: ItemDetails; anc
 // A card's own editorial section under the cards. Left (stays in view on desktop): photo, title, opening
 // paragraph, key figures and a quote action. Right: topics under their own headings, then a practical
 // checklist. Alternating bands keep consecutive sections apart.
-function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string; shaded: boolean }) {
+function CardDetail({ item, pageId, shaded, locale, t }: { item: DetailItem; pageId: string; shaded: boolean; locale: Locale; t: Labels }) {
   const topic = topicForCard(item, pageId);
   const { lead, facts = [], topics, checklist } = item.details;
 
@@ -159,14 +167,14 @@ function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="primary">
               <Link href={quoteHref(routeIntent(pageId), getRoute(pageId)?.href)}>
-                Request a Quote
+                {t.requestQuote}
                 <ArrowRight size={18} aria-hidden="true" />
               </Link>
             </Button>
             {item.href ? (
               <Button asChild variant="light">
                 <Link href={item.href}>
-                  {(item.routeId && getRoute(item.routeId)?.label) || item.title} page
+                  {fill(t.pageLink, { label: (item.routeId && getRoute(item.routeId, locale)?.label) || item.title })}
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
               </Button>
@@ -199,7 +207,7 @@ function CardDetail({ item, pageId, shaded }: { item: DetailItem; pageId: string
   );
 }
 
-function SectionBody({ section, pageId }: { section: ResolvedSection; pageId: string }) {
+function SectionBody({ section, pageId, t, form }: { section: ResolvedSection; pageId: string; t: Labels; form: Messages["quoteForm"] }) {
   if (section.kind === "list") {
     // On the page surface, not in a box: a short title over its explanation, marked by an orange square.
     return (
@@ -264,7 +272,7 @@ function SectionBody({ section, pageId }: { section: ResolvedSection; pageId: st
     const intent = leadIntents[routeIntent(pageId) ?? "general"];
     return (
       <div className="max-w-[820px]">
-        <QuoteRequestForm defaultCategory={intent.category} sourcePage={getRoute(pageId)?.href} showHeader={false} />
+        <QuoteRequestForm defaultCategory={intent.category} sourcePage={getRoute(pageId)?.href} showHeader={false} labels={form} />
       </div>
     );
   }
@@ -280,6 +288,7 @@ function SectionBody({ section, pageId }: { section: ResolvedSection; pageId: st
             href={item.href}
             anchor={item.anchor}
             topic={topicForCard(item, pageId)}
+            t={t}
           />
         ))}
       </div>
@@ -292,7 +301,7 @@ function SectionBody({ section, pageId }: { section: ResolvedSection; pageId: st
         {section.items.map((item, index) => (
           <li key={item.title}>
             <Card className={cn(cardClass, "h-full")}>
-              <Eyebrow className="mb-3 text-[13px]">Step {index + 1}</Eyebrow>
+              <Eyebrow className="mb-3 text-[13px]">{fill(t.step, { n: index + 1 })}</Eyebrow>
               <h3 className={cardTitleClass}>{item.title}</h3>
               {item.description ? <p className={cardCopyClass}>{item.description}</p> : null}
             </Card>
@@ -346,10 +355,12 @@ function SectionBody({ section, pageId }: { section: ResolvedSection; pageId: st
   );
 }
 
-export async function ContentPage({ page, children, showClients = false }: ContentPageProps) {
-  const sections = visibleSections(page, await getSiteFacts());
-  const trail = breadcrumbTrail(page.id);
-  const related = relatedToShow(page.id, sections);
+export async function ContentPage({ page, locale, children, showClients = false }: ContentPageProps) {
+  const sections = visibleSections(page, await getSiteFacts(locale));
+  const trail = breadcrumbTrail(page.id, locale);
+  const related = relatedToShow(page.id, sections, locale);
+  const messages = getMessages(locale);
+  const t = messages.contentPage;
   const heroTopic = topicForPage(page.id);
   const questions = sections
     .filter((section) => section.kind === "faq")
@@ -363,7 +374,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
             "@type": "ListItem",
             position: index + 1,
             name: route.label,
-            item: `${siteUrl}${route.href}`,
+            item: `${siteUrl}${localizeHref(route.href, locale)}`,
           })),
         }
       : null,
@@ -382,11 +393,11 @@ export async function ContentPage({ page, children, showClients = false }: Conte
 
   return (
     <div className="min-h-screen overflow-x-clip">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
       <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
 
       {trail.length > 2 ? (
-        <nav className="page-breadcrumb border-b border-slate-100 bg-surface" aria-label="Breadcrumb">
+        <nav className="page-breadcrumb border-b border-slate-100 bg-surface" aria-label={t.breadcrumb}>
           <Container asChild>
             <ol className="flex list-none flex-wrap items-center gap-y-1 py-3 text-[15px]">
               {trail.map((route, index) => (
@@ -464,23 +475,23 @@ export async function ContentPage({ page, children, showClients = false }: Conte
           <Section spacing="tight">
             <Container>
               <SectionHeader title={section.title} copy={section.intro} />
-              <SectionBody section={section} pageId={page.id} />
+              <SectionBody section={section} pageId={page.id} t={t} form={messages.quoteForm} />
             </Container>
           </Section>
           {section.items
             .filter((item): item is DetailItem => Boolean(item.details && item.anchor))
             .map((item, index) => (
-              <CardDetail key={item.anchor} item={item} pageId={page.id} shaded={index % 2 === 0} />
+              <CardDetail key={item.anchor} item={item} pageId={page.id} shaded={index % 2 === 0} locale={locale} t={t} />
             ))}
         </Fragment>
       ))}
 
-      {showClients ? <TrustedBy title="Our clients" /> : null}
+      {showClients ? <TrustedBy title={messages.trustedBy.short} locale={locale} /> : null}
 
       {related.length >= 2 ? (
         <Section spacing="tight">
           <Container>
-            <SectionHeader title="Related solutions" />
+            <SectionHeader title={t.related} />
             <div className={gridClass}>
               {related.map((route) => (
                 <LinkCard
@@ -489,6 +500,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
                   description={route.blurb}
                   href={route.href}
                   topic={topicForCard({ title: route.label, routeId: route.id }, page.id)}
+                  t={t}
                 />
               ))}
             </div>
@@ -508,7 +520,7 @@ export async function ContentPage({ page, children, showClients = false }: Conte
       ) : null}
 
       </main>
-      <IndustrialFooter />
+      <IndustrialFooter locale={locale} />
       <FloatingContactActions />
     </div>
   );

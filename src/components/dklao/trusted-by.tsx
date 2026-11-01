@@ -4,13 +4,14 @@ import { getSiteFacts } from "@/lib/cms/site-facts";
 import { clientLogo, parseClientGroups } from "@/lib/data/clients";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/section";
+import type { Locale } from "@/lib/i18n";
 
 // Key account customers named by the owner, grouped by sector. A client with a logo (clientLogos) shows its
 // logo on a white tile, named in the alt text; any other client shows as a text pill. Nothing shows until
 // the fact is filled in. Groups sit in two columns on wide screens and stack below 1100px; tiles wrap and
 // get smaller on phones.
-export async function TrustedBy({ title = "Trusted by businesses and public bodies in Laos" }: { title?: string } = {}) {
-  const groups = parseClientGroups((await getSiteFacts()).referenceClients);
+export async function TrustedBy({ title = "Trusted by businesses and public bodies in Laos", locale }: { title?: string; locale: Locale }) {
+  const groups = parseClientGroups((await getSiteFacts(locale)).referenceClients);
 
   if (groups.length === 0) return null;
 

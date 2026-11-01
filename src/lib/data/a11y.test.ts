@@ -8,12 +8,15 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { en } from "@/messages/en";
+import { lo } from "@/messages/lo";
+
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), "src", ...parts), "utf8").replace(/\r\n/g, "\n");
 
 const shells = [
-  ["app", "(site)", "page.tsx"],
-  ["app", "(site)", "about", "page.tsx"],
-  ["app", "(site)", "not-found.tsx"],
+  ["app", "(site)", "[locale]", "page.tsx"],
+  ["app", "(site)", "[locale]", "about", "page.tsx"],
+  ["app", "(site)", "[locale]", "not-found.tsx"],
   ["components", "dklao", "content-page.tsx"],
 ];
 
@@ -21,10 +24,10 @@ describe("landmarks and skip link", () => {
   it("keeps the header and footer outside <main>, so they are the banner and contentinfo and the skip link skips the header", () => {
     for (const parts of shells) {
       const source = read(...parts);
-      const header = source.indexOf("<SiteHeader />");
+      const header = source.indexOf("<SiteHeader locale={locale} />");
       const main = source.indexOf('<main id="main-content" tabIndex={-1}');
       const mainEnd = source.indexOf("</main>");
-      const footer = source.indexOf("<IndustrialFooter />");
+      const footer = source.indexOf("<IndustrialFooter locale={locale} />");
 
       expect(header, parts.join("/")).toBeGreaterThan(-1);
       expect(main, parts.join("/")).toBeGreaterThan(header);
@@ -53,15 +56,19 @@ describe("focus and motion", () => {
 
   it("starts each card link's accessible name with its visible text (WCAG 2.5.3)", () => {
     // Voice-control users say the words they see ("click View details"); the aria-label must begin with them.
-    const links = [...read("components", "dklao", "content-page.tsx").matchAll(/aria-label=\{`([^`]*)`\}>\s*([^<{\n]+)/g)];
-    expect(links.length).toBe(4); // a new card link must be added here, not skipped silently
-    for (const [, label, visible] of links) expect(label.startsWith(`${visible.trim()} `) || label.startsWith(`${visible.trim()}:`)).toBe(true);
+    // Each link shows {t.<visible>} and is named by fill(t.<label>, ...), in English and in Lao.
+    const pairs = [...read("components", "dklao", "content-page.tsx").matchAll(/aria-label=\{fill\(t\.(\w+), \{ title \}\)\}>\s*\{t\.(\w+)\}/g)];
+    expect(pairs.length).toBe(4); // a new card link must be added here, not skipped silently
+    for (const t of [en.contentPage, lo.contentPage] as Record<string, string>[]) {
+      for (const [, label, visible] of pairs) expect(t[label].startsWith(t[visible])).toBe(true);
+    }
   });
 
   it("starts the app back button's accessible name with the screen name it shows (WCAG 2.5.3)", () => {
     const back = read("components", "app", "back-button.tsx");
     expect(back).toContain("<span className=\"android:sr-only\">{label}</span>");
-    expect(back).toMatch(/aria-label=\{`\$\{label\}[^`]*`\}/);
+    expect(back).toContain("aria-label={fill(t.back, { label })}");
+    for (const file of [["messages", "app-en.ts"], ["messages", "lo", "mobile-app.ts"]]) expect(read(...file)).toMatch(/\bback: "\{label\}/);
   });
 });
 
@@ -71,8 +78,8 @@ describe("quote form", () => {
   it("says which fields are required up front and marks Email as optional", () => {
     expect(form).toContain('"aria-required": required || undefined');
     expect(form).toContain('describedBy("email", errors.email, false)');
-    expect(form).toMatch(/<Field id="email"[^>]*optional>/);
-    expect(form).toContain("(optional)");
+    expect(form).toMatch(/<Field id="email"[^>]*optional=\{t\.optional\}>/);
+    expect(en.quoteForm.optional).toBe("(optional)");
   });
 
   it("keeps the send button focusable while sending, so focus is not lost", () => {

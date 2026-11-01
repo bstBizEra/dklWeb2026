@@ -13,22 +13,32 @@ import { Card } from "@/components/ui/card";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eyebrow } from "@/components/ui/section";
-import { categoryOptions, leadTypeForCategory } from "@/lib/leads/intents";
+import { categoryOptions, leadIntents, leadTypeForCategory } from "@/lib/leads/intents";
 import { cn } from "@/lib/utils";
 import {
-  quoteRequestSchema,
+  quoteRequestSchemaFor,
   type ApiError,
   type ApiSuccess,
   type QuoteRequestInput,
 } from "@/lib/validation/leads";
+import { en, type Messages } from "@/messages/en";
 
 type QuoteResponse = ApiSuccess<{ leadId: string; status: string }> | ApiError;
+type Labels = Messages["quoteForm"];
+
+// The English category each list entry sends (the CRM's value), mapped to its key in labels.categories.
+const categoryKey = Object.fromEntries(Object.entries(leadIntents).map(([key, intent]) => [intent.category, key])) as Record<
+  string,
+  keyof Labels["categories"]
+>;
 
 type QuoteRequestFormProps = {
   defaultCategory?: string;
   // Page the visitor came from. Falls back to the current path.
   sourcePage?: string;
   showHeader?: boolean;
+  // The page's language: getMessages(locale).quoteForm, passed from the server page.
+  labels?: Labels;
 };
 
 function emptyValues(category: string): QuoteRequestInput {
@@ -52,21 +62,22 @@ function Field({
   label,
   error,
   wide = false,
-  optional = false,
+  optional,
   children,
 }: {
   id: string;
   label: string;
   error?: FieldError;
   wide?: boolean;
-  optional?: boolean;
+  // The "(optional)" text in the page's language, for a field that may be left empty.
+  optional?: string;
   children: ReactNode;
 }) {
   return (
     <div className={cn("grid gap-2", wide && "col-span-full")}>
       <Label htmlFor={id}>
         {label}
-        {optional ? <span className="font-semibold text-slate-500"> (optional)</span> : null}
+        {optional ? <span className="font-semibold text-slate-500"> {optional}</span> : null}
       </Label>
       {children}
       {error ? (
@@ -89,9 +100,11 @@ export function QuoteRequestForm({
   defaultCategory = categoryOptions[0],
   sourcePage,
   showHeader = true,
+  labels: t = en.quoteForm,
 }: QuoteRequestFormProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [schema] = useState(() => quoteRequestSchemaFor(t.validation));
 
   const {
     register,
@@ -101,7 +114,7 @@ export function QuoteRequestForm({
     control,
     formState: { errors, isSubmitting },
   } = useForm<QuoteRequestInput>({
-    resolver: zodResolver(quoteRequestSchema),
+    resolver: zodResolver(schema),
     defaultValues: emptyValues(defaultCategory),
     // Check a field when the visitor leaves it, then live while they correct it.
     mode: "onTouched",
@@ -130,11 +143,7 @@ export function QuoteRequestForm({
       result = (await response.json()) as QuoteResponse;
     } catch {
       // Offline, or the server answered with something other than our JSON. The typed details stay in place.
-      setErrorMessage(
-        navigator.onLine === false
-          ? "You are offline. Your details are still here: send again when you are back online, or call or WhatsApp DK LAO."
-          : "Your request could not be sent. Please try again, or call or WhatsApp DK LAO.",
-      );
+      setErrorMessage(navigator.onLine === false ? t.offline : t.sendFailed);
       return;
     }
 
@@ -148,11 +157,12 @@ export function QuoteRequestForm({
           placed = true;
         }
       }
-      setErrorMessage(placed ? "Please check the highlighted fields." : result.error.message);
+      setErrorMessage(placed ? t.checkFields : (t.serverErrors[result.error.code] ?? result.error.message));
       return;
     }
 
-    setSuccessMessage(`${result.message} Your reference: ${result.data.leadId}.`);
+    // English shows the server's own thank-you (t.received is empty); Lao has its own.
+    setSuccessMessage(`${t.received || result.message} ${t.reference} ${result.data.leadId}.`);
     reset(emptyValues(defaultCategory));
   }
 
@@ -172,14 +182,11 @@ export function QuoteRequestForm({
       <form onSubmit={submit} id="quote-request" className="scroll-mt-[110px]" noValidate>
         {showHeader ? (
           <div className="mb-6 grid gap-3">
-            <Eyebrow>Central quote request</Eyebrow>
+            <Eyebrow>{t.eyebrow}</Eyebrow>
             <h2 className="m-0 text-[2.5rem] font-[850] leading-[1.06] tracking-[-0.03em] text-navy-950 max-[780px]:text-[2rem]">
-              Tell DK LAO what your operation needs
+              {t.title}
             </h2>
-            <p className="m-0 leading-[1.75] text-slate-700">
-              Share the equipment or service category, site context, and contact details
-              so the right advisor can review your request.
-            </p>
+            <p className="m-0 leading-[1.75] text-slate-700">{t.copy}</p>
           </div>
         ) : null}
 
@@ -189,25 +196,25 @@ export function QuoteRequestForm({
         {/* Honeypot: off-screen and skipped by keyboard and screen readers. Only a bot fills it. */}
         <div className="quote-form__trap absolute -left-[10000px] size-px overflow-hidden" aria-hidden="true">
           <label htmlFor="homepageUrl">
-            Leave this field empty
+            {t.trap}
             <input id="homepageUrl" type="text" tabIndex={-1} autoComplete="off" {...register("homepageUrl")} />
           </label>
         </div>
 
         <div className="grid grid-cols-2 gap-4 max-[780px]:grid-cols-1">
-          <Field id="companyName" label="Company or organisation" error={errors.companyName}>
+          <Field id="companyName" label={t.companyName} error={errors.companyName}>
             <Input id="companyName" autoComplete="organization" {...describedBy("companyName", errors.companyName)} {...register("companyName")} />
           </Field>
-          <Field id="contactPerson" label="Contact person" error={errors.contactPerson}>
+          <Field id="contactPerson" label={t.contactPerson} error={errors.contactPerson}>
             <Input id="contactPerson" autoComplete="name" {...describedBy("contactPerson", errors.contactPerson)} {...register("contactPerson")} />
           </Field>
-          <Field id="phone" label="Phone number" error={errors.phone}>
+          <Field id="phone" label={t.phone} error={errors.phone}>
             <Input id="phone" type="tel" autoComplete="tel" {...describedBy("phone", errors.phone)} {...register("phone")} />
           </Field>
-          <Field id="email" label="Email" error={errors.email} optional>
+          <Field id="email" label={t.email} error={errors.email} optional={t.optional}>
             <Input id="email" type="email" autoComplete="email" {...describedBy("email", errors.email, false)} {...register("email")} />
           </Field>
-          <Field id="equipmentOrServiceCategory" label="Equipment or service category" error={errors.equipmentOrServiceCategory} wide>
+          <Field id="equipmentOrServiceCategory" label={t.category} error={errors.equipmentOrServiceCategory} wide>
             <NativeSelect
               id="equipmentOrServiceCategory"
               {...describedBy("equipmentOrServiceCategory", errors.equipmentOrServiceCategory, false)}
@@ -215,14 +222,14 @@ export function QuoteRequestForm({
             >
               {categoryOptions.map((option) => (
                 <option key={option} value={option}>
-                  {option}
+                  {t.categories[categoryKey[option]] ?? option}
                 </option>
               ))}
             </NativeSelect>
           </Field>
-          <Field id="message" label="Requirement details" error={errors.message} wide>
+          <Field id="message" label={t.message} error={errors.message} wide>
             <p id="message-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
-              Load, lift height, site and timing, for example: 2.5 t forklift, 4.5 m lift, 3 months, warehouse in Vientiane.
+              {t.messageHint}
             </p>
             <Textarea
               id="message"
@@ -260,7 +267,7 @@ export function QuoteRequestForm({
           className="mt-[18px] w-full aria-disabled:cursor-progress aria-disabled:opacity-60"
           aria-disabled={isSubmitting || undefined}
         >
-          {isSubmitting ? "Sending Request" : "Request a Quote"}
+          {isSubmitting ? t.sending : t.submit}
           <Send size={18} aria-hidden="true" />
         </Button>
       </form>

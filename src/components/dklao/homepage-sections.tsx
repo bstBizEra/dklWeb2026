@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import {
   ArrowRight,
   ClipboardCheck,
@@ -9,11 +9,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Container, Eyebrow, Section, SectionCopy, SectionHeader, SectionTitle } from "@/components/ui/section";
-import {
-  industrySolutions,
-  knowledgeArticles,
-  solutionCards,
-} from "@/lib/data/homepage";
+import { homepageFor } from "@/lib/data/homepage";
+import type { Locale } from "@/lib/i18n";
+import { getMessages } from "@/messages";
 import { AnatomyDiagram } from "./anatomy-diagram";
 import { CTASection } from "./cta-section";
 import { QuoteRequestForm } from "./quote-request-form";
@@ -25,15 +23,13 @@ const paperGrid =
 const cardGrid = "grid grid-cols-4 gap-[18px] max-[1120px]:grid-cols-2 max-[780px]:grid-cols-1";
 const tile = "rounded-[22px] border border-slate-300/80 bg-card shadow-card";
 
-export function SolutionOverview() {
+export function SolutionOverview({ locale }: { locale: Locale }) {
+  const { solutionCards } = homepageFor(locale);
+  const t = getMessages(locale).home.solutions;
   return (
     <Section id="solutions">
       <Container>
-        <SectionHeader
-          eyebrow="What we do"
-          title="Rent, buy, service and supply in one place"
-          copy="One team for your forklifts and warehouse: choose what you need and we reply with a quotation."
-        />
+        <SectionHeader eyebrow={t.eyebrow} title={t.title} copy={t.copy} />
         <div className={cardGrid}>
           {solutionCards.map((card) => (
             <ServiceCard key={card.title} item={card} />
@@ -44,60 +40,56 @@ export function SolutionOverview() {
   );
 }
 
-const rentalFacts = [
-  { icon: Gauge, label: "Capacity", value: "On request" },
-  { icon: Warehouse, label: "Indoor or outdoor", value: "Site matched" },
-  { icon: ClipboardCheck, label: "Rental period", value: "Flexible" },
-];
+// Same order as home.rental.facts in the messages: capacity, site, period.
+const rentalIcons = [Gauge, Warehouse, ClipboardCheck];
 
-export function RentalHighlight() {
+export function RentalHighlight({ locale }: { locale: Locale }) {
+  const t = getMessages(locale).home.rental;
   return (
     <section className={`py-[84px] ${paperGrid}`}>
       <Container className="grid grid-cols-[minmax(0,0.9fr)_minmax(360px,0.6fr)] items-center gap-12 max-[1120px]:grid-cols-1">
         <div>
-          <Eyebrow>Forklift rental</Eyebrow>
-          <SectionTitle className="mt-4 leading-[1.06] max-[780px]:text-[2rem]">Forklift rental for a week, a season or years</SectionTitle>
-          <p className="mt-4 mb-0 leading-[1.75] text-slate-700">
-            Tell us the load, lift height, site and dates. We match the truck and send a rental quotation.
-          </p>
+          <Eyebrow>{t.eyebrow}</Eyebrow>
+          <SectionTitle className="mt-4 leading-[1.06] max-[780px]:text-[2rem]">{t.title}</SectionTitle>
+          <p className="mt-4 mb-0 leading-[1.75] text-slate-700">{t.copy}</p>
           <div className="mt-[26px] flex flex-wrap gap-3.5 max-[780px]:grid">
             <Button asChild variant="primary">
               <Link href="/forklift-rental">
-                Ask for Rental Price
+                {t.askPrice}
                 <ArrowRight size={18} aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild variant="light">
-              <Link href="#quote-request">
-                Request a Quote
-              </Link>
+              <Link href="#quote-request">{t.requestQuote}</Link>
             </Button>
           </div>
         </div>
         <div className="rental-highlight__panel grid gap-3.5 max-[1120px]:max-w-[680px]">
-          {rentalFacts.map(({ icon: Icon, label, value }) => (
+          {t.facts.map(({ label, value }, index) => {
+            const Icon = rentalIcons[index];
+            return (
             <div key={label} className={`${tile} grid grid-cols-[auto_1fr] items-center gap-x-3.5 gap-y-1.5 p-[22px]`}>
               <Icon size={28} aria-hidden="true" className="row-span-2 text-action-red" />
               <span className="text-[0.88rem] font-extrabold text-slate-500">{label}</span>
               <strong className="text-[1.2rem] text-navy-950">{value}</strong>
             </div>
-          ))}
+            );
+          })}
         </div>
       </Container>
     </section>
   );
 }
 
-export function ForkliftAnatomyInteractive() {
+export function ForkliftAnatomyInteractive({ locale }: { locale: Locale }) {
+  const t = getMessages(locale).home.anatomy;
   return (
     <Section className="bg-[linear-gradient(rgba(0,97,175,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(0,97,175,0.08)_1px,transparent_1px),linear-gradient(135deg,#ffffff,#eef4fa)] bg-[size:44px_44px,44px_44px,cover]">
       <Container className="grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-12 max-[1024px]:grid-cols-1 max-[1024px]:gap-7">
         <div className="grid max-w-[420px] gap-4 max-[1024px]:max-w-[640px]">
-          <Eyebrow>Equipment matching</Eyebrow>
-          <SectionTitle>Know the forklift, ask the right questions</SectionTitle>
-          <SectionCopy>
-            Every recommendation starts from the same parts of the truck. See what we check before we quote.
-          </SectionCopy>
+          <Eyebrow>{t.eyebrow}</Eyebrow>
+          <SectionTitle>{t.title}</SectionTitle>
+          <SectionCopy>{t.copy}</SectionCopy>
         </div>
         <AnatomyDiagram />
       </Container>
@@ -105,15 +97,13 @@ export function ForkliftAnatomyInteractive() {
   );
 }
 
-export function IndustriesAndTrustSection() {
+export function IndustriesAndTrustSection({ locale }: { locale: Locale }) {
+  const { industrySolutions } = homepageFor(locale);
+  const t = getMessages(locale).home.industries;
   return (
     <Section>
       <Container>
-        <SectionHeader
-          eyebrow="Industries"
-          title="Equipment for the way your operation works"
-          copy="Pick your industry to see what slows it down and the equipment that fixes it."
-        />
+        <SectionHeader eyebrow={t.eyebrow} title={t.title} copy={t.copy} />
         <div className={cardGrid}>
           {industrySolutions.map((industry) => (
             <ServiceCard key={industry.title} item={industry} />
@@ -124,16 +114,16 @@ export function IndustriesAndTrustSection() {
   );
 }
 
-export function KnowledgeCenterPreview() {
+export function KnowledgeCenterPreview({ locale }: { locale: Locale }) {
+  const { knowledgeArticles } = homepageFor(locale);
+  const t = getMessages(locale).home.knowledge;
   return (
     <Section spacing="tight" className={paperGrid}>
       <Container className="grid grid-cols-[minmax(0,0.8fr)_minmax(360px,1fr)] items-start gap-12 max-[1120px]:grid-cols-1">
         <div>
-          <Eyebrow>Knowledge center</Eyebrow>
-          <SectionTitle className="mt-4 text-[2.3rem] leading-[1.08] max-[780px]:text-[2rem]">Short guides before you ask for a quote</SectionTitle>
-          <p className="mt-4 mb-0 leading-[1.7] text-slate-700">
-            What to prepare for a rental request, how to match a spare part and how to choose a floor scrubber.
-          </p>
+          <Eyebrow>{t.eyebrow}</Eyebrow>
+          <SectionTitle className="mt-4 text-[2.3rem] leading-[1.08] max-[780px]:text-[2rem]">{t.title}</SectionTitle>
+          <p className="mt-4 mb-0 leading-[1.7] text-slate-700">{t.copy}</p>
         </div>
         <div className="grid gap-3">
           {knowledgeArticles.map((article) => (
@@ -153,40 +143,41 @@ export function KnowledgeCenterPreview() {
   );
 }
 
-export function QuoteSection() {
+export function QuoteSection({ locale }: { locale: Locale }) {
+  const messages = getMessages(locale);
+  const t = messages.home.quote;
   return (
     <Section className="bg-[linear-gradient(135deg,var(--dk-color-surface),var(--dk-color-neutral-white))]">
       <Container className="grid grid-cols-[minmax(0,0.7fr)_minmax(420px,0.9fr)] items-start gap-12 max-[1120px]:grid-cols-1 max-[780px]:gap-7">
         <div>
-          <Eyebrow>Request a quote</Eyebrow>
-          <SectionTitle className="mt-4">Tell us what you need</SectionTitle>
-          <SectionCopy className="mt-4">
-            One short form for rental, sales, service, parts, warehouse or cleaning. An advisor replies with a recommendation and a quotation.
-          </SectionCopy>
+          <Eyebrow>{t.eyebrow}</Eyebrow>
+          <SectionTitle className="mt-4">{t.title}</SectionTitle>
+          <SectionCopy className="mt-4">{t.copy}</SectionCopy>
           <div className={`quote-section__asset ${tile} mt-8 inline-flex items-center gap-4 p-4 font-extrabold text-slate-700`}>
             <Image
               src="/images/logo/Logo-V_Text.svg"
               width={84}
               height={61}
-              alt="DK LAO vertical logo"
+              alt={t.logoAlt}
             />
-            <span>Quotation-based pricing. Availability on request.</span>
+            <span>{t.pricing}</span>
           </div>
         </div>
-        <QuoteRequestForm showHeader={false} />
+        <QuoteRequestForm showHeader={false} labels={messages.quoteForm} />
       </Container>
     </Section>
   );
 }
 
-export function FinalHomepageCTA() {
+export function FinalHomepageCTA({ locale }: { locale: Locale }) {
+  const t = getMessages(locale).home.final;
   return (
     <CTASection
-      title="Ready when you are"
-      copy="Send your request any time. An advisor replies with the next step."
-      primaryLabel="Request a Quote"
+      title={t.title}
+      copy={t.copy}
+      primaryLabel={t.primary}
       primaryHref="#quote-request"
-      secondaryLabel="Talk to a DK LAO Advisor"
+      secondaryLabel={t.secondary}
       secondaryHref="/contact"
     />
   );

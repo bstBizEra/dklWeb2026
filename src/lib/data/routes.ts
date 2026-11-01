@@ -1,4 +1,7 @@
+import type { Locale } from "@/lib/i18n";
+import { localized } from "@/lib/i18n/localize";
 import type { IntentKey } from "@/lib/leads/intents";
+import { loRoutes } from "@/messages/lo/routes";
 
 export type RouteGroup = "solutions" | "company" | "conversion";
 
@@ -49,6 +52,10 @@ export const routes: readonly SiteRoute[] = [
 
 const routeById = new Map(routes.map((route) => [route.id, route]));
 
+// Route labels and blurbs per locale (ids, hrefs and groups stay English). Lao text: src/messages/lo/routes.ts.
+const routesByLocale = localized(Object.fromEntries(routeById) as Record<string, SiteRoute>, loRoutes);
+const localizedRoutes = (locale: Locale) => routes.map((route) => routesByLocale(locale)[route.id]);
+
 // Parent page for breadcrumbs. Material handling and racking sit under Warehouse but keep flat URLs.
 const parents: Record<string, string> = {
   "rental-short": "rental",
@@ -67,16 +74,16 @@ const parents: Record<string, string> = {
 };
 
 // Pages from Home down to (and including) this route, published pages only.
-export function breadcrumbTrail(id: string): SiteRoute[] {
+export function breadcrumbTrail(id: string, locale: Locale = "en"): SiteRoute[] {
   const trail: SiteRoute[] = [];
-  let current = getRoute(id);
+  let current = getRoute(id, locale);
 
   while (current) {
     trail.unshift(current);
-    current = parents[current.id] ? getRoute(parents[current.id]) : undefined;
+    current = parents[current.id] ? getRoute(parents[current.id], locale) : undefined;
   }
 
-  const home = getRoute("home");
+  const home = getRoute("home", locale);
   if (home && trail[0]?.id !== "home") trail.unshift(home);
 
   return trail.filter((route) => route.published);
@@ -109,25 +116,25 @@ export function routeIntent(id: string): IntentKey | undefined {
   return intents[id];
 }
 
-export function getRoute(id: string): SiteRoute | undefined {
-  return routeById.get(id);
+export function getRoute(id: string, locale: Locale = "en"): SiteRoute | undefined {
+  return locale === "en" ? routeById.get(id) : routesByLocale(locale)[id];
 }
 
 export function isPublishedRoute(id: string): boolean {
   return getRoute(id)?.published === true;
 }
 
-export function publishedRoutes(): SiteRoute[] {
-  return routes.filter((route) => route.published);
+export function publishedRoutes(locale: Locale = "en"): SiteRoute[] {
+  return localizedRoutes(locale).filter((route) => route.published);
 }
 
-export function navRoutes(): SiteRoute[] {
-  return publishedRoutes().filter((route) => route.navLabel);
+export function navRoutes(locale: Locale = "en"): SiteRoute[] {
+  return publishedRoutes(locale).filter((route) => route.navLabel);
 }
 
-export function relatedRoutes(id: string): SiteRoute[] {
+export function relatedRoutes(id: string, locale: Locale = "en"): SiteRoute[] {
   return (getRoute(id)?.related ?? [])
-    .map(getRoute)
+    .map((relatedId) => getRoute(relatedId, locale))
     .filter((route): route is SiteRoute => route !== undefined && route.published);
 }
 

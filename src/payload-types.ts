@@ -90,7 +90,7 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'lo') | ('en' | 'lo')[];
   globals: {
     'site-facts': SiteFact;
     navigation: Navigation;
@@ -99,7 +99,7 @@ export interface Config {
     'site-facts': SiteFactsSelect<false> | SiteFactsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'lo';
   widgets: {
     collections: CollectionsWidget;
   };

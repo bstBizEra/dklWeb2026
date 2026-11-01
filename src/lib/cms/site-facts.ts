@@ -1,6 +1,7 @@
 import { cache } from "react";
 
-import { siteFacts, type FactKey, type SiteFacts } from "@/lib/data/site-facts";
+import { siteFacts, siteFactsFor, type FactKey, type SiteFacts } from "@/lib/data/site-facts";
+import type { Locale } from "@/lib/i18n";
 import { hasConfirmMarker } from "@/lib/data/confirm";
 
 import { cmsEnabled, getCms } from "./client";
@@ -22,15 +23,15 @@ export function sanitizeFacts(raw: Record<string, unknown> | null | undefined): 
 
 // When the CMS answers, it is the only source: clearing a field in the admin hides it on the site.
 // When the CMS is off or unreachable, the built-in facts keep the site complete.
-async function loadSiteFacts(): Promise<SiteFacts> {
-  if (!cmsEnabled()) return siteFacts;
+async function loadSiteFacts(locale: Locale = "en"): Promise<SiteFacts> {
+  if (!cmsEnabled()) return siteFactsFor(locale);
 
   try {
     const cms = await getCms();
-    const doc = await cms.findGlobal({ slug: "site-facts", overrideAccess: true });
+    const doc = await cms.findGlobal({ slug: "site-facts", overrideAccess: true, locale, fallbackLocale: "en" });
     return sanitizeFacts(doc as unknown as Record<string, unknown>);
   } catch {
-    return siteFacts;
+    return siteFactsFor(locale);
   }
 }
 

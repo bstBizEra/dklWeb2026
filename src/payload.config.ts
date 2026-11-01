@@ -28,6 +28,15 @@ export default buildConfig({
   collections: [Users, Pages, Articles, Leads],
   globals: [SiteFacts, Navigation],
   editor: lexicalEditor(),
+  // English and Lao. Lao pages ask for locale "lo"; a Lao field left empty shows the English text.
+  localization: {
+    locales: [
+      { code: "en", label: "English" },
+      { code: "lo", label: "ລາວ" },
+    ],
+    defaultLocale: "en",
+    fallback: true,
+  },
   // Throws at startup when a production server with a database has no proper secret (lib/payload-secret.ts).
   secret: payloadSecret(),
   graphQL: { disable: true },
