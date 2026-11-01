@@ -8,7 +8,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const source = readFileSync(join(process.cwd(), "src", "components", "app", "request-form.tsx"), "utf8");
+const source = readFileSync(join(process.cwd(), "src", "components", "app", "request-form.tsx"), "utf8").replace(/\r\n/g, "\n");
 
 describe("app request form layout", () => {
   it("caps the form's grid column at the screen width", () => {

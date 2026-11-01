@@ -62,7 +62,8 @@ describe("server deploy script", () => {
   it("is executable bash that stops on errors", () => {
     expect(script.startsWith("#!/usr/bin/env bash\n")).toBe(true);
     expect(script).toContain("set -euo pipefail");
-    expect(statSync(join(process.cwd(), "scripts", "server", "dklao-deploy")).mode & 0o111).not.toBe(0);
+    // Windows file stats never carry the Unix exec bit; git's index (100755) still does, and CI checks it on Linux.
+    if (process.platform !== "win32") expect(statSync(join(process.cwd(), "scripts", "server", "dklao-deploy")).mode & 0o111).not.toBe(0);
   });
 
   it("accepts only `deploy <target>-<run>-<sha>` (behaviour: deploy-script.test.ts)", () => {
