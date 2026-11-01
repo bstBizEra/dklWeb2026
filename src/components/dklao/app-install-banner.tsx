@@ -49,7 +49,7 @@ export function AppInstallBanner({ labels: t }: { labels: Messages["appBanner"] 
         {t.copy}
       </p>
       <Link
-        href="/app?install"
+        href={t.appHref}
         className="inline-flex min-h-11 items-center rounded-button bg-action-red px-4 text-[14px] font-extrabold text-white"
       >
         {t.install}

@@ -102,7 +102,7 @@ export function MainHero({ ctas, labels: t }: MainHeroProps) {
           data-lift="stage"
           className="relative aspect-[4/3] max-[1120px]:max-w-[680px] max-[780px]:w-full max-[780px]:max-w-[min(520px,88vw)] max-[780px]:justify-self-center"
           role="img"
-          aria-label="A DK LAO forklift drives into a warehouse carrying a pallet of cartons"
+          aria-label={t.visualLabel}
         >
           <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_at_55%_55%,black_45%,transparent_78%)]" aria-hidden="true">
             {/* The scene moves this wrapper; the CSS fade-in runs on the layer inside, because a CSS animation

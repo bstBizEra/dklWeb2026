@@ -91,7 +91,7 @@ export function ForkliftAnatomyInteractive({ locale }: { locale: Locale }) {
           <SectionTitle>{t.title}</SectionTitle>
           <SectionCopy>{t.copy}</SectionCopy>
         </div>
-        <AnatomyDiagram />
+        <AnatomyDiagram alt={t.imageAlt} />
       </Container>
     </Section>
   );

@@ -46,6 +46,7 @@ export const lo: Messages = {
     copy: "ຂໍໃບສະເໜີລາຄາ, ຈອງບໍລິການ ແລະ ເບິ່ງເສັ້ນທາງ ໄດ້ຈາກໜ້າຈໍຫຼັກຂອງທ່ານ.",
     install: "ຕິດຕັ້ງ",
     close: "ປິດ",
+    appHref: "/app/lo?install",
   },
   footer: {
     talkToUs: "ຕິດຕໍ່ພວກເຮົາ",

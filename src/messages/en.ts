@@ -45,6 +45,8 @@ export const en = {
     copy: "Quotes, service and directions from your home screen.",
     install: "Install",
     close: "Close",
+    // The app's install card, in the same language as the page.
+    appHref: "/app?install",
   },
   footer: {
     talkToUs: "Talk to us",
@@ -70,7 +72,7 @@ export const en = {
       title: "Forklift Rental, Sales & Service in Laos",
       copy: "Rent, buy and maintain forklifts. Source spare parts. Equip your warehouse. One DK LAO team across Laos.",
       actionsLabel: "Primary actions",
-      visualLabel: "DK LAO forklift hero visual",
+      visualLabel: "A DK LAO forklift drives into a warehouse carrying a pallet of cartons",
       imageAlt: "Modern orange DK LAO forklift hero visual",
     },
     proof: {
