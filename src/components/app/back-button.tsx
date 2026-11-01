@@ -18,7 +18,7 @@ export function BackButton({ href, label }: { href: string; label: string }) {
         if (window.history.length > 1) router.back();
         else router.replace(href);
       }}
-      aria-label={`Back to ${label}`}
+      aria-label={`${label}, back`}
       className="-ml-2 inline-flex min-h-11 items-center gap-0.5 pr-3 text-[17px] whitespace-nowrap text-ios-tint no-underline android:-ml-3 android:size-12 android:justify-center android:rounded-full android:p-0 android:text-md-on-surface android:active:bg-md-on-surface/10"
     >
       <ChevronLeft className="size-7 android:hidden" strokeWidth={2.4} aria-hidden="true" />

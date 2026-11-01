@@ -57,6 +57,12 @@ describe("focus and motion", () => {
     expect(links.length).toBe(4); // a new card link must be added here, not skipped silently
     for (const [, label, visible] of links) expect(label.startsWith(`${visible.trim()} `) || label.startsWith(`${visible.trim()}:`)).toBe(true);
   });
+
+  it("starts the app back button's accessible name with the screen name it shows (WCAG 2.5.3)", () => {
+    const back = read("components", "app", "back-button.tsx");
+    expect(back).toContain("<span className=\"android:sr-only\">{label}</span>");
+    expect(back).toMatch(/aria-label=\{`\$\{label\}[^`]*`\}/);
+  });
 });
 
 describe("quote form", () => {
