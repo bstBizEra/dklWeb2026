@@ -268,3 +268,10 @@ img {
     }
   }
 }
+
+/* Lao stacks vowels and tone marks above and below each letter, so the heading leading tuned for Inter
+   (leading-none to 1.2) made two-line Lao titles touch. Unlayered, so it wins over the leading-* utilities
+   on every title; English titles keep their spacing. */
+:lang(lo) :is(h1, h2, h3) {
+  line-height: 1.4;
+}
