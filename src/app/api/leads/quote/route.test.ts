@@ -68,6 +68,17 @@ describe("POST /api/leads/quote", () => {
     expect(notifyNewLead.mock.calls[0][0]).toMatchObject({ leadId: "DKL-777", recordId: 9, companyName: "Mekong Cold Chain" });
   });
 
+  it("starts every lead as NEW at the server's time, whatever the visitor sends", async () => {
+    const before = Date.now();
+    const response = await post({ ...good, status: "WON", submissionTimestamp: "2000-01-01T00:00:00.000Z" });
+
+    expect(response.status).toBe(200);
+    expect((await response.json()).data.status).toBe("NEW");
+    const saved = storeLead.mock.calls[0][0];
+    expect(saved.status).toBe("NEW");
+    expect(Date.parse(saved.submissionTimestamp)).toBeGreaterThanOrEqual(before);
+  });
+
   it("still answers success when the notification fails", async () => {
     notifyNewLead.mockResolvedValue("failed");
     const response = await post(good);

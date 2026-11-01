@@ -33,6 +33,8 @@ export const Pages: CollectionConfig = {
   access: {
     create: isOwnerOrEditor,
     read: publishedOrStaff,
+    // Unset, Payload lets any logged-in user (advisors too) read every draft through /api/pages/versions.
+    readVersions: isOwnerOrEditor,
     update: isOwnerOrEditor,
     delete: isOwner,
   },

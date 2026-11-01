@@ -12,7 +12,8 @@ export const Articles: CollectionConfig = {
   labels: { singular: "Article", plural: "Articles" },
   admin: { useAsTitle: "title", defaultColumns: ["title", "category", "_status", "publishedAt"], group: "Content" },
   versions: { drafts: true, maxPerDoc: 25 },
-  access: { create: isOwnerOrEditor, read: publishedOrStaff, update: isOwnerOrEditor, delete: isOwner },
+  // readVersions: drafts are staff-only, as on Pages.
+  access: { create: isOwnerOrEditor, read: publishedOrStaff, readVersions: isOwnerOrEditor, update: isOwnerOrEditor, delete: isOwner },
   fields: [
     { name: "title", type: "text", required: true, localized: true, validate: noConfirmMarker },
     slugField(), // lowercase, hyphenated, unique; the public address is /knowledge-center/<slug>

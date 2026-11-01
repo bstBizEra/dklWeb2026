@@ -4,7 +4,9 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { Articles } from "./collections/articles";
 import { Leads } from "./collections/leads";
+import { Pages } from "./collections/pages";
 import { Users } from "./collections/users";
 import { SiteFacts } from "./globals/site-facts";
 import { isOwner, isOwnerOrAdvisor, isOwnerOrEditor, never, ownerOrSelf, roles } from "./access";
@@ -36,6 +38,14 @@ describe("cms roles", () => {
 
   it("lets editors work on content but not customer data", () => {
     expect(isOwnerOrEditor(as("editor"))).toBe(true);
+    expect(isOwnerOrEditor(as("advisor"))).toBe(false);
+  });
+
+  it("shows page and article drafts and history only to owners and editors", () => {
+    // Unset, Payload lets any logged-in user read versions, which put unpublished drafts in front of advisors.
+    for (const collection of [Pages, Articles]) {
+      expect(collection.access?.readVersions, collection.slug).toBe(isOwnerOrEditor);
+    }
     expect(isOwnerOrEditor(as("advisor"))).toBe(false);
   });
 

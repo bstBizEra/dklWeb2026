@@ -79,7 +79,8 @@ export async function POST(request: Request): Promise<NextResponse<QuoteLeadResp
   // 4. Save, then tell the team by email (info@dklao.com) and webhook. The visitor's request counts as
   // received when it was saved or at least one notification reached DK LAO; only when all fail is it
   // refused, so the visitor knows to call instead.
-  const lead = withoutHoneypot(parsed.data);
+  // Status and time are the server's: a visitor must not file a lead as WON or back-date it past triage.
+  const lead = { ...withoutHoneypot(parsed.data), status: "NEW" as const, submissionTimestamp: new Date().toISOString() };
   const stored = await storeLead(lead).catch(() => null);
   const notifiable = stored ?? { ...lead, leadId: `DKL-${crypto.randomUUID()}` };
   const [emailed, notified] = await Promise.all([emailNewLead(notifiable), notifyNewLead(notifiable)]);
