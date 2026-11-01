@@ -4,6 +4,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
+import { refreshWhenIdle } from "./refresh-when-idle";
+
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Content that rises into place the first time it scrolls into view. The footer has its own motion
@@ -89,14 +91,9 @@ export function SiteMotion() {
       }
     });
 
-    // Images and fonts settle after load and move content; re-measure so the triggers stay accurate.
-    let timer: ReturnType<typeof setTimeout>;
-    const observer = new ResizeObserver(() => {
-      clearTimeout(timer);
-      timer = setTimeout(() => ScrollTrigger.refresh(), 150);
-    });
-
-    observer.observe(document.body);
+    // Images and fonts settle after load and move content; re-measure so the triggers stay accurate, but
+    // not during a smooth scroll, which a refresh would cancel.
+    const stopRefreshing = refreshWhenIdle(() => ScrollTrigger.refresh());
 
     // Keyboard users tab to content before its reveal (or the footer slide-in) has played. Whatever holds
     // the focused element at part opacity is shown at once, so nothing receives focus while hard to see.
@@ -115,8 +112,7 @@ export function SiteMotion() {
     document.addEventListener("focusin", showFocused);
 
     return () => {
-      clearTimeout(timer);
-      observer.disconnect();
+      stopRefreshing();
       document.removeEventListener("focusin", showFocused);
       mm.revert();
     };

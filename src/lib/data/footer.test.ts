@@ -154,8 +154,8 @@ describe("footer redesign", () => {
     expect(motion).toContain("(prefers-reduced-motion: reduce)");
     expect(motion).toContain("context.conditions?.reduced ? 0 : 90");
     expect(motion).toContain("mm.revert()");
-    expect(motion).toContain("new ResizeObserver");
-    expect(motion).toContain("ScrollTrigger.refresh()");
+    // Re-measures after a resize, once scrolling has stopped (behaviour: refresh-when-idle.test.ts).
+    expect(motion).toContain("refreshWhenIdle(() => ScrollTrigger.refresh())");
     // Every selector the motion targets exists in the footer markup.
     for (const selector of motion.match(/\.industrial-footer__[a-z-]+/g) ?? []) {
       expect(source, selector).toContain(selector.slice(1));

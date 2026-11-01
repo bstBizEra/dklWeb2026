@@ -5,6 +5,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
+import { refreshWhenIdle } from "./refresh-when-idle";
+
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Each footer layer flows in once the page is scrolled down to it: the left half slides in from the left
@@ -86,18 +88,12 @@ export function FooterMotion({ children }: { children: ReactNode }) {
 
       footer.current?.addEventListener("focusin", onFocus);
 
-      // Images above the footer settle after load and move it; re-measure so the last layer keeps its trigger.
-      let timer: ReturnType<typeof setTimeout>;
-      const observer = new ResizeObserver(() => {
-        clearTimeout(timer);
-        timer = setTimeout(() => ScrollTrigger.refresh(), 150);
-      });
-
-      observer.observe(document.body);
+      // Images above the footer settle after load and move it; re-measure so the last layer keeps its trigger,
+      // but not during a smooth scroll, which a refresh would cancel.
+      const stopRefreshing = refreshWhenIdle(() => ScrollTrigger.refresh());
 
       return () => {
-        clearTimeout(timer);
-        observer.disconnect();
+        stopRefreshing();
         footer.current?.removeEventListener("focusin", onFocus);
         mm.revert();
       };
