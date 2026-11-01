@@ -37,12 +37,17 @@ export function rateStore(env: Record<string, string | undefined> = process.env)
   return env.DATABASE_URL?.trim() ? "database" : "memory";
 }
 
-async function loadDatabaseLimiters() {
+// The Postgres adapter's own connection pool: no second pool next to Payload's. Also used by lib/auth/throttle.ts.
+export async function cmsPool(): Promise<Queryable> {
   const { getCms } = await import("@/lib/cms/client");
   const cms = await getCms();
-  // The Postgres adapter's own connection pool: no second pool next to Payload's.
   const pool = (cms.db as unknown as { pool?: Queryable }).pool;
   if (!pool) throw new Error("no database pool");
+  return pool;
+}
+
+async function loadDatabaseLimiters() {
+  const pool = await cmsPool();
   return {
     perAddress: createDatabaseRateLimiter(pool, rateLimitConfig(), { prefix: "lead" }),
     shared: createDatabaseRateLimiter(pool, sharedRateLimitConfig(), { prefix: "lead-shared" }),

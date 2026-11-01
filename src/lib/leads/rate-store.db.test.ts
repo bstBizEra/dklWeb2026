@@ -60,4 +60,17 @@ describe.skipIf(!url)("database rate limiter on PostgreSQL", () => {
     const { rows } = await pool!.query("SELECT count(*)::int AS n FROM lead_rate_limits WHERE bucket = 'test:old'", []);
     expect(rows[0].n).toBe(0);
   });
+
+  it("clears only its own prefix, so limiters with longer windows keep their counts", async () => {
+    const now = Date.now();
+    const hourly = createDatabaseRateLimiter(pool!, { limit: 3, windowMs: 60 * 60_000 }, { prefix: "test-hourly" });
+    await hourly.check("198.51.100.5", now - 30 * 60_000);
+    const short = createDatabaseRateLimiter(pool!, config, { prefix: "test", cleanupEvery: 1 });
+    await short.check("198.51.100.6", now);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const { rows } = await pool!.query("SELECT count(*)::int AS n FROM lead_rate_limits WHERE bucket = 'test-hourly:198.51.100.5'", []);
+    expect(rows[0].n).toBe(1);
+    await pool!.query("DELETE FROM lead_rate_limits WHERE bucket LIKE 'test-hourly:%'", []);
+  });
 });

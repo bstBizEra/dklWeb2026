@@ -27,7 +27,9 @@ const upsert = `
          COALESCE((SELECT hits FROM lead_rate_limits WHERE bucket = $1 AND window_start = $3), 0) AS previous
   FROM current`;
 
-const cleanup = `DELETE FROM lead_rate_limits WHERE window_start < $1`;
+// Each limiter clears only its own prefix: the login and reset limiters (lib/auth/throttle.ts) share this
+// table with longer windows, and a quote-form cleanup must not wipe their counts.
+const cleanup = `DELETE FROM lead_rate_limits WHERE window_start < $1 AND bucket LIKE $2`;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -63,7 +65,7 @@ export function createDatabaseRateLimiter(
       // Old windows are cleared now and then by the requests themselves: no cron job to set up.
       calls += 1;
       if (calls % cleanupEvery === 0) {
-        void db.query(cleanup, [new Date(start - windowMs)]).catch(() => {});
+        void db.query(cleanup, [new Date(start - windowMs), `${prefix}:%`]).catch(() => {});
       }
 
       if (estimate > config.limit) {

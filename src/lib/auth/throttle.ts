@@ -2,51 +2,91 @@
 // failed logins on the target account (users.ts: 20 per 15 minutes), so without this any caller who knows
 // an email could keep that account locked, and every forgot-password request would send an email through
 // the SMTP account the lead emails depend on. Checked in the REST route before Payload sees the request.
-// shortcut: counted in memory per server process; move to the database store (lib/leads/rate-store.ts)
-// if the host runs several app processes.
+// Counted in the database when there is one (table lead_rate_limits, shared by every server process), as
+// the quote form is (lib/leads/guard.ts); when the database store fails, the request is limited from memory.
 
-import { clientKey, createRateLimiter, sharedClientKey, type RateLimiter } from "@/lib/leads/rate-limit";
+import { cmsPool, rateStore } from "@/lib/leads/guard";
+import { clientKey, createRateLimiter, sharedClientKey, type RateLimitResult } from "@/lib/leads/rate-limit";
+import { createDatabaseRateLimiter, type AsyncRateLimiter, type Queryable } from "@/lib/leads/rate-store";
 
 const minute = 60 * 1000;
 // Requests without a usable address share one bucket, so it gets a larger budget (as for the quote form).
 const sharedFactor = 6;
 
-type Rule = { perAddress: RateLimiter; shared: RateLimiter; overall?: RateLimiter };
+type Spec = { limit: number; windowMs: number; overall?: number };
+const specs: Record<string, Spec> = {
+  // Fewer than the 20 failures that lock an account, so one address cannot lock anyone out.
+  login: { limit: 10, windowMs: 15 * minute },
+  // Each request sends a reset email; the overall cap keeps the SMTP quota for lead emails.
+  "forgot-password": { limit: 3, windowMs: 60 * minute, overall: 30 },
+};
 
-function rule(limit: number, windowMs: number, overall?: number): Rule {
-  return {
-    perAddress: createRateLimiter({ limit, windowMs }),
-    shared: createRateLimiter({ limit: limit * sharedFactor, windowMs }),
-    overall: overall ? createRateLimiter({ limit: overall, windowMs }) : undefined,
-  };
-}
+type Rule = { perAddress: AsyncRateLimiter; shared: AsyncRateLimiter; overall?: AsyncRateLimiter };
+type Make = (name: string, limit: number, windowMs: number) => AsyncRateLimiter;
 
-let rules: Record<string, Rule> = {};
-
-export function resetAuthThrottle(): void {
-  rules = {
-    // Fewer than the 20 failures that lock an account, so one address cannot lock anyone out.
-    login: rule(10, 15 * minute),
-    // Each request sends a reset email; the overall cap keeps the SMTP quota for lead emails.
-    "forgot-password": rule(3, 60 * minute, 30),
-  };
-}
-resetAuthThrottle();
-
-// A 429 in Payload's error shape when the request is over a limit, otherwise null (let Payload handle it).
-export function authThrottle(request: Request): Response | null {
-  if (request.method !== "POST") return null;
-  const action = new URL(request.url).pathname.match(/^\/api\/users\/(login|forgot-password)\/?$/)?.[1];
-  if (!action) return null;
-
-  const { perAddress, shared, overall } = rules[action];
-  const key = clientKey(request);
-  const result = (key === sharedClientKey ? shared : perAddress).check(key);
-  const total = result.allowed && overall ? overall.check("all") : result;
-  if (total.allowed) return null;
-
-  return Response.json(
-    { errors: [{ message: "Too many attempts. Please wait a few minutes and try again." }] },
-    { status: 429, headers: { "Retry-After": String(total.retryAfterSeconds) } },
+function rules(make: Make): Record<string, Rule> {
+  return Object.fromEntries(
+    Object.entries(specs).map(([action, { limit, windowMs, overall }]) => [
+      action,
+      {
+        perAddress: make(`auth-${action}`, limit, windowMs),
+        shared: make(`auth-${action}-shared`, limit * sharedFactor, windowMs),
+        overall: overall ? make(`auth-${action}-all`, overall, windowMs) : undefined,
+      },
+    ]),
   );
 }
+
+const memoryRules = () =>
+  rules((_, limit, windowMs) => {
+    const limiter = createRateLimiter({ limit, windowMs });
+    return { check: async (key) => limiter.check(key) };
+  });
+
+async function decide(rule: Rule, key: string): Promise<RateLimitResult> {
+  const result = await (key === sharedClientKey ? rule.shared : rule.perAddress).check(key);
+  return result.allowed && rule.overall ? rule.overall.check("all") : result;
+}
+
+// db: where the shared counts live. Default: the CMS database when rateStore() says so, read per request;
+// null forces memory.
+export function createAuthThrottle({ db }: { db?: (() => Promise<Queryable>) | null } = {}) {
+  const memory = memoryRules();
+  let database: Promise<Record<string, Rule>> | undefined;
+  let lastWarning = 0;
+
+  return async function authThrottle(request: Request): Promise<Response | null> {
+    if (request.method !== "POST") return null;
+    const action = new URL(request.url).pathname.match(/^\/api\/users\/(login|forgot-password)\/?$/)?.[1];
+    if (!action) return null;
+
+    const key = clientKey(request);
+    const pool = db === undefined ? (rateStore() === "database" ? cmsPool : null) : db;
+    let result: RateLimitResult;
+
+    if (pool) {
+      try {
+        database ??= pool().then((store) => rules((name, limit, windowMs) => createDatabaseRateLimiter(store, { limit, windowMs }, { prefix: name })));
+        result = await decide((await database)[action], key);
+      } catch (error) {
+        // A failed setup is retried on the next request instead of being cached.
+        database = undefined;
+        if (Date.now() - lastWarning > 60_000) {
+          lastWarning = Date.now();
+          console.warn(`[auth] shared rate-limit store failed (${error instanceof Error ? error.name : "error"}); limiting from memory`);
+        }
+        result = await decide(memory[action], key);
+      }
+    } else {
+      result = await decide(memory[action], key);
+    }
+
+    if (result.allowed) return null;
+    return Response.json(
+      { errors: [{ message: "Too many attempts. Please wait a few minutes and try again." }] },
+      { status: 429, headers: { "Retry-After": String(result.retryAfterSeconds) } },
+    );
+  };
+}
+
+export const authThrottle = createAuthThrottle();

@@ -61,6 +61,7 @@ describe("database rate limiter", () => {
 
     const deletes = db.query.mock.calls.filter(([text]) => text.includes("DELETE"));
     expect(deletes).toHaveLength(2);
-    expect(deletes[0][1]).toEqual([new Date(9 * config.windowMs)]);
+    // Only its own buckets: the login and reset limiters use other windows in the same table.
+    expect(deletes[0][1]).toEqual([new Date(9 * config.windowMs), "lead:%"]);
   });
 });
