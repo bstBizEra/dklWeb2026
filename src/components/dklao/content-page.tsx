@@ -98,13 +98,13 @@ function LinkCard({
             Read more
             <ArrowDown size={16} aria-hidden="true" />
           </a>
-          <Link className={cn(linkClass, "mt-0")} href={href} aria-label={`View the ${title} page`}>
+          <Link className={cn(linkClass, "mt-0")} href={href} aria-label={`View page: ${title}`}>
             View page
             <ArrowRight size={16} aria-hidden="true" className="transition-transform duration-[260ms] group-hover:translate-x-1 motion-reduce:transition-none" />
           </Link>
         </div>
       ) : href ? (
-        <Link className={linkClass} href={href} aria-label={`View ${title}`}>
+        <Link className={linkClass} href={href} aria-label={`View details: ${title}`}>
           View details
           <ArrowRight size={16} aria-hidden="true" className="transition-transform duration-[260ms] group-hover:translate-x-1 motion-reduce:transition-none" />
         </Link>

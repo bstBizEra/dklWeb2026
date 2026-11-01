@@ -50,6 +50,13 @@ describe("focus and motion", () => {
     expect(read("components", "dklao", "mega-menu.tsx")).toMatch(/const topLinkClass =\s*"[^"]*min-h-6/);
     expect(read("components", "dklao", "content-page.tsx").match(/min-h-6/g)?.length).toBeGreaterThanOrEqual(3);
   });
+
+  it("starts each card link's accessible name with its visible text (WCAG 2.5.3)", () => {
+    // Voice-control users say the words they see ("click View details"); the aria-label must begin with them.
+    const links = [...read("components", "dklao", "content-page.tsx").matchAll(/aria-label=\{`([^`]*)`\}>\s*([^<{\n]+)/g)];
+    expect(links.length).toBe(4); // a new card link must be added here, not skipped silently
+    for (const [, label, visible] of links) expect(label.startsWith(`${visible.trim()} `) || label.startsWith(`${visible.trim()}:`)).toBe(true);
+  });
 });
 
 describe("quote form", () => {
