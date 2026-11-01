@@ -5,6 +5,10 @@
 import type { PageContent } from "@/lib/data/pages";
 import type { DeepPartial } from "@/lib/i18n/localize";
 
+import { loHandlingCleaningPages } from "./sitemap-pages-handling-cleaning";
+import { loKnowledgePages } from "./sitemap-pages-knowledge";
+import { loPowerWarehousePages } from "./sitemap-pages-power-warehouse";
+
 const quoteClosing = {
   title: "ຮັບໃບສະເໜີລາຄາ",
   copy: "ບອກພວກເຮົາວ່າທ່ານຕ້ອງການຫຍັງ ແລະ ພວກເຮົາຈະຕອບກັບພ້ອມໃບສະເໜີລາຄາ.",
@@ -681,5 +685,8 @@ export const loSitemapPages: Partial<Record<string, DeepPartial<PageContent>>> =
     closing: { ...quoteClosing, primary: { label: "ຂໍອາໄຫຼ່" } },
   },
 
-  // PART2
+  // batteries, warehouse, material, racking, cleaning, knowledge and article live in their own files.
+  ...loPowerWarehousePages,
+  ...loHandlingCleaningPages,
+  ...loKnowledgePages,
 };
