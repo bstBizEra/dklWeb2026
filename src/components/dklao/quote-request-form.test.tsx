@@ -40,12 +40,13 @@ describe("quote form language", () => {
 
   it("is given the page's messages wherever a page shows it", () => {
     for (const page of [
-      ["app", "(site)", "[locale]", "contact", "page.tsx"],
       ["app", "(site)", "[locale]", "request-quote", "page.tsx"],
       ["components", "dklao", "content-page.tsx"],
       ["components", "dklao", "homepage-sections.tsx"],
     ]) {
       expect(read(...page), page.join("/")).toMatch(/<QuoteRequestForm[^>]*labels=\{/);
     }
+    // The contact page has its own inquiry form, with its own and the shared quote-form texts.
+    expect(read("app", "(site)", "[locale]", "contact", "page.tsx")).toMatch(/<ContactInquiryForm[^>]*labels=\{[^}]*\}[^>]*shared=\{/);
   });
 });

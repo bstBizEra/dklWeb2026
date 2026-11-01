@@ -56,8 +56,8 @@ function emptyValues(category: string): QuoteRequestInput {
 }
 
 // One labelled field. The error message is linked to the control (aria-describedby), the control is
-// marked invalid, and the message is announced as soon as it appears.
-function Field({
+// marked invalid, and the message is announced as soon as it appears. Also used by contact-inquiry-form.tsx.
+export function Field({
   id,
   label,
   error,
@@ -90,7 +90,7 @@ function Field({
 }
 
 // Props that tie a control to its error message. Required fields say so up front, not only after a failed send.
-const describedBy = (id: string, error?: FieldError, required = true) => ({
+export const describedBy = (id: string, error?: FieldError, required = true) => ({
   "aria-required": required || undefined,
   "aria-invalid": error ? true : undefined,
   "aria-describedby": error ? `${id}-error` : undefined,
