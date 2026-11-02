@@ -45,6 +45,20 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
     - The service types offered are only the confirmed ones.
     - A test booking returned a reference and was saved as a NEW `SERVICE_BOOKING` lead; the test line was removed.
   - Tests: `src/lib/validation/service.test.ts`, `src/app/api/leads/service/route.test.ts`, `src/lib/data/maintenance-page.test.ts`.
+- **Port of `feature/services-all-products`, stage 3: spare parts page.** This branch's `/spare-parts` already covered the parts families, the nameplate guidance and the "need more than a part?" links, so only the request form was ported.
+  - `POST /api/leads/spare-parts` runs on the shared pipeline as JSON (the feature branch's form-data route existed only for photos). `src/lib/validation/parts.ts` asks for:
+    - what the part is for (forklift, warehouse equipment or cleaning machine) and the type of part;
+    - equipment type and brand, with optional model and serial number;
+    - which part, in up to 500 characters, and the quantity;
+    - urgency, whether it should be fitted, and where the equipment is.
+
+    It files a `SPARE_PARTS_INQUIRY` lead whose category is the product group, with the answers as labelled lines. A test checks that the longest message fits in 1200 characters. The feature branch's separate free-text message field was folded into the part description.
+  - The page's form section now shows the parts request form (`parts-request-form.tsx`) in place of the generic quote form, in English and Lao (`partsForm` messages; urgency and yes/no answers reuse `serviceForm`).
+  - Not ported, on purpose:
+    - The feature branch's parts catalogue for racking, shelving, warehouse safety and cleaning machine parts, and its "confirmed on request" availability labels. This branch's parts page is about forklift parts, and those ranges are not confirmed. The form still lets a visitor ask about them, which makes no claim.
+    - Part and machine photo upload, which comes in the uploads stage.
+  - Checked in the browser: empty submit shows the field errors; a test request returned a reference and was saved as a NEW `SPARE_PARTS_INQUIRY` lead with its lines (removed afterwards); `/lo/spare-parts` shows the form in Lao except the Messenger and WhatsApp names.
+  - Tests: `src/lib/validation/parts.test.ts`, `src/app/api/leads/spare-parts/route.test.ts`, `src/lib/data/parts-page.test.ts`.
 
 - **Lao language merged in, with a 🇬🇧 EN / 🇱🇦 ລາວ flag toggle** (owner request 2026-11-01: "add Lao Translation, Lao/Eng Flag toggle"; merged locally from `motor/i18n/lao-translation`, TASK-012, which was never merged to `main` and had no changelog entry). What the merge brings: Lao pages under `/lo/...` (English stays unprefixed; `/en/...` redirects 308 to it) through `src/proxy.ts`, site routes moved under `src/app/(site)/[locale]/`, `src/messages/en.ts` / `lo.ts` with Lao text, Lao CMS fields (Payload `localization`, migration `20261026_050606_lao_localization`, run before `20261031_120000_lead_rate_limits`), the sitemap listing every page in both languages with hreflang links, and Lao text for the phone app (`src/components/app/screens.tsx`, `src/messages/lo/mobile-app.ts`). Conflicts resolved by keeping both sides: the sitemap keeps the CMS lastModified dates, the app request form keeps `grid-cols-1`, `leads.ts` keeps `z.config({ jitless: true })`, and `payload.config.ts` keeps `payloadSecret()`.
   - **Flags.** `src/components/i18n/flag.tsx` draws the UK and Lao flags as inline SVG (Windows shows flag emoji as the letters "GB" / "LA"); the website header toggle and the app's top-bar switch show each flag before "EN" / "ລາວ". The text stays, so each button's name is still the language, and the flags are `aria-hidden`.

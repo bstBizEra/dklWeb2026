@@ -9,6 +9,7 @@ import { IndustrialFooter } from "@/components/dklao/industrial-footer";
 import { SiteHeader } from "@/components/dklao/site-header";
 import { TrustedBy } from "@/components/dklao/trusted-by";
 import { QuoteRequestForm } from "@/components/dklao/quote-request-form";
+import { PartsRequestForm } from "@/components/dklao/parts-request-form";
 import { ServiceBookingForm } from "@/components/dklao/service-booking-form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -282,11 +283,18 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
   }
 
   if (section.kind === "form") {
-    // The maintenance page books a service with its own form (ported from feature/services-all-products).
+    // The maintenance and spare parts pages use their own forms (ported from feature/services-all-products).
     if (pageId === "maintenance") {
       return (
         <div className="max-w-[820px]">
           <ServiceBookingForm labels={messages.serviceForm} contact={messages.contactForm} shared={form} />
+        </div>
+      );
+    }
+    if (pageId === "parts") {
+      return (
+        <div className="max-w-[820px]">
+          <PartsRequestForm labels={messages.partsForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
         </div>
       );
     }
