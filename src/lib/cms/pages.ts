@@ -6,7 +6,7 @@ import { fromDetailsRow, type DetailsRow } from "./details-backfill";
 import { factKeys, type FactKey } from "@/lib/data/site-facts";
 import { hasConfirmMarker } from "@/lib/data/confirm";
 
-import type { Locale } from "@/lib/i18n";
+import { defaultLocale, type Locale } from "@/lib/i18n";
 
 import { cmsEnabled, getCms } from "./client";
 
@@ -84,8 +84,14 @@ export function pageFromDoc(doc: Doc): PageContent | null {
   };
 }
 
+// A row translated whole: every section it holds came back with a title in the asked-for language. A part-
+// translated row would render with the empty sections silently dropped, so it waits until it is finished.
+const coversEverySection = (doc: Doc, page: PageContent): boolean => page.sections.length === list(doc.sections).length;
+
 // The published CMS page wins. Without a database, or without a published row, the built-in page is used.
-// Text fields are localized in the CMS: a Lao field left empty shows the English text (fallbackLocale).
+// Outside the default language there is no English fallback: the rows in the admin were filled in English
+// only, and the fallback put that English text on every Lao page while the built-in Lao pages
+// (src/messages/lo/) went unused. A row counts for Lao only once it is translated whole.
 async function loadPage(fallbackId: string, locale: Locale): Promise<PageContent | null> {
   if (!cmsEnabled()) return null;
 
@@ -95,13 +101,15 @@ async function loadPage(fallbackId: string, locale: Locale): Promise<PageContent
       collection: "pages",
       where: { routeId: { equals: fallbackId }, _status: { equals: "published" } },
       locale,
-      fallbackLocale: "en",
+      fallbackLocale: locale === defaultLocale ? defaultLocale : false,
       limit: 1,
       depth: 0,
       overrideAccess: true,
     });
-    const doc = result.docs[0];
-    return doc ? pageFromDoc(doc as unknown as Doc) : null;
+    const doc = result.docs[0] as unknown as Doc | undefined;
+    const page = doc ? pageFromDoc(doc) : null;
+    if (!page || locale === defaultLocale) return page;
+    return coversEverySection(doc as Doc, page) ? page : null;
   } catch {
     return null;
   }
