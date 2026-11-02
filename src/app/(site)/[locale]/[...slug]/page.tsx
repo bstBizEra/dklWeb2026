@@ -14,6 +14,11 @@ import { setRequestLocale } from "@/lib/i18n/request-locale";
 // slugs are answered 404 before rendering. With dynamicParams true, Next.js rendered them and saved the
 // not-found page to .next/server/app, which a later process could serve with status 200.
 export const revalidate = 60;
+// Keep false. true does make an unknown slug render the site's own 404 (not-found.tsx) instead of Next's
+// bare page, but it also makes Next save an answer for every address a visitor invents: measured
+// 2026-11-03, a process killed in the moment after such a request leaves the saved page with an empty
+// .meta beside it, and the next process then serves that page with status 200 — a soft 404 that lasts
+// until the entry is written again. The bare page is the cheaper cost. See con_agents/CHANGELOG.md 0.23.0.
 export const dynamicParams = false;
 
 type Params = Promise<{ locale: string; slug: string[] }>;

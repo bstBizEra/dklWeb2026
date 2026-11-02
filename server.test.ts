@@ -109,8 +109,11 @@ describe.skipIf(!built)("unknown pages after a restart", () => {
       try {
         expect((await fetch(`${base}/no-such-page`)).status).toBe(404);
         expect((await fetch(`${base}/no/such/page`)).status).toBe(404);
-        expect(existsSync(join(root, ".next", "server", "app", "no-such-page.html"))).toBe(false);
-        expect(existsSync(join(root, ".next", "server", "app", "no", "such", "page.html"))).toBe(false);
+        // Pages live under their locale since 0.23.0 (app/en/..., app/lo/...), so these are the paths an
+        // invented address would be saved to. The check sat on the pre-locale paths and passed either way.
+        expect(existsSync(join(root, ".next", "server", "app", "en", "no-such-page.html"))).toBe(false);
+        expect(existsSync(join(root, ".next", "server", "app", "en", "no", "such", "page.html"))).toBe(false);
+        expect(existsSync(join(root, ".next", "server", "app", "lo", "no-such-page.html"))).toBe(false);
       } finally {
         child.kill("SIGKILL");
       }
