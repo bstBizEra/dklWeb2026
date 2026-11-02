@@ -5,6 +5,10 @@ import { appPermissionsPolicy, securityHeaders } from "./src/lib/security-header
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // app/global-not-found.tsx: the 404 for an address that matches no route. Needed because the app has no
+  // single root layout — (site), (app) and (payload) each bring their own <html> — so an ordinary
+  // not-found.tsx has nowhere to render and Next answers with its built-in error document instead.
+  experimental: { globalNotFound: true },
   async headers() {
     return [
       { source: "/:path*", headers: [...securityHeaders] },

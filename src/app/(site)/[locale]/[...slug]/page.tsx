@@ -11,16 +11,13 @@ import { setRequestLocale } from "@/lib/i18n/request-locale";
 // One template for every published page that has no file of its own: the sitemap pages, in each locale.
 // The CMS row wins over the built-in page. A route that is not published, or has no page data, is a 404.
 // Every slug is known at build time (the CMS edits a route's content, it cannot add a route), so the pages
-// below are all prerendered; an unknown slug renders this file and lands on notFound().
+// below are all prerendered and an unknown slug never reaches this file.
 export const revalidate = 60;
-// true, so an unknown slug reaches this page and its notFound() renders the site's own 404 in the visitor's
-// language instead of Next's bare built-in page. The owner chose this on 2026-11-03 knowing the cost: Next
-// then saves an answer for every address a visitor invents, and a process killed in the moment after such a
-// request leaves the saved page with an empty .meta beside it, so the next process serves that page with
-// status 200 until the entry is written again (measured; a clean build clears it, as every deploy does).
-// What keeps that from becoming an indexed page: not-found.tsx asks for noindex, whatever the status.
-// server.test.ts holds both halves — the branded page, and 404 from a fresh process.
-export const dynamicParams = true;
+// false: an address that is not a known slug matches no route at all, so Next answers it with
+// app/global-not-found.tsx — the site's own 404, rendered as HTML — and saves nothing for it. With true,
+// Next rendered and saved an answer for every address a visitor invents, and a process killed in the
+// moment after such a request left one of them serving status 200 (measured 2026-11-03).
+export const dynamicParams = false;
 
 type Params = Promise<{ locale: string; slug: string[] }>;
 

@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { localeHeader } from "@/lib/i18n/request-locale";
+
 // Language from the URL only (the host's nginx cache keys on the URL, so no cookie or Accept-Language is
 // read and nothing redirects by browser language):
 //   /lo, /lo/...   Lao pages, served as they are.
@@ -13,6 +15,12 @@ const notSite = /^\/(api|admin|app|og|_next)(\/|$)/;
 // who sends the header on /en/... just gets the English page instead of the redirect.
 const rewritten = "x-dklao-locale-rewrite";
 
+function withLocale(request: NextRequest, locale: "en" | "lo"): Headers {
+  const headers = new Headers(request.headers);
+  headers.set(localeHeader, locale);
+  return headers;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (notSite.test(pathname)) return NextResponse.next();
@@ -24,7 +32,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  if (pathname === "/lo" || pathname.startsWith("/lo/")) return NextResponse.next();
+  // The language also travels in a header, for app/global-not-found.tsx: an address that matches no route
+  // renders outside the site layout, so it has nothing else to read the language from.
+  if (pathname === "/lo" || pathname.startsWith("/lo/")) return NextResponse.next({ request: { headers: withLocale(request, "lo") } });
 
   // Built from request.url, the address the request arrived on, never from request.nextUrl. Next rewrites
   // internally only while the destination keeps that same origin; nextUrl follows X-Forwarded-Proto, so
@@ -39,7 +49,7 @@ export function proxy(request: NextRequest) {
   // destination read https, Next treated it as another site and fetched the page from itself over HTTPS, and
   // every English page answered 500. Revisit only if the app is ever given its own certificate.
   target.protocol = "http:";
-  const headers = new Headers(request.headers);
+  const headers = withLocale(request, "en");
   headers.set(rewritten, "1");
   return NextResponse.rewrite(target, { request: { headers } });
 }

@@ -5,7 +5,7 @@
  * Needs a finished `pnpm build`; without one the test is skipped (CI runs the tests before building).
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 
@@ -50,20 +50,14 @@ ${output}`);
   return { child, base, output: () => output };
 }
 
-// Since dynamicParams is true, a request for an invented address leaves a saved answer behind, and a run
-// killed mid-write leaves a torn one. Every deploy builds .next anew, so the tests start from that state
-// too: without this, one run's leftovers decide the next run's statuses.
-const savedPaths = ["en/no-such-page", "lo/no-such-page", "en/no"];
-function clearSavedAnswers() {
-  if (!built) return;
-  for (const path of savedPaths) {
-    // .segments is a directory, the others are files.
-    for (const extension of ["", ".html", ".meta", ".rsc", ".segments"]) {
-      rmSync(join(root, ".next", "server", "app", ...path.split("/")) + extension, { force: true, recursive: true });
-    }
-  }
-}
-beforeAll(clearSavedAnswers);
+// What a visitor without JavaScript sees: the markup, with the scripts (and the data payload inside them,
+// which repeats every string on the page) taken out. A page drawn only in the browser leaves this empty.
+const visibleText = (html: string) =>
+  html
+    .replace(/<script[\s\S]*?<\/script>/g, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 // Started directly, and through app.js loaded with require() the way Passenger may load it.
 describe.skipIf(!built).each([
@@ -98,14 +92,18 @@ describe.skipIf(!built).each([
   it("returns 404 for an unknown page and serves the lead API", async () => {
     const unknown = await fetch(`${base}/no-such-page`);
     expect(unknown.status).toBe(404);
-    // The site's own 404 page, in the language of the address, not Next.js's bare built-in one, and never
-    // offered to a search engine whatever status a saved copy of it is later served with.
+    // The site's own 404 (app/global-not-found.tsx), in the language of the address, as markup rather than
+    // a payload the browser has to draw, and asking search engines to leave it alone.
     const page = await unknown.text();
-    expect(page).toContain(en.notFound.title);
+    expect(page).not.toContain("__next_error__");
+    expect(visibleText(page)).toContain(en.notFound.title);
     expect(page).toMatch(/name="robots"[^>]*noindex/);
     const unknownLao = await fetch(`${base}/lo/no-such-page`);
     expect(unknownLao.status).toBe(404);
-    expect(await unknownLao.text()).toContain(lo.notFound.title);
+    expect(unknownLao.headers.get("content-type")).toMatch(/text\/html/);
+    const laoPage = await unknownLao.text();
+    expect(laoPage).toMatch(/<html[^>]*lang="lo"/);
+    expect(visibleText(laoPage)).toContain(lo.notFound.title);
     const invalid = await fetch(`${base}/api/leads/quote`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Real-IP": "203.0.113.250" },
@@ -126,34 +124,23 @@ describe.skipIf(!built).each([
   }, 15_000);
 });
 
-// An unknown URL must stay a 404 for a server started later. Since dynamicParams is true, Next does keep
-// the not-found render for an invented address (app/en/..., app/lo/... — pages moved under their locale in
-// 0.23.0), so that a repeat hit costs nothing; what matters is that the saved entry records status 404. A
-// 200 there would be a soft 404: a fresh process would serve "not found" as a success.
+// An unknown URL must stay a 404 for a server started later, and Next.js must save nothing for it under
+// .next/server/app: a saved entry can be served by a fresh process with status 200 (a soft 404), and any
+// address a visitor invents would add files to the disk. Pages live under their locale since 0.23.0, so
+// those are the paths to watch; the check sat on the pre-locale ones and passed whatever happened.
 describe.skipIf(!built)("unknown pages after a restart", () => {
-  // Again here: the servers above were killed the moment their last request finished, which can leave a
-  // torn entry behind, and this test is about what a fresh process makes of a complete one.
-  beforeAll(clearSavedAnswers);
-
-  const savedStatus = (...parts: string[]) => {
-    const file = join(root, ".next", "server", "app", ...parts);
-    const text = existsSync(file) ? readFileSync(file, "utf8") : "";
-    // Empty means a write cut short by the kill below, not a status this build chose.
-    return text ? (JSON.parse(text) as { status?: number }).status : undefined;
-  };
-
-  it("still returns 404 from a fresh server", async () => {
+  it("still returns 404 from a fresh server, with nothing saved for the address", async () => {
     for (let run = 0; run < 2; run++) {
       const { child, base } = await startServer(["server.mjs"]);
       try {
         expect((await fetch(`${base}/no-such-page`)).status).toBe(404);
         expect((await fetch(`${base}/no/such/page`)).status).toBe(404);
         expect((await fetch(`${base}/lo/no-such-page`)).status).toBe(404);
-        for (const saved of [savedStatus("en", "no-such-page.meta"), savedStatus("lo", "no-such-page.meta")]) {
-          if (saved !== undefined) expect(saved).toBe(404);
-        }
-        // Next saves its answer after replying; give that write the moment a graceful stop would allow.
+        // Next saves its answer after replying, so look a moment later.
         await new Promise((resolve) => setTimeout(resolve, 1000));
+        for (const saved of ["en/no-such-page.html", "lo/no-such-page.html", "en/no/such/page.html"]) {
+          expect(existsSync(join(root, ".next", "server", "app", ...saved.split("/")))).toBe(false);
+        }
       } finally {
         child.kill("SIGKILL");
       }

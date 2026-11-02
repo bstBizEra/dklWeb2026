@@ -16,7 +16,8 @@ const read = (...parts: string[]) => readFileSync(join(process.cwd(), "src", ...
 const shells = [
   ["app", "(site)", "[locale]", "page.tsx"],
   ["app", "(site)", "[locale]", "about", "page.tsx"],
-  ["app", "(site)", "[locale]", "not-found.tsx"],
+  // The 404's markup, shared by the route's not-found.tsx and app/global-not-found.tsx.
+  ["components", "dklao", "not-found-content.tsx"],
   ["components", "dklao", "content-page.tsx"],
 ];
 
