@@ -10,16 +10,17 @@ import { setRequestLocale } from "@/lib/i18n/request-locale";
 
 // One template for every published page that has no file of its own: the sitemap pages, in each locale.
 // The CMS row wins over the built-in page. A route that is not published, or has no page data, is a 404.
-// Every slug is known at build time (the CMS edits a route's content, it cannot add a route), so unknown
-// slugs are answered 404 before rendering. With dynamicParams true, Next.js rendered them and saved the
-// not-found page to .next/server/app, which a later process could serve with status 200.
+// Every slug is known at build time (the CMS edits a route's content, it cannot add a route), so the pages
+// below are all prerendered; an unknown slug renders this file and lands on notFound().
 export const revalidate = 60;
-// Keep false. true does make an unknown slug render the site's own 404 (not-found.tsx) instead of Next's
-// bare page, but it also makes Next save an answer for every address a visitor invents: measured
-// 2026-11-03, a process killed in the moment after such a request leaves the saved page with an empty
-// .meta beside it, and the next process then serves that page with status 200 — a soft 404 that lasts
-// until the entry is written again. The bare page is the cheaper cost. See con_agents/CHANGELOG.md 0.23.0.
-export const dynamicParams = false;
+// true, so an unknown slug reaches this page and its notFound() renders the site's own 404 in the visitor's
+// language instead of Next's bare built-in page. The owner chose this on 2026-11-03 knowing the cost: Next
+// then saves an answer for every address a visitor invents, and a process killed in the moment after such a
+// request leaves the saved page with an empty .meta beside it, so the next process serves that page with
+// status 200 until the entry is written again (measured; a clean build clears it, as every deploy does).
+// What keeps that from becoming an indexed page: not-found.tsx asks for noindex, whatever the status.
+// server.test.ts holds both halves — the branded page, and 404 from a fresh process.
+export const dynamicParams = true;
 
 type Params = Promise<{ locale: string; slug: string[] }>;
 
