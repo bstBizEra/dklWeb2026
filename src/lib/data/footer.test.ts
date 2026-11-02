@@ -176,11 +176,14 @@ describe("footer redesign", () => {
     expect(motion.startsWith('"use client"')).toBe(true);
     expect(motion).toContain("registerPlugin(ScrollTrigger, useGSAP)");
     expect(motion).toContain('toggleActions: "play none none reverse"');
-    expect(motion).toMatch(/x, opacity: 0/);
+    // The layers travel; they never fade. A faded link is a link whose text is not there yet, and the
+    // chips carry the phone numbers: scrolling past them showed them at 0.5 opacity for a few hundred ms.
+    expect(motion).not.toMatch(/opacity:\s*0\b/);
+    expect(motion).toMatch(/\{ x \}/);
     expect(motion).toContain("from(layer.left, -distance)");
     expect(motion).toContain("from(layer.right, distance)");
     expect(motion).toContain("(prefers-reduced-motion: no-preference)");
-    // Reduced motion: fade only, no sideways travel.
+    // Reduced motion: no travel, and since nothing fades either, the footer simply stands still.
     expect(motion).toContain("(prefers-reduced-motion: reduce)");
     expect(motion).toContain("context.conditions?.reduced ? 0 : 90");
     expect(motion).toContain("mm.revert()");
@@ -201,7 +204,7 @@ describe("footer redesign", () => {
     // from() reads its end state off the page; a mid-tween refresh left layers at opacity 0 or 90px off-screen.
     expect(motion).not.toMatch(/timeline\.from\(/);
     expect(motion).toContain("timeline.fromTo(");
-    expect(motion).toContain("{ x: 0, opacity: 1,");
+    expect(motion).toContain("{ x: 0,");
     // Animated chips must not also have a CSS transform transition.
     expect(source).toMatch(/const pressableChip = "transition-\[background-color,border-color\]/);
   });

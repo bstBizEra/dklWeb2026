@@ -11,7 +11,8 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Each footer layer flows in once the page is scrolled down to it: the left half slides in from the left
 // and the right half from the right. Scrolling back up past the layer plays the same motion in reverse.
-// Selectors are scoped to the footer. Visitors who ask for reduced motion get a plain fade, with no sideways travel.
+// Selectors are scoped to the footer. Nothing fades: the layers are readable the whole way in, so a visitor
+// or an audit meeting them mid-travel still sees the phone numbers. Ask for reduced motion and they stand still.
 const layers: { trigger: string; start: string; left: string[]; right: string[] }[] = [
   {
     trigger: ".industrial-footer__contact",
@@ -49,7 +50,7 @@ export function FooterMotion({ children }: { children: ReactNode }) {
       let timelines: { layer: string; timeline: gsap.core.Timeline }[] = [];
 
       // Full motion slides from the sides. When the system asks for reduced motion (Windows: Settings, Accessibility,
-      // Visual effects, Animation effects off) the layers only fade in and out, with no sideways travel.
+      // Visual effects, Animation effects off) the travel is zero, so the layers simply sit where they belong.
       mm.add({ full: "(prefers-reduced-motion: no-preference)", reduced: "(prefers-reduced-motion: reduce)" }, (context) => {
         const distance = context.conditions?.reduced ? 0 : 90;
 
@@ -62,13 +63,16 @@ export function FooterMotion({ children }: { children: ReactNode }) {
               toggleActions: "play none none reverse",
             },
           });
+          // Travel only, never a fade. A fading layer is text that is on screen but not readable yet, and these
+          // layers carry the phone numbers: scrolling past the chips showed them at half opacity for a few
+          // hundred milliseconds, and anything measuring the page in that moment sees links with no visible name.
           // fromTo, not from: a from() tween reads its end state off the page, and a refresh that lands mid-tween
-          // made it read a half-hidden state, leaving content invisible or shifted off-screen for good.
+          // made it read a half-hidden state, leaving content shifted off-screen for good.
           const from = (selectors: string[], x: number) =>
             timeline.fromTo(
               selectors.join(","),
-              { x, opacity: 0 },
-              { x: 0, opacity: 1, duration: distance ? 0.7 : 0.5, ease: "power3.out", stagger: 0.04 },
+              { x },
+              { x: 0, duration: distance ? 0.7 : 0.5, ease: "power3.out", stagger: 0.04 },
               0,
             );
 
