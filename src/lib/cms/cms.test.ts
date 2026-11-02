@@ -10,10 +10,10 @@ import { Pages } from "@/payload/collections/pages";
 import { publishedOrStaff } from "@/payload/access";
 import { hasConfirmMarker, noConfirmMarker } from "@/lib/data/confirm";
 import { contactPage, forkliftRentalPage, visibleSections, type PageContent } from "@/lib/data/pages";
-import { factKeys, siteFacts } from "@/lib/data/site-facts";
+import { factKeys, siteFacts, siteFactsFor } from "@/lib/data/site-facts";
 
 import { pageFromDoc } from "./pages";
-import { sanitizeFacts } from "./site-facts";
+import { localeFacts, sanitizeFacts } from "./site-facts";
 
 describe("confirm markers", () => {
   it("detects planning markers in any spelling", () => {
@@ -82,6 +82,26 @@ describe("site facts from the CMS", () => {
     const titles = visibleSections(contactPage, cleared).flatMap((s) => s.items.map((i) => i.title));
     expect(titles).not.toContain("Opening hours");
     expect(titles).toContain("Facebook");
+  });
+
+  // The admin filled the facts in English only. A number or a link is the same in both languages, so the
+  // admin's value wins; a sentence is not, so a Lao page takes the built-in Lao wording over English.
+  it("never shows an English sentence on a Lao page, but keeps the admin's numbers and links", () => {
+    const own = sanitizeFacts({ phone: "+85621 000 000" });
+    const fallback = sanitizeFacts({ ...siteFacts, phone: "+85621 000 000", email: "" });
+    const merged = localeFacts(own, fallback, "lo");
+
+    expect(merged.phone).toBe("+85621 000 000");
+    expect(merged.address).toBe(siteFactsFor("lo").address);
+    expect(merged.brands).toBe(siteFactsFor("lo").brands);
+    expect(merged.referenceClients).toBe(siteFacts.referenceClients);
+    expect(merged.email).toBeNull();
+  });
+
+  it("takes a translated fact from the admin whenever it is there", () => {
+    const own = sanitizeFacts({ address: "ທີ່ຢູ່ໃໝ່" });
+    const merged = localeFacts(own, sanitizeFacts(siteFacts), "lo");
+    expect(merged.address).toBe("ທີ່ຢູ່ໃໝ່");
   });
 });
 
