@@ -103,6 +103,23 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
     - The feature page's other sections, which this page already covers or which repeat unconfirmed terms.
   - Checked in the browser: empty submit shows the field errors; a test inquiry returned a reference and was saved as a NEW `RENTAL_INQUIRY` with category "Forklift rental: long term" (removed afterwards); `/lo/forklift-rental` shows the form in Lao except the Messenger and WhatsApp names; at 375 px the form is one column with no sideways scrolling.
   - Tests: `src/lib/validation/rental.test.ts`, `src/app/api/leads/rental/route.test.ts`, `src/lib/data/rental-page.test.ts`.
+- **Port of `feature/services-all-products`, stage 7: cleaning equipment page.** This branch's `/cleaning-equipment` already covered the Nilfisk professional and home ranges, machine-to-site matching, planning guidance, facilities and FAQ, and already had a "Get a recommendation" form section (the generic quote form). That section now shows a cleaning recommendation form.
+  - The feature branch's 6-step `CleaningRecommendationWizard` was not usable as it stood: it imported option lists that its `lib/data/cleaning.ts` does not define, and posted the lead type `CLEANING_RECOMMENDATION`, which the leads table does not accept. Its questions were rebuilt as one page, with choices taken from this page.
+  - `POST /api/leads/cleaning` runs on the shared pipeline. `src/lib/validation/cleaning.ts` asks for:
+    - what needs cleaning (the page's six "Match machine to site" rows, or something else);
+    - which machine (the page's seven Nilfisk professional range cards, or not sure);
+    - business, or home and small shop (the page's consumer range);
+    - where the site is, with optional area, frequency, timeline and budget;
+    - a description of up to 500 characters.
+
+    It files a `CLEANING_EQUIPMENT_RECOMMENDATION` lead whose category is the machine, with the answers as labelled lines. A test checks that the longest message fits in 1200 characters.
+  - The form is `cleaning-request-form.tsx`, in English and Lao (`cleaningForm` messages; timelines and contact methods reuse `contactForm`).
+  - Not ported, on purpose:
+    - The site survey, delivery and training questions, since none of those services is confirmed.
+    - The brand question; Nilfisk is the confirmed brand.
+    - The feature page's own sections (brand showcase, sub-navigation, Nilfisk professional and home catalogues, industry use cases, FAQ, final call to action) and `lib/cleaning/catalog.ts`. This page already covers the same ground from confirmed content.
+  - Checked in the browser: empty submit shows the field errors; a test request returned a reference and was saved as a NEW `CLEANING_EQUIPMENT_RECOMMENDATION` with category "Cleaning: sweeper" (removed afterwards); `/lo/cleaning-equipment` shows the form in Lao except the Messenger and WhatsApp names; at 375 px the form is one column with no sideways scrolling.
+  - Tests: `src/lib/validation/cleaning.test.ts`, `src/app/api/leads/cleaning/route.test.ts`, `src/lib/data/cleaning-page.test.ts`.
 
 - **Lao language merged in, with a 🇬🇧 EN / 🇱🇦 ລາວ flag toggle** (owner request 2026-11-01: "add Lao Translation, Lao/Eng Flag toggle"; merged locally from `motor/i18n/lao-translation`, TASK-012, which was never merged to `main` and had no changelog entry). What the merge brings: Lao pages under `/lo/...` (English stays unprefixed; `/en/...` redirects 308 to it) through `src/proxy.ts`, site routes moved under `src/app/(site)/[locale]/`, `src/messages/en.ts` / `lo.ts` with Lao text, Lao CMS fields (Payload `localization`, migration `20261026_050606_lao_localization`, run before `20261031_120000_lead_rate_limits`), the sitemap listing every page in both languages with hreflang links, and Lao text for the phone app (`src/components/app/screens.tsx`, `src/messages/lo/mobile-app.ts`). Conflicts resolved by keeping both sides: the sitemap keeps the CMS lastModified dates, the app request form keeps `grid-cols-1`, `leads.ts` keeps `z.config({ jitless: true })`, and `payload.config.ts` keeps `payloadSecret()`.
   - **Flags.** `src/components/i18n/flag.tsx` draws the UK and Lao flags as inline SVG (Windows shows flag emoji as the letters "GB" / "LA"); the website header toggle and the app's top-bar switch show each flag before "EN" / "ລາວ". The text stays, so each button's name is still the language, and the flags are `aria-hidden`.

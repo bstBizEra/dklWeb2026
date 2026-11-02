@@ -3,6 +3,7 @@ import Link from "@/components/i18n/link";
 import { Fragment, type ReactNode } from "react";
 import { ArrowDown, ArrowRight, CheckCircle2 } from "lucide-react";
 
+import { CleaningRequestForm } from "@/components/dklao/cleaning-request-form";
 import { CTASection } from "@/components/dklao/cta-section";
 import { FloatingContactActions } from "@/components/dklao/floating-contact-actions";
 import { IndustrialFooter } from "@/components/dklao/industrial-footer";
@@ -319,6 +320,13 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
       return (
         <div className="max-w-[820px]">
           <RentalInquiryForm labels={messages.rentalForm} sales={messages.salesForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
+        </div>
+      );
+    }
+    if (pageId === "cleaning") {
+      return (
+        <div className="max-w-[820px]">
+          <CleaningRequestForm labels={messages.cleaningForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
         </div>
       );
     }
