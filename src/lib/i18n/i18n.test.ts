@@ -78,8 +78,12 @@ describe("proxy", () => {
   const run = (path: string) => proxy(new NextRequest(new URL(path, "https://www.dklao.com")));
 
   it("rewrites English to /en, redirects /en away and passes Lao", () => {
-    expect(run("/about").headers.get("x-middleware-rewrite")).toBe("https://www.dklao.com/en/about");
-    expect(run("/").headers.get("x-middleware-rewrite")).toBe("https://www.dklao.com/en");
+    // The rewrite is internal and never seen by the visitor, so it carries the app's own http address: Next
+    // keeps a rewrite inside the app only while the destination matches the address the request arrived on,
+    // and the app always listens on plain http behind the server's nginx and Apache (src/proxy.ts). The
+    // redirects below are different: a visitor follows those, so they keep the public https address.
+    expect(run("/about").headers.get("x-middleware-rewrite")).toBe("http://www.dklao.com/en/about");
+    expect(run("/").headers.get("x-middleware-rewrite")).toBe("http://www.dklao.com/en");
     const redirect = run("/en/about?x=1");
     expect(redirect.status).toBe(308);
     expect(redirect.headers.get("location")).toBe("https://www.dklao.com/about?x=1");
