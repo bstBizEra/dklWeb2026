@@ -34,7 +34,7 @@ export function MobileMenu({
       >
         <Menu size={24} aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent closeLabel={labels.close}>
         <SheetTitle className="m-0 pr-12 text-lg font-[850]">{labels.title}</SheetTitle>
         <SheetDescription className="sr-only">{labels.description}</SheetDescription>
         <nav aria-label={labels.navLabel} className="grid gap-1.5">

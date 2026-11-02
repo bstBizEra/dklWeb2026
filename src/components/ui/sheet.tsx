@@ -18,8 +18,9 @@ function SheetContent({
   className,
   children,
   side = "right",
+  closeLabel,
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: "left" | "right" }) {
+}: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: "left" | "right"; closeLabel: string }) {
   return (
     <SheetPrimitive.Portal>
       <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-navy-950/60 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 motion-reduce:animate-none" />
@@ -37,7 +38,8 @@ function SheetContent({
         {children}
         <SheetPrimitive.Close className="absolute top-4 right-4 inline-grid size-11 place-items-center rounded-button text-white/80 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-orange">
           <X size={22} aria-hidden="true" />
-          <span className="sr-only">Close menu</span>
+          {/* The caller passes it: this button sits on Lao pages too. */}
+          <span className="sr-only">{closeLabel}</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
     </SheetPrimitive.Portal>
