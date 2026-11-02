@@ -11,7 +11,7 @@ import type { QuoteRequest } from "@/lib/validation/leads";
 //   LEAD_NOTIFY_WEBHOOK_SECRET  optional. When set, the body is signed: X-DKLAO-Signature: sha256=<hex hmac>.
 //   LEAD_NOTIFY_DETAILS         "summary" (default) sends no personal details; "full" adds name, phone, email, message.
 
-export type NotifiableLead = QuoteRequest & { leadId: string; recordId?: string | number };
+export type NotifiableLead = QuoteRequest & { leadId: string; recordId?: string | number; notInCms?: true };
 
 export type NotifyConfig = {
   url: string;
@@ -25,28 +25,40 @@ export type NotifyResult = "sent" | "skipped" | "failed";
 
 const localHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
-export function readNotifyConfig(env: Record<string, string | undefined> = process.env): NotifyConfig | null {
-  const raw = env.LEAD_NOTIFY_WEBHOOK_URL?.trim();
-  if (!raw) return null;
+// A webhook address is accepted only over https (http only for this machine) and without credentials in
+// it. Shared with the ops alert webhook (lib/ops/alert.ts).
+export function safeWebhookUrl(raw: string | undefined): string | null {
+  const value = raw?.trim();
+  if (!value) return null;
 
   let url: URL;
   try {
-    url = new URL(raw);
+    url = new URL(value);
   } catch {
     return null;
   }
 
   const secure = url.protocol === "https:" || (url.protocol === "http:" && localHosts.has(url.hostname));
   if (!secure || url.username || url.password) return null;
+  return url.toString();
+}
+
+export function readNotifyConfig(env: Record<string, string | undefined> = process.env): NotifyConfig | null {
+  const url = safeWebhookUrl(env.LEAD_NOTIFY_WEBHOOK_URL);
+  if (!url) return null;
 
   return {
-    url: url.toString(),
+    url,
     secret: env.LEAD_NOTIFY_WEBHOOK_SECRET?.trim() || undefined,
     details: env.LEAD_NOTIFY_DETAILS === "full" ? "full" : "summary",
     timeoutMs: 4000,
     appUrl: (env.APP_URL ?? "https://www.dklao.com").replace(/\/$/, ""),
   };
 }
+
+// Shown when the database save failed and the lead is only in the server's local file.
+export const notInCmsNote =
+  "NOT IN THE CMS YET: the database was unavailable, so this request is only in data/leads-local.jsonl on the server. Import it with: pnpm cms:import-fallback-leads";
 
 const clip = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 1)}…` : value);
 
@@ -66,6 +78,7 @@ export function buildNotification(lead: NotifiableLead, config: Pick<NotifyConfi
     sourcePage: lead.sourcePage,
     receivedAt: now.toISOString(),
     ...(adminUrl ? { adminUrl } : {}),
+    ...(lead.notInCms ? { notInCms: true } : {}),
   };
 
   if (config.details === "full") {
@@ -75,6 +88,7 @@ export function buildNotification(lead: NotifiableLead, config: Pick<NotifyConfi
   }
 
   if (adminUrl) lines.push(`Open: ${adminUrl}`);
+  if (lead.notInCms) lines.push(notInCmsNote);
 
   return { ...payload, subject, text: lines.join("\n") };
 }

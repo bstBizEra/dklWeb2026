@@ -157,10 +157,12 @@ export function topicForPage(pageId: string): LibraryTopic | undefined {
 
 // A card's photo: the linked page's photo when it links to another page, else a match on its title,
 // else the page's own photo. A card that links back to its own page ("Manufacturing" on Industries) is
-// matched by title, so it does not repeat the hero photo.
-export function topicForCard(card: { title: string; href?: string; routeId?: string }, pageId: string): LibraryTopic | undefined {
+// matched by title, so it does not repeat the hero photo. On a translated page the English title
+// (photoTitle) is matched, so the card keeps its English photo.
+export function topicForCard(card: { title: string; href?: string; routeId?: string; photoTitle?: string }, pageId: string): LibraryTopic | undefined {
   const routeId = card.routeId ?? publishedRoutes().find((route) => route.href === card.href)?.id;
   const linked = routeId && routeId !== pageId && getRoute(routeId) ? pageTopics[routeId] : undefined;
+  const title = card.photoTitle ?? card.title;
 
-  return linked ?? titleTopics.find(([pattern]) => pattern.test(card.title))?.[1] ?? pageTopics[pageId];
+  return linked ?? titleTopics.find(([pattern]) => pattern.test(title))?.[1] ?? pageTopics[pageId];
 }

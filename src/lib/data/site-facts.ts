@@ -1,3 +1,6 @@
+import { localized } from "@/lib/i18n/localize";
+import { loSiteFacts } from "@/messages/lo/site-facts";
+
 // Owner-confirmed business facts. A null value means "not confirmed yet".
 // Any page item bound to a null fact is hidden, so nothing unverified is published.
 // Fill a value here (and nowhere else) once the owner has confirmed it.
@@ -49,6 +52,10 @@ export const siteFacts: SiteFacts = {
 };
 
 export const factKeys = Object.keys(siteFacts) as FactKey[];
+
+// Built-in facts per locale: the wording of text facts can be translated, numbers and links stay.
+// Lao text: src/messages/lo/site-facts.ts. With a database the CMS Site facts global is used instead.
+export const siteFactsFor = localized(siteFacts, loSiteFacts);
 
 export type ContactChannel = { label: string; href: string; text: string; external: boolean };
 

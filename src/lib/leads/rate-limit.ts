@@ -25,6 +25,17 @@ export function rateLimitConfig(env: Record<string, string | undefined> = proces
   };
 }
 
+// Requests without a usable address all land in one bucket (sharedClientKey). With the per-address limit
+// that bucket would close the form for every visitor after 5 requests, for example if a proxy change ever
+// stops sending X-Real-IP. So it gets its own, much larger budget: LEAD_SHARED_RATE_LIMIT requests per
+// the same window (default 60), enough for real traffic and still a ceiling on a flood.
+export const sharedClientKey = "unknown";
+const defaultSharedLimit = 60;
+
+export function sharedRateLimitConfig(env: Record<string, string | undefined> = process.env): RateLimitConfig {
+  return { ...rateLimitConfig(env), limit: positiveInt(env.LEAD_SHARED_RATE_LIMIT, defaultSharedLimit) };
+}
+
 export function createRateLimiter(config: RateLimitConfig = defaults): RateLimiter {
   const hits = new Map<string, number[]>();
 
@@ -84,10 +95,11 @@ const validIp = (value: string | null): string | undefined => {
 // them, so a different made-up value on each request would dodge the limit. On the cPanel server nginx
 // overwrites X-Real-IP with the address that actually connected; when that address is Cloudflare, the
 // visitor is in CF-Connecting-IP, which only Cloudflare can vouch for. Requests without a usable address
-// (for example local development with no proxy) share one bucket, so they are limited too.
+// (for example local development with no proxy) share one bucket with its own larger budget
+// (sharedRateLimitConfig), so they are limited too without one visitor closing the form for everyone.
 export function clientKey(request: Request): string {
   const connected = validIp(request.headers.get("x-real-ip"));
-  if (!connected) return "unknown";
+  if (!connected) return sharedClientKey;
 
   const viaCloudflare = cloudflare.check(connected, isIP(connected) === 6 ? "ipv6" : "ipv4");
   return (viaCloudflare && validIp(request.headers.get("cf-connecting-ip"))) || connected;

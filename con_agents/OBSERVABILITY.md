@@ -65,6 +65,16 @@ Database connection fails
 Upload failures spike
 ```
 
+### Built alerts (since 0.23.0)
+
+`src/lib/ops/alert.ts` raises `lead.all_failed` (critical), `lead.not_in_cms`, `lead.email_failed`,
+`lead.webhook_failed`, `ratelimit.store_failed` and `ratelimit.no_address`. Each is logged as
+`[alert] <severity> <kind> [<leadId>]` and, when configured, sent to `OPS_ALERT_WEBHOOK_URL` (signed with
+`OPS_ALERT_WEBHOOK_SECRET`) and `OPS_ALERT_EMAIL`, at most once per kind per 15 minutes with a count of the
+ones held back. Alerts carry the lead reference and a short reason only, never customer details. "Website is
+down" needs an external uptime monitor: the app cannot report its own absence. Setup:
+`docs/deploy-checklist.md` section 9.
+
 ## 6. Privacy Rule
 
 Do not log sensitive customer details unless required for operations. Never log secrets.

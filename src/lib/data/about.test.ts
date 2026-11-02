@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { en } from "@/messages/en";
+
 import { publishedRoutes } from "./routes";
 
 import {
@@ -26,8 +28,9 @@ describe("about page content", () => {
   it("uses the planned hero copy: forklift and warehouse partner, no one-stop wording", () => {
     const source = readFileSync(join(process.cwd(), "src", "components", "dklao", "about-sections.tsx"), "utf8");
 
-    expect(source).toContain("Your Forklift and Warehouse Equipment Partner in Laos");
-    expect(source).not.toMatch(/one-stop/i);
+    // The copy is in the messages (en.about); the component shows the page language's version.
+    expect(en.about.hero.title).toBe("Your Forklift and Warehouse Equipment Partner in Laos");
+    expect(`${source}${JSON.stringify(en.about)}`).not.toMatch(/one-stop/i);
     expect(source).not.toContain("about-hero__badges");
   });
 

@@ -64,6 +64,19 @@ Admin routes must require authentication.
 
 Admin access must be role-based when multiple users are added.
 
+### Content-Security-Policy
+
+Every response carries a Content-Security-Policy built in `src/lib/security-headers.ts`: own origin only,
+no plugins (`object-src 'none'`), no framing by other sites, `base-uri` and `form-action` limited to the
+site, and no `unsafe-eval` in production builds. `'unsafe-inline'` stays for scripts (Next.js page data,
+JSON-LD) and styles (GSAP) until nonces are worth giving up static pages.
+
+Rollout: since 0.22.0 the policy is sent as `Content-Security-Policy-Report-Only`. Browsers report what it
+would block to `POST /api/csp-report`, which logs `[csp] <directive> blocked <origin> on <path>` once per
+distinct violation (no query strings or script samples). Switching `cspMode` to `"enforce"` is its own
+reviewed release, after the reports from the preview, including `/admin`, have been reviewed. Do not add a
+third-party origin to the site without adding it to the policy in the same change.
+
 ## 7. Logging Rules
 
 Log:

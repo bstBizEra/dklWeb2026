@@ -8,7 +8,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { appPermissionsPolicy, securityHeaders } from "./security-headers";
+import { appPermissionsPolicy, contentSecurityPolicy, cspHeader, cspMode, securityHeaders } from "./security-headers";
 
 describe("security headers", () => {
   const byKey = Object.fromEntries(securityHeaders.map((header) => [header.key, header.value]));
@@ -18,6 +18,35 @@ describe("security headers", () => {
     expect(byKey["X-Frame-Options"]).toBe("SAMEORIGIN");
     expect(byKey["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
     expect(byKey["Permissions-Policy"]).toMatch(/camera=\(\).*microphone=\(\).*geolocation=\(\)/);
+  });
+
+  it("ships the Content-Security-Policy in report-only mode until the reports are reviewed", () => {
+    expect(cspMode).toBe("report-only");
+    expect(cspHeader.key).toBe("Content-Security-Policy-Report-Only");
+    expect(byKey["Content-Security-Policy-Report-Only"]).toBe(cspHeader.value);
+    // report-uri only: with report-to present Chromium stops sending report-uri reports.
+    expect(byKey["Reporting-Endpoints"]).toBeUndefined();
+    expect(cspHeader.value).not.toContain("report-to");
+  });
+
+  it("allows only the site's own origin, blocks plugins and framing by other sites, and reports", () => {
+    const policy = contentSecurityPolicy(false);
+    const directive = (name: string) => policy.split("; ").find((entry) => entry.startsWith(`${name} `));
+
+    expect(directive("default-src")).toBe("default-src 'self'");
+    expect(directive("object-src")).toBe("object-src 'none'");
+    expect(directive("frame-ancestors")).toBe("frame-ancestors 'self'");
+    expect(directive("base-uri")).toBe("base-uri 'self'");
+    expect(directive("form-action")).toBe("form-action 'self'");
+    expect(directive("report-uri")).toBe("report-uri /api/csp-report");
+    // No other origin anywhere in the policy.
+    expect(policy).not.toMatch(/https?:/);
+  });
+
+  it("allows eval and websockets only for next dev, never in a production build", () => {
+    expect(contentSecurityPolicy(false)).not.toMatch(/unsafe-eval|ws:/);
+    expect(contentSecurityPolicy(true)).toMatch(/script-src 'self' 'unsafe-inline' 'unsafe-eval'/);
+    expect(contentSecurityPolicy(true)).toMatch(/connect-src 'self' ws: wss:/);
   });
 
   it("has no duplicate or empty headers", () => {

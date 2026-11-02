@@ -244,14 +244,14 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "articles" CASCADE;
   DROP TABLE "_articles_v_version_related_route_ids" CASCADE;
   DROP TABLE "_articles_v" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_pages_fk";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_pages_fk";
   
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_articles_fk";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_articles_fk";
   
-  DROP INDEX "payload_locked_documents_rels_pages_id_idx";
-  DROP INDEX "payload_locked_documents_rels_articles_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "pages_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "articles_id";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_pages_id_idx";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_articles_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "pages_id";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "articles_id";
   DROP TYPE "public"."enum_pages_sections_items_fact";
   DROP TYPE "public"."enum_pages_sections_kind";
   DROP TYPE "public"."enum_pages_status";

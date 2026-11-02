@@ -1,3 +1,6 @@
+import { localized } from "@/lib/i18n/localize";
+import { loSeo } from "@/messages/lo/seo";
+
 // Search and social text for the pages that are not built from PageContent (Home and About).
 // Limits: a rendered title is at most 60 characters, a description at most 155. A test enforces both.
 // Home sets its own full title (no suffix is added). About and the content pages get " | DK LAO" appended.
@@ -20,3 +23,6 @@ export const aboutSeo = {
   shareDescription:
     "Who DK LAO is, and how we support forklift rental, sales, service, parts, warehouse equipment and cleaning in Laos.",
 } as const;
+
+// Home and About search text per locale. Lao text: src/messages/lo/seo.ts.
+export const seoFor = localized({ homeSeo, aboutSeo }, loSeo);

@@ -88,8 +88,8 @@ navigation, cards, footers or contact facts.
 
 ```powershell
 pnpm build
-pnpm start                                  # in its own terminal, serves http://127.0.0.1:3000
-pnpm links:check                            # checks http://127.0.0.1:3000
+pnpm start                                  # in its own terminal, serves http://127.0.0.1:3001
+pnpm links:check                            # checks http://127.0.0.1:3001
 pnpm links:check https://snare-snowsuit-obnoxious.ngrok-free.dev   # another running copy
 pnpm links:check --skip-external            # offline: internal links and anchors only
 ```
@@ -108,3 +108,22 @@ Known limits:
 - `/admin` and `/api` are not crawled.
 - Links that only appear after a click or in client-side state are not seen; the crawl reads the HTML each
   page serves.
+
+## 9. Local CI (`pnpm verify`)
+
+> Added 2026-10-31 by Claude at owner request ("build local & work local") while GitHub Actions could not
+> start workflows. Extend-only addition.
+
+`pnpm verify` (`scripts/verify-local.mjs`) runs every CI gate on this machine, continues past a failure and
+prints a pass/fail summary: version records, tests, lint, typecheck, and a build without a database. With
+`TEST_DATABASE_URL` set to an **empty throwaway** PostgreSQL database it also runs CI's database job:
+`pnpm cms:migrate`, then `src/lib/leads/rate-store.db.test.ts`. A passing `pnpm verify` is the
+acceptance evidence when GitHub Actions is unavailable; record its summary in the pull request.
+
+```powershell
+pnpm verify
+$env:TEST_DATABASE_URL="postgresql://USER:PASSWORD@127.0.0.1:5433/dklao_ci_empty"; pnpm verify
+```
+
+Then check the built site at `http://localhost:3001/` (`pnpm start`) for any visible change.
+

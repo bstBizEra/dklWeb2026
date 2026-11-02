@@ -71,17 +71,23 @@ export interface Config {
     pages: Page;
     articles: Article;
     leads: Lead;
+    'lead-photos': LeadPhoto;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    leads: {
+      photos: 'lead-photos';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
+    'lead-photos': LeadPhotosSelect<false> | LeadPhotosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -90,7 +96,7 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'lo') | ('en' | 'lo')[];
   globals: {
     'site-facts': SiteFact;
     navigation: Navigation;
@@ -99,7 +105,7 @@ export interface Config {
     'site-facts': SiteFactsSelect<false> | SiteFactsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'lo';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -385,8 +391,32 @@ export interface Lead {
    * Staff only. Never shown to the customer.
    */
   internalNotes?: string | null;
+  photos?: {
+    docs?: (number | LeadPhoto)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lead-photos".
+ */
+export interface LeadPhoto {
+  id: number;
+  lead: number | Lead;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -427,6 +457,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'leads';
         value: number | Lead;
+      } | null)
+    | ({
+        relationTo: 'lead-photos';
+        value: number | LeadPhoto;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -621,8 +655,27 @@ export interface LeadsSelect<T extends boolean = true> {
   sourcePage?: T;
   submittedAt?: T;
   internalNotes?: T;
+  photos?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lead-photos_select".
+ */
+export interface LeadPhotosSelect<T extends boolean = true> {
+  lead?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

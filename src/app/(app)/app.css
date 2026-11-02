@@ -198,3 +198,16 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Lao stacks vowels and tone marks above and below each letter; the iOS title leading (34/41) made them
+   touch on two lines. Unlayered, so it wins over the leading-* utilities. lang="lo" is set on /app/lo by
+   platformScript. */
+:lang(lo) :is(h1, h2, h3) {
+  line-height: 1.4;
+}
+
+/* Lao body text likewise: the iOS body leading (1.29) and the 1.33 footnotes let the marks meet across
+   lines. Same value as the website's Lao body text; titles keep their own rule above. */
+:lang(lo) :is(p, li, dd, dt, small, span, strong, label, figcaption):not(:is(h1, h2, h3) *) {
+  line-height: 1.65;
+}

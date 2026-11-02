@@ -4,16 +4,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { House, LayoutGrid, MapPin, SquarePen, type LucideIcon } from "lucide-react";
 
+import { appHref, appLocaleOf } from "@/lib/i18n/app-locale";
 import { cn } from "@/lib/utils";
+import { appMessages } from "@/messages/app-en";
 
-const tabs: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/app", label: "Home", icon: House },
-  { href: "/app/services", label: "Services", icon: LayoutGrid },
-  { href: "/app/request", label: "Request", icon: SquarePen },
-  { href: "/app/location", label: "Location", icon: MapPin },
+const tabs: { href: string; key: "home" | "services" | "request" | "location"; icon: LucideIcon }[] = [
+  { href: "/app", key: "home", icon: House },
+  { href: "/app/services", key: "services", icon: LayoutGrid },
+  { href: "/app/request", key: "request", icon: SquarePen },
+  { href: "/app/location", key: "location", icon: MapPin },
 ];
-
-const home = "/app";
 const fromHomeKey = "dklao-app-tab-from-home";
 
 function remember(value: boolean) {
@@ -40,6 +40,9 @@ function cameFromHome(): boolean {
 export function TabBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const locale = appLocaleOf(pathname);
+  const t = appMessages(locale).tabs;
+  const home = appHref("/app", locale);
   const isActive = (href: string) => (href === home ? pathname === home : pathname.startsWith(href));
 
   const go = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -64,11 +67,12 @@ export function TabBar() {
 
   return (
     <nav
-      aria-label="App sections"
+      aria-label={t.label}
       className="fixed inset-x-0 bottom-0 z-40 border-t-[0.5px] border-ios-separator bg-ios-bar pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-[1.8] android:border-t-0 android:bg-md-surface-container android:backdrop-blur-none"
     >
       <ul className="mx-auto m-0 grid max-w-[640px] list-none grid-cols-4 p-0 android:min-h-20">
-        {tabs.map(({ href, label, icon: Icon }) => {
+        {tabs.map(({ href: path, key, icon: Icon }) => {
+          const href = appHref(path, locale);
           const active = isActive(href);
 
           return (
@@ -93,7 +97,7 @@ export function TabBar() {
                 >
                   <Icon className="size-[25px] android:size-6" strokeWidth={active ? 2.3 : 1.8} aria-hidden="true" />
                 </span>
-                {label}
+                {t[key]}
               </Link>
             </li>
           );

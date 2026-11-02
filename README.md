@@ -519,7 +519,7 @@ pnpm dev
 Default local URL:
 
 ```txt
-http://localhost:3000
+http://localhost:3001
 ```
 
 For the CMS locally, set `DATABASE_URL` and `PAYLOAD_SECRET`, then run `pnpm cms:migrate` and optionally `pnpm cms:seed` (see `docs/cms-local-setup.md`).
@@ -546,7 +546,13 @@ The server runs `server.mjs` (`app.js` loads it for hosts that `require()` the e
 
 ## 21. Quality Gates
 
-Run before every completed change (CI runs the same):
+Run before every completed change (CI runs the same). One command runs them all, continues past a failure and prints a summary:
+
+```bash
+pnpm verify
+```
+
+It runs these, in this order:
 
 ```bash
 pnpm version:status
@@ -555,6 +561,14 @@ pnpm lint
 pnpm typecheck
 pnpm build
 ```
+
+To also run CI's database job (every migration on an empty database, then the PostgreSQL tests), point it at an **empty throwaway** database, never the site's own:
+
+```powershell
+$env:TEST_DATABASE_URL="postgresql://USER:PASSWORD@127.0.0.1:5433/dklao_ci_empty"; pnpm verify
+```
+
+`pnpm verify` is the reference when GitHub Actions is unavailable. A test (`src/lib/data/verify-local.test.ts`) fails if `ci.yml` gains a gate that `pnpm verify` lacks.
 
 ---
 

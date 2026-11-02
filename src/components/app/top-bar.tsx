@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import { BackButton } from "@/components/app/back-button";
+import { LanguageSwitch } from "@/components/app/language-switch";
 import { cn } from "@/lib/utils";
 
 // Header of every app screen. At the top of a screen it is fully transparent: just the DK LAO primary logo
@@ -53,7 +54,9 @@ export function TopBar({ title, back, brand }: { title: string; back?: { href: s
         >
           {title}
         </p>
-        <span />
+        <div className="justify-self-end">
+          <LanguageSwitch />
+        </div>
       </div>
     </div>
   );

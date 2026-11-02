@@ -11,7 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), "utf8").replace(/\r\n/g, "\n");
 const css = read("src", "app", "(site)", "globals.css");
-const layout = read("src", "app", "(site)", "layout.tsx");
+const layout = read("src", "app", "(site)", "[locale]", "layout.tsx");
 const site = read("src", "components", "dklao", "site-motion.tsx");
 const footer = read("src", "components", "dklao", "footer-motion.tsx");
 

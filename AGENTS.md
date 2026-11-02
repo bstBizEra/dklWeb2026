@@ -130,7 +130,7 @@ Before committing or pushing implementation work, agents must:
 4. Never force-push to `main` without explicit owner approval.
 5. Use task-prefixed commit messages such as `[TASK-002] Fix conventional favicon route`.
 6. Run the project gates before completion: `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
-7. Verify browser-facing changes at `http://localhost:3000/` because Laragon/local development uses that origin.
+7. Verify browser-facing changes at `http://localhost:3001/` because Laragon/local development uses that origin.
 8. Update `C:\laragon\www\dklao\con_agents\CHANGELOG.md` for governance, implementation, asset, route, or release-impacting changes.
 9. For version-impacting changes, update `package.json`, `VERSION.json`, and `con_agents\CHANGELOG.md`, then run `pnpm version:status`.
 
@@ -171,7 +171,7 @@ Promotion from design branch to `main` requires:
 4. Version records updated when the change is version-impacting.
 5. `pnpm version:status` when version records changed.
 6. `pnpm test -- --run`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
-7. Browser QA at `http://localhost:3000/` for any visible page or component change.
+7. Browser QA at `http://localhost:3001/` for any visible page or component change.
 
 ## Footer Ownership and Version Rules
 
@@ -233,7 +233,7 @@ Ngrok is approved only as a temporary public preview tunnel for the local DK LAO
 Rendered application origin:
 
 ```txt
-http://localhost:3000/
+http://localhost:3001/
 ```
 
 Approved ngrok preview domain:
@@ -245,22 +245,22 @@ https://snare-snowsuit-obnoxious.ngrok-free.dev
 Preferred direct tunnel to the Next.js / Node.js server:
 
 ```powershell
-ngrok http 3000 --domain=snare-snowsuit-obnoxious.ngrok-free.dev
+ngrok http 3001 --domain=snare-snowsuit-obnoxious.ngrok-free.dev
 ```
 
 If the Node.js framework blocks the remote host or origin, rewrite the host header:
 
 ```powershell
-ngrok http 3000 --domain=snare-snowsuit-obnoxious.ngrok-free.dev --host-header=localhost:3000
+ngrok http 3001 --domain=snare-snowsuit-obnoxious.ngrok-free.dev --host-header=localhost:3001
 ```
 
-Agents must not point ngrok at the Laragon/Nginx project directory unless Nginx is explicitly configured as a reverse proxy to `http://localhost:3000`. If the public ngrok URL shows `Index of /` with project folders such as `con_agents/`, `src/`, `node_modules/`, or `public/`, the tunnel is serving the filesystem docroot instead of the rendered app.
+Agents must not point ngrok at the Laragon/Nginx project directory unless Nginx is explicitly configured as a reverse proxy to `http://localhost:3001`. If the public ngrok URL shows `Index of /` with project folders such as `con_agents/`, `src/`, `node_modules/`, or `public/`, the tunnel is serving the filesystem docroot instead of the rendered app.
 
 Optional Laragon/Nginx route for local `http://dklao.dev` access:
 
 ```nginx
 location / {
-    proxy_pass http://localhost:3000;
+    proxy_pass http://localhost:3001;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

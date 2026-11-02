@@ -28,15 +28,15 @@ describe("route registry", () => {
   it("publishes a route only when its page exists: a file under src/app/(site) or built-in sitemap page data", () => {
     for (const route of publishedRoutes()) {
       const folder = route.href === "/" ? "" : route.href;
-      const hasFile = existsSync(join(process.cwd(), "src", "app", "(site)", folder, "page.tsx"));
+      const hasFile = existsSync(join(process.cwd(), "src", "app", "(site)", "[locale]", folder, "page.tsx"));
 
       expect(hasFile || route.id in sitemapPages, route.href).toBe(true);
     }
   });
 
-  it("keeps unpublished routes out of the header, related links and sitemap", () => {
+  it("keeps unpublished routes out of the header, related links and sitemap", async () => {
     const unpublished = routes.filter((route) => !route.published).map((route) => route.href);
-    const sitemapPaths = sitemap().map((entry) => new URL(entry.url).pathname);
+    const sitemapPaths = (await sitemap()).map((entry) => new URL(entry.url).pathname);
 
     expect(navRoutes().every((route) => route.published)).toBe(true);
     expect(relatedRoutes("rental").every((route) => route.published)).toBe(true);

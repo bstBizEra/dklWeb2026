@@ -86,6 +86,15 @@ UNAVAILABLE
 - Maintenance records must connect to customer and equipment where available.
 - Rental fleet must be separated from general product catalog.
 
+### Operational tables outside Payload collections
+
+```txt
+lead_rate_limits   Quote-form rate limit shared by every server process (since 0.23.0).
+                   bucket (lead:<address> or lead-shared:unknown), window_start, hits; primary key
+                   (bucket, window_start). Rows older than two windows are deleted as the form is used.
+                   No customer data. Migration 20261031_120000_lead_rate_limits.
+```
+
 ## 7. Future Readiness
 
 Data model must remain ready for:

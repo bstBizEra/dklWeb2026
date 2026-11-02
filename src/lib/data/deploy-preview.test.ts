@@ -1,5 +1,5 @@
 /**
- * Automatic preview deploys (.github/workflows/deploy-preview.yml and scripts/server/dklao-deploy-preview).
+ * Automatic preview deploys (.github/workflows/deploy-preview.yml and scripts/server/dklao-deploy).
  * The workflow must keep secrets in the preview environment, never deploy forks or unlabelled pull
  * requests, and run one deploy at a time. The server script must accept only its own command, back up the
  * database before new migrations, and roll back when a step fails.
@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), "utf8").replace(/\r\n/g, "\n");
 const workflow = read(".github", "workflows", "deploy-preview.yml");
 const ci = read(".github", "workflows", "ci.yml");
-const script = read("scripts", "server", "dklao-deploy-preview");
+const script = read("scripts", "server", "dklao-deploy");
 
 describe("deploy-preview workflow", () => {
   it("deploys main, labelled pull requests from this repository, and manual runs only", () => {
@@ -62,12 +62,13 @@ describe("server deploy script", () => {
   it("is executable bash that stops on errors", () => {
     expect(script.startsWith("#!/usr/bin/env bash\n")).toBe(true);
     expect(script).toContain("set -euo pipefail");
-    expect(statSync(join(process.cwd(), "scripts", "server", "dklao-deploy-preview")).mode & 0o111).not.toBe(0);
+    // Windows file stats never carry the Unix exec bit; git's index (100755) still does, and CI checks it on Linux.
+    if (process.platform !== "win32") expect(statSync(join(process.cwd(), "scripts", "server", "dklao-deploy")).mode & 0o111).not.toBe(0);
   });
 
-  it("accepts only `deploy preview-<run>-<sha>`", () => {
+  it("accepts only `deploy <target>-<run>-<sha>` (behaviour: deploy-script.test.ts)", () => {
     expect(script).toContain('read -r action tag extra <<<"${SSH_ORIGINAL_COMMAND:-}"');
-    expect(script).toContain('"${tag:-}" =~ ^preview-[0-9]+-[0-9a-f]{7,40}$');
+    expect(script).toContain('"${tag:-}" =~ ^${target}-[0-9]+-[0-9a-f]{7,40}$');
     expect(script).toContain('-n "${extra:-}"');
   });
 
@@ -78,6 +79,7 @@ describe("server deploy script", () => {
 
   it("dumps the database before a release that changes migrations, and stops if the dump fails", () => {
     expect(script).toContain("git diff --quiet \"$previous\" \"$tag\" -- src/payload/migrations");
+    expect(script).toContain('[[ "$BACKUP_ALWAYS" != "yes" ]]');
     expect(script).toContain('pg_dump --dbname="$url" > "$dump" || { echo "database dump failed" >&2; return 1; }');
     expect(script).toContain("backup_database && restart && healthy");
   });
@@ -85,7 +87,8 @@ describe("server deploy script", () => {
   it("restarts only its own service and rolls back when any step fails", () => {
     // No sudo (it cannot work in cPanel's jailshell): the script asks root's path unit for a restart.
     expect(script).not.toMatch(/^\s*sudo\b/m);
-    expect(script).toContain('> "$HOME/.deploy/restart-request"');
+    expect(script).toContain('RESTART_REQUEST="$HOME/.deploy/restart-request"');
+    expect(script).toContain('> "$RESTART_REQUEST"');
     // Healthy means the new build is served, so an old process that has not restarted never passes.
     expect(script).toContain('id="$(cat "$APP/.next/BUILD_ID")"');
     expect(script).toContain('"$code" == "200" && "$page" == *"$id"*');

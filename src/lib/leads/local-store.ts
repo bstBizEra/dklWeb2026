@@ -7,20 +7,20 @@ type StoredLead = QuoteRequest & {
   leadId: string;
 };
 
-export async function storeLocalLead(lead: QuoteRequest): Promise<StoredLead> {
-  const leadId = `DKL-${crypto.randomUUID()}`;
+export const newLeadId = () => `DKL-${crypto.randomUUID()}`;
+
+export const localLeadFile = path.join("data", "leads-local.jsonl");
+
+// The file holds customer details, so it is created readable by the app's own user only.
+export async function storeLocalLead(lead: QuoteRequest, leadId: string = newLeadId()): Promise<StoredLead> {
   const storedLead = {
     ...lead,
     leadId,
   };
 
-  const dataDir = path.join(process.cwd(), "data");
-  await mkdir(dataDir, { recursive: true });
-  await appendFile(
-    path.join(dataDir, "leads-local.jsonl"),
-    `${JSON.stringify(storedLead)}\n`,
-    "utf8",
-  );
+  const file = path.join(process.cwd(), localLeadFile);
+  await mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
+  await appendFile(file, `${JSON.stringify(storedLead)}\n`, { encoding: "utf8", mode: 0o600 });
 
   return storedLead;
 }

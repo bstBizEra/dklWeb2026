@@ -12,6 +12,7 @@ import * as about from "./about";
 import * as home from "./homepage";
 import { contactPage, forkliftRentalPage, requestQuotePage } from "./pages";
 import { sitemapPageList } from "./sitemap-pages";
+import { en } from "@/messages/en";
 
 const small = new Set(["a", "an", "and", "for", "of", "the", "to", "in", "on", "with", "at"]);
 
@@ -50,8 +51,21 @@ const footerLabels = [...componentSource.matchAll(/<Link href=\{?[^>]*>([A-Z][^<
 // Text written inside a styled button link, on one line or several.
 const buttonLabels = [...componentSource.matchAll(/<Button[^>]*asChild[^>]*>\s*<Link[^>]*>\s*([A-Z][^<{]*?)\s*(?:<|\{)/g)].map((m) => m[1].trim());
 
+// Button text the components take from the English messages (Lao pages show the Lao version).
+const messageLabels = [
+  en.home.rental.askPrice,
+  en.home.rental.requestQuote,
+  en.home.final.primary,
+  en.home.final.secondary,
+  en.about.final.primary,
+  en.about.final.secondary,
+  en.contentPage.requestQuote,
+  en.quoteForm.submit,
+];
+
 const labels = [
   ...buttonLabels,
+  ...messageLabels,
   ...dataLabels(home),
   ...dataLabels(about),
   ...home.homepageCtas.map((cta) => cta.label),
@@ -62,9 +76,9 @@ const labels = [
 ];
 
 describe("call to action wording", () => {
-  it("finds the button text written inside components", () => {
-    expect(buttonLabels).toEqual(expect.arrayContaining(["Ask for Rental Price"]));
-    expect(buttonLabels.every((label) => label.length > 2)).toBe(true);
+  it("finds the button text written inside components or taken from the messages", () => {
+    expect(messageLabels).toEqual(expect.arrayContaining(["Ask for Rental Price"]));
+    expect([...buttonLabels, ...messageLabels].every((label) => label.length > 2)).toBe(true);
   });
 
   it("collects a meaningful set of labels", () => {

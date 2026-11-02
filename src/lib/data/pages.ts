@@ -4,6 +4,13 @@ import { breadcrumbTrail, getRoute, isPublishedRoute, quoteHref, relatedRoutes, 
 import { hasConfirmMarker } from "@/lib/data/confirm";
 import { siteFacts, type FactKey, type SiteFacts } from "@/lib/data/site-facts";
 import { shareImage } from "./share";
+import type { Locale } from "@/lib/i18n";
+import { localize, type DeepPartial } from "@/lib/i18n/localize";
+import { localeAlternates, ogBase } from "@/lib/i18n/metadata";
+import { loIndustryDetails } from "@/messages/lo/industry-details";
+import { loIndustryPages } from "@/messages/lo/industry-pages";
+import { loPages } from "@/messages/lo/pages";
+import { loSitemapPages } from "@/messages/lo/sitemap-pages";
 
 // A card's own editorial section below the cards: an opening paragraph, up to three key figures,
 // two or more topics with their own headings, and an optional practical checklist.
@@ -35,6 +42,8 @@ export type PageItem = {
   fact?: FactKey;
   // Draft wording the owner has not confirmed yet. Hidden on the site until this is cleared.
   needsConfirmation?: boolean;
+  // The English card's title on a translated page, set by withPhotoTitles: the photo is matched on it.
+  photoTitle?: string;
 };
 
 export type SectionKind = "cards" | "steps" | "table" | "faq" | "list" | "stats" | "chips" | "text" | "form";
@@ -69,7 +78,7 @@ export type PageContent = {
 };
 
 export type ResolvedSection = Omit<PageSection, "items" | "needsConfirmation"> & {
-  items: { title: string; description?: string; href?: string; details?: ItemDetails; anchor?: string; routeId?: string }[];
+  items: { title: string; description?: string; href?: string; details?: ItemDetails; anchor?: string; routeId?: string; photoTitle?: string }[];
 };
 
 export function visibleSections(
@@ -112,8 +121,12 @@ export function visibleSections(
             description: description ?? undefined,
             href: route && isPublishedRoute(route.id) ? route.href : undefined,
             routeId: item.routeId,
-            // A detail section only for cards, and only when its content is complete.
-            ...(section.kind === "cards" && isCompleteDetails(item.details) ? { details: item.details, anchor: detailAnchor(item.title) } : {}),
+            photoTitle: item.photoTitle,
+            // A detail section only for cards, and only when its content is complete. The anchor comes from
+            // the English title: a Lao title has no Latin letters and gave every section "detail-".
+            ...(section.kind === "cards" && isCompleteDetails(item.details)
+              ? { details: item.details, anchor: detailAnchor(item.photoTitle ?? item.title) }
+              : {}),
           },
         ];
       }),
@@ -127,30 +140,75 @@ export function visibleSections(
 
 // "Related solutions" without repeats: pages already linked from a card on this page, pages in the
 // breadcrumb and the quote and contact pages (the page has its own calls to action) are left out.
-export function relatedToShow(pageId: string, sections: ResolvedSection[]): SiteRoute[] {
+export function relatedToShow(pageId: string, sections: ResolvedSection[], locale: Locale = "en"): SiteRoute[] {
   const linked = new Set(sections.flatMap((section) => section.items.map((item) => item.href)));
   const trail = new Set(breadcrumbTrail(pageId).map((route) => route.id));
 
   // At most one row of four, so a lone card never hangs on a second row.
-  return relatedRoutes(pageId)
+  return relatedRoutes(pageId, locale)
     .filter((route) => route.group !== "conversion" && !trail.has(route.id) && !linked.has(route.href))
     .slice(0, 4);
 }
 
-export function buildMetadata(page: PageContent): Metadata {
+export function buildMetadata(page: PageContent, locale: Locale = "en"): Metadata {
   const route = getRoute(page.id);
   const url = route?.href ?? "/";
 
   return {
     title: page.metaTitle,
     description: page.metaDescription,
-    alternates: { canonical: url },
+    alternates: localeAlternates(url, locale),
     openGraph: {
+      ...ogBase(url, locale),
       title: page.metaTitle,
       description: page.metaDescription,
-      url,
       images: [shareImage(page.id)],
     },
+  };
+}
+
+// Lao override for one built-in page, from whichever module mirrors its English source. Card sections
+// written per industry (industry-details) are keyed by the English card title, like the English data.
+function pageOverride(page: PageContent): DeepPartial<PageContent> | undefined {
+  const override = loPages[page.id] ?? loSitemapPages[page.id] ?? loIndustryPages[page.id];
+  const details = loIndustryDetails[page.id];
+  if (!details) return override;
+
+  const sections = page.sections.map((section, s) => ({
+    ...override?.sections?.[s],
+    items: section.items.map((item, i) => {
+      const own = override?.sections?.[s]?.items?.[i];
+      const card = details[item.title];
+      return card ? { ...own, details: localize(card as ItemDetails, own?.details as DeepPartial<ItemDetails>) } : own ?? {};
+    }),
+  }));
+  return { ...override, sections } as DeepPartial<PageContent>;
+}
+
+const lao = new WeakMap<PageContent, PageContent>();
+
+// A built-in page in the given locale: the English page with its Lao override laid over it.
+export function localizePage(page: PageContent, locale: Locale): PageContent {
+  if (locale === "en") return page;
+  let merged = lao.get(page);
+  if (!merged) {
+    merged = localize(page, pageOverride(page));
+    lao.set(page, merged);
+  }
+  return merged;
+}
+
+// Card photos are matched on the English card title (library.ts). A translated page, built in or from the
+// CMS, keeps each card's English photo: an item gets the title of the item at the same place on the English
+// page (translations follow the English order). The English page itself is returned unchanged.
+export function withPhotoTitles(page: PageContent, english: PageContent | undefined): PageContent {
+  if (!english || page === english) return page;
+  return {
+    ...page,
+    sections: page.sections.map((section, s) => ({
+      ...section,
+      items: section.items.map((item, i) => ({ ...item, photoTitle: english.sections[s]?.items[i]?.title })),
+    })),
   };
 }
 
@@ -389,6 +447,7 @@ export const forkliftRentalPage: PageContent = {
         { title: "Can I buy the forklift after renting?", fact: "rentToBuyTerms" },
       ],
     },
+    { kind: "form", title: "Tell us about your rental", items: [] },
   ],
   closing: {
     title: "Get your rental quotation",

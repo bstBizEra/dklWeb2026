@@ -18,7 +18,7 @@ Start the database (once per boot), from the repo root:
 /c/laragon/bin/postgresql/postgresql-17.10/bin/pg_ctl.exe -D C:/laragon/data/dklao-pg -o "-p 5433 -c listen_addresses=127.0.0.1" -l C:/laragon/data/dklao-pg.log start
 ```
 
-Then `pnpm dev -p 3000` for the site and admin.
+Then `pnpm dev -p 3001` for the site and admin.
 
 ## Commands
 

@@ -9,7 +9,8 @@
 # Every run waits for approval in the "preview" environment when it has required reviewers.
 #
 # The code travels as a git bundle over one SSH connection. The deploy key may run nothing but
-# ~/bin/dklao-deploy-preview on the server (a forced command), which builds, restarts and rolls back.
+# `~/bin/dklao-deploy preview` on the server (a forced command), which builds, restarts and rolls back.
+# Live-site releases go through deploy-production.yml instead.
 name: Deploy preview
 
 on:

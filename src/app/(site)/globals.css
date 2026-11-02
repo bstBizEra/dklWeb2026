@@ -39,7 +39,7 @@
   --color-slate-300: var(--dk-color-slate-300);
   --color-slate-100: var(--dk-color-slate-100);
 
-  --font-sans: Inter, "Noto Sans Lao", Roboto, Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Inter, var(--font-lao, "Noto Sans Lao"), Roboto, Arial, ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: var(--dk-radius-xs);
   --radius-md: var(--dk-radius-sm);
@@ -220,7 +220,7 @@ body {
   background: var(--dk-color-surface);
   color: var(--dk-color-navy-950);
   font-family:
-    Inter, "Noto Sans Lao", Roboto, Arial, ui-sans-serif, system-ui,
+    Inter, var(--font-lao, "Noto Sans Lao"), Roboto, Arial, ui-sans-serif, system-ui,
     sans-serif;
   letter-spacing: 0;
 }
@@ -267,4 +267,17 @@ img {
       animation-iteration-count: 1 !important;
     }
   }
+}
+
+/* Lao stacks vowels and tone marks above and below each letter, so the heading leading tuned for Inter
+   (leading-none to 1.2) made two-line Lao titles touch. Unlayered, so it wins over the leading-* utilities
+   on every title; English titles keep their spacing. */
+:lang(lo) :is(h1, h2, h3) {
+  line-height: 1.4;
+}
+
+/* Lao body text likewise: hints, captions and labels at leading-snug (1.3 to 1.43) let the marks meet
+   across lines. 1.65 is what most paragraphs here already use; titles keep their own rule above. */
+:lang(lo) :is(p, li, dd, dt, small, span, strong, label, figcaption):not(:is(h1, h2, h3) *) {
+  line-height: 1.65;
 }

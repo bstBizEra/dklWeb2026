@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { clientKey, createRateLimiter, rateLimitConfig } from "./rate-limit";
+import { clientKey, createRateLimiter, rateLimitConfig, sharedClientKey, sharedRateLimitConfig } from "./rate-limit";
 
 const minute = 60_000;
 
@@ -65,6 +65,18 @@ describe("rate limit settings", () => {
     expect(rateLimitConfig({ LEAD_RATE_LIMIT: "12", LEAD_RATE_WINDOW_SECONDS: "60" })).toEqual({ limit: 12, windowMs: 60_000 });
     expect(rateLimitConfig({ LEAD_RATE_LIMIT: "0", LEAD_RATE_WINDOW_SECONDS: "abc" })).toEqual({ limit: 5, windowMs: 600_000 });
     expect(rateLimitConfig({ LEAD_RATE_LIMIT: "-3" }).limit).toBe(5);
+  });
+});
+
+describe("shared bucket settings (requests without an address)", () => {
+  it("defaults to 60 requests per the same window, so one visitor cannot close the form for everyone", () => {
+    expect(sharedClientKey).toBe("unknown");
+    expect(sharedRateLimitConfig({})).toEqual({ limit: 60, windowMs: 600_000 });
+  });
+
+  it("reads LEAD_SHARED_RATE_LIMIT, shares the window setting and ignores bad values", () => {
+    expect(sharedRateLimitConfig({ LEAD_SHARED_RATE_LIMIT: "200", LEAD_RATE_WINDOW_SECONDS: "60" })).toEqual({ limit: 200, windowMs: 60_000 });
+    expect(sharedRateLimitConfig({ LEAD_SHARED_RATE_LIMIT: "0" }).limit).toBe(60);
   });
 });
 

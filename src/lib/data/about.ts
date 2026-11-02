@@ -16,6 +16,8 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { localized } from "@/lib/i18n/localize";
+import { loAbout } from "@/messages/lo/about";
 
 export type AboutCta = {
   label: string;
@@ -228,3 +230,9 @@ export const servicePromiseSteps = [
   "Provide ongoing after-sales support",
   "Help your business operate with better reliability and productivity",
 ];
+
+const aboutContent = { aboutHeroCtas, companySnapshot, aboutSolutions, aboutTrustPoints, servedIndustries, servicePromiseSteps };
+export type AboutContent = typeof aboutContent;
+
+// About page data per locale. Lao text: src/messages/lo/about.ts.
+export const aboutFor = localized(aboutContent, loAbout);

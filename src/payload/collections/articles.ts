@@ -12,13 +12,14 @@ export const Articles: CollectionConfig = {
   labels: { singular: "Article", plural: "Articles" },
   admin: { useAsTitle: "title", defaultColumns: ["title", "category", "_status", "publishedAt"], group: "Content" },
   versions: { drafts: true, maxPerDoc: 25 },
-  access: { create: isOwnerOrEditor, read: publishedOrStaff, update: isOwnerOrEditor, delete: isOwner },
+  // readVersions: drafts are staff-only, as on Pages.
+  access: { create: isOwnerOrEditor, read: publishedOrStaff, readVersions: isOwnerOrEditor, update: isOwnerOrEditor, delete: isOwner },
   fields: [
-    { name: "title", type: "text", required: true, validate: noConfirmMarker },
+    { name: "title", type: "text", required: true, localized: true, validate: noConfirmMarker },
     slugField(), // lowercase, hyphenated, unique; the public address is /knowledge-center/<slug>
     { name: "category", type: "select", required: true, options: articleCategories.map((value) => ({ label: value, value })) },
-    { name: "excerpt", type: "textarea", required: true, maxLength: 300, validate: noConfirmMarker },
-    { name: "body", type: "richText" },
+    { name: "excerpt", type: "textarea", required: true, maxLength: 300, localized: true, validate: noConfirmMarker },
+    { name: "body", type: "richText", localized: true },
     {
       name: "relatedRouteIds",
       label: "Related solution pages",
@@ -33,8 +34,8 @@ export const Articles: CollectionConfig = {
       ],
       admin: { description: "Solution pages this guide links to. Every guide should link to at least one." },
     },
-    { name: "metaTitle", type: "text", validate: noConfirmMarker },
-    { name: "metaDescription", type: "textarea", validate: noConfirmMarker },
+    { name: "metaTitle", type: "text", localized: true, validate: noConfirmMarker },
+    { name: "metaDescription", type: "textarea", localized: true, validate: noConfirmMarker },
     { name: "publishedAt", type: "date", admin: { position: "sidebar" } },
   ],
 };

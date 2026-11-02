@@ -8,6 +8,9 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { en as enMessages } from "@/messages/en";
+import { lo as loMessages } from "@/messages/lo";
+
 import { footerGroups, footerRoutes, orderFooterChannels } from "./footer";
 import { contactChannels, siteFacts } from "./site-facts";
 
@@ -62,12 +65,39 @@ describe("phone rules", () => {
 
 describe("footer redesign", () => {
   it("keeps the required ownership line and the three lead actions", () => {
-    for (const text of ["siteFooterMetadata.copyrightPrefix", "siteFooterMetadata.version", "siteFooterMetadata.developerUrl"]) {
+    for (const text of ["siteFooterMetadata.version", "siteFooterMetadata.developerUrl"]) {
       expect(source).toContain(text);
     }
 
-    for (const label of ["Request a Quote", "Talk to a DK LAO Advisor", "Schedule Site Survey"]) {
-      expect(source).toMatch(new RegExp(`>\\s*${label}\\s*</Link>`));
+    // The words themselves come from the page's language, so the source holds keys, never English.
+    for (const key of ["requestQuote", "advisor", "siteSurvey"]) {
+      expect(source).toMatch(new RegExp(`>\\s*\\{t\\.${key}\\}\\s*</Link>`));
+    }
+  });
+
+  it("writes every footer and floating-action word in the page's language", () => {
+    const floating = read("components", "dklao", "floating-contact-actions.tsx");
+    for (const [file, text] of [
+      [source, "Talk to us"],
+      [source, "Footer lead actions"],
+      [source, "Footer contact channels"],
+      [source, "Footer social links"],
+      [source, "Copyright © DK LAO"],
+      [source, "Develop by:"],
+      [floating, "Quick contact actions"],
+      [floating, "Request a DK LAO quote"],
+      [floating, "Contact DK LAO advisor"],
+    ] as const) {
+      expect(file).not.toContain(text);
+    }
+
+    for (const [en, lo] of [
+      [enMessages.footer, loMessages.footer],
+      [enMessages.floatingActions, loMessages.floatingActions],
+    ]) {
+      for (const key of Object.keys(en)) {
+        expect((lo as Record<string, string>)[key], key).not.toBe((en as Record<string, string>)[key]);
+      }
     }
   });
 
@@ -154,8 +184,8 @@ describe("footer redesign", () => {
     expect(motion).toContain("(prefers-reduced-motion: reduce)");
     expect(motion).toContain("context.conditions?.reduced ? 0 : 90");
     expect(motion).toContain("mm.revert()");
-    expect(motion).toContain("new ResizeObserver");
-    expect(motion).toContain("ScrollTrigger.refresh()");
+    // Re-measures after a resize, once scrolling has stopped (behaviour: refresh-when-idle.test.ts).
+    expect(motion).toContain("refreshWhenIdle(() => ScrollTrigger.refresh())");
     // Every selector the motion targets exists in the footer markup.
     for (const selector of motion.match(/\.industrial-footer__[a-z-]+/g) ?? []) {
       expect(source, selector).toContain(selector.slice(1));

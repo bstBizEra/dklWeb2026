@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/link";
 import { ArrowRight } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Eyebrow, IconBadge } from "@/components/ui/section";
-import { groupMenuLinks, solutionsPromo, type MenuGroup, type MenuLink, type MenuPromo, type ResolvedNavItem } from "@/lib/data/navigation";
+import { groupMenuLinks, type MenuGroup, type MenuLink, type MenuPromo, type ResolvedNavItem } from "@/lib/data/navigation";
 import { cn } from "@/lib/utils";
 
 // Desktop main menu. Radix (through ui/navigation-menu) handles opening, Escape, arrow keys and focus;
@@ -128,13 +128,25 @@ export function MegaMenu({ label, groups, promo }: { label: string; groups: Menu
 }
 
 // The desktop header menu: an item with children opens a mega menu, the rest are plain links.
-export function MainNavigation({ items, className }: { items: ResolvedNavItem[]; className?: string }) {
+export function MainNavigation({
+  items,
+  label,
+  groupTitles,
+  promo,
+  className,
+}: {
+  items: ResolvedNavItem[];
+  label: string;
+  groupTitles: string[];
+  promo: MenuPromo;
+  className?: string;
+}) {
   return (
-    <NavigationMenu viewport={false} aria-label="Main menu" className={cn("max-w-none", className)}>
+    <NavigationMenu viewport={false} aria-label={label} className={cn("max-w-none", className)}>
       <NavigationMenuList className="gap-[22px]">
         {items.map((item) =>
           item.children ? (
-            <MegaMenu key={item.label} label={item.label} groups={groupMenuLinks(item.children)} promo={solutionsPromo} />
+            <MegaMenu key={item.label} label={item.label} groups={groupMenuLinks(item.children, groupTitles)} promo={promo} />
           ) : (
             <NavigationMenuItem key={item.label}>
               <NavigationMenuLink asChild className={topLinkClass}>

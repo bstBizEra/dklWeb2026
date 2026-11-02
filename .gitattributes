@@ -1,0 +1,2 @@
+# The server runs these with bash; CRLF breaks the shebang and every line.
+scripts/server/* text eol=lf

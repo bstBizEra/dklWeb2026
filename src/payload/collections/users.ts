@@ -4,9 +4,12 @@ import { isOwner, ownerOrSelf, roles } from "../access";
 
 export const Users: CollectionConfig = {
   slug: "users",
-  auth: true,
+  // More failures than one address may send in the window (lib/auth/throttle.ts allows 10 per 15 minutes),
+  // so a single caller cannot lock an account out.
+  auth: { maxLoginAttempts: 20, lockTime: 15 * 60 * 1000 },
   admin: { useAsTitle: "email", defaultColumns: ["email", "name", "role"] },
-  access: { create: isOwner, read: ownerOrSelf, update: ownerOrSelf, delete: isOwner },
+  // unlock: Payload's default lets any logged-in user unlock any account.
+  access: { create: isOwner, read: ownerOrSelf, update: ownerOrSelf, delete: isOwner, unlock: isOwner },
   hooks: {
     beforeChange: [
       async ({ data, operation, req }) => {
