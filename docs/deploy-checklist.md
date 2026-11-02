@@ -192,7 +192,12 @@ fails on the pnpm layout. The app runs outside cPanel instead. Backups of every 
       address changes, then `/usr/local/cpanel/scripts/ea-nginx clear_cache dklao`.
 - [x] The app sends `Cache-Control: private, no-store` for `/api` and `/admin`, because the host's nginx cache
       keys on the URL alone (`next.config.ts`).
-- [ ] Photo uploads: requests up to about 11 MB must reach the app on `/api/leads/service`,
+- [x] Photo uploads: checked from outside on 2026-11-02 against preview.dklao.com. An 11 MB body was
+      accepted by nginx and Apache and refused by the app itself (`{"code":"VALIDATION_ERROR" … "Request is
+      too large"}`, HTTP 400, 11,534,336 bytes uploaded), not by nginx's own 413 page. So the server already
+      passes requests this size and no nginx change is needed. Re-check with the command in step 4 below if
+      the host changes its settings. The original instructions are kept for that:
+      requests up to about 11 MB must reach the app on `/api/leads/service`,
       `/api/leads/spare-parts` and `/api/leads/warehouse` (two 5 MB photos plus the form). The app enforces
       the limits itself: about 10.1 MB on those three routes and 20 KB on the other lead forms
       (`src/lib/leads/intake.ts`). So nginx only has to let these requests through; nothing else changes.
