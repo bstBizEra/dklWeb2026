@@ -1428,6 +1428,11 @@ export const sitemapPageList: PageContent[] = [
           },
         ],
       },
+      {
+        kind: "form",
+        title: "Tell us about your warehouse",
+        items: [],
+      },
     ],
     closing: {
       title: "Book your site survey",

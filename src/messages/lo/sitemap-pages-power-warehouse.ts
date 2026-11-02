@@ -351,6 +351,7 @@ export const loPowerWarehousePages: Partial<Record<string, DeepPartial<PageConte
           },
         ],
       },
+      { title: "ບອກພວກເຮົາກ່ຽວກັບສາງຂອງທ່ານ" },
     ],
     closing: { title: "ນັດໝາຍການສຳຫຼວດສະຖານທີ່", copy: quoteCopy, primary: { label: "ນັດສຳຫຼວດສະຖານທີ່" } },
   },

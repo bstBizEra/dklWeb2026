@@ -59,6 +59,21 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
     - Part and machine photo upload, which comes in the uploads stage.
   - Checked in the browser: empty submit shows the field errors; a test request returned a reference and was saved as a NEW `SPARE_PARTS_INQUIRY` lead with its lines (removed afterwards); `/lo/spare-parts` shows the form in Lao except the Messenger and WhatsApp names.
   - Tests: `src/lib/validation/parts.test.ts`, `src/app/api/leads/spare-parts/route.test.ts`, `src/lib/data/parts-page.test.ts`.
+- **Port of `feature/services-all-products`, stage 4: warehouse equipment page.** This branch's `/warehouse-equipment` already covered what we equip, the site survey steps and the four problem cards, but had no form (its buttons go to `/request-quote`). The feature branch's warehouse inquiry form was ported as a new last section, "Tell us about your warehouse" (Lao title in `sitemap-pages-power-warehouse.ts`).
+  - `POST /api/leads/warehouse` runs on the shared pipeline. The feature branch built the message in the browser and posted it to the quote route; here the server validates each answer. `src/lib/validation/warehouse.ts` asks for:
+    - what is needed (the page's four "What we equip" areas, several of these, or not sure);
+    - where the warehouse is, with optional size, goods stored and heaviest load;
+    - whether installation is needed, an optional timeline and budget range;
+    - a project description of up to 500 characters.
+
+    There is no warehouse lead type, so it files a `QUOTE_REQUEST` (as the feature branch did) whose category starts with "Warehouse:", with the answers as labelled lines. A test checks that the longest message fits in 1200 characters.
+  - The form is `warehouse-inquiry-form.tsx`, in English and Lao (`warehouseForm` messages; yes/no answers reuse `serviceForm`, timelines and contact methods reuse `contactForm`).
+  - Not ported, on purpose:
+    - The racking-type choice (selective, drive-in, cantilever, mezzanine, mobile and so on) and the "advanced warehouse systems", storage-bin, safety-equipment and workstation options. Pallet racking, shelving, bins and workstations are still marked needsConfirmation on this branch.
+    - The feature page's other sections (sub-navigation, solution cards, racking, storage, safety, workstation, advanced-systems, industry and FAQ sections), which describe those unconfirmed ranges.
+    - Layout or photo upload, which comes in the uploads stage.
+  - Checked in the browser: empty submit shows the field errors; a test inquiry returned a reference and was saved as a NEW `QUOTE_REQUEST` with category "Warehouse: material handling" (removed afterwards); `/lo/warehouse-equipment` shows the form in Lao except the Messenger and WhatsApp names; at 375 px the form is one column with no sideways scrolling.
+  - Tests: `src/lib/validation/warehouse.test.ts`, `src/app/api/leads/warehouse/route.test.ts`, `src/lib/data/warehouse-page.test.ts`.
 
 - **Lao language merged in, with a 🇬🇧 EN / 🇱🇦 ລາວ flag toggle** (owner request 2026-11-01: "add Lao Translation, Lao/Eng Flag toggle"; merged locally from `motor/i18n/lao-translation`, TASK-012, which was never merged to `main` and had no changelog entry). What the merge brings: Lao pages under `/lo/...` (English stays unprefixed; `/en/...` redirects 308 to it) through `src/proxy.ts`, site routes moved under `src/app/(site)/[locale]/`, `src/messages/en.ts` / `lo.ts` with Lao text, Lao CMS fields (Payload `localization`, migration `20261026_050606_lao_localization`, run before `20261031_120000_lead_rate_limits`), the sitemap listing every page in both languages with hreflang links, and Lao text for the phone app (`src/components/app/screens.tsx`, `src/messages/lo/mobile-app.ts`). Conflicts resolved by keeping both sides: the sitemap keeps the CMS lastModified dates, the app request form keeps `grid-cols-1`, `leads.ts` keeps `z.config({ jitless: true })`, and `payload.config.ts` keeps `payloadSecret()`.
   - **Flags.** `src/components/i18n/flag.tsx` draws the UK and Lao flags as inline SVG (Windows shows flag emoji as the letters "GB" / "LA"); the website header toggle and the app's top-bar switch show each flag before "EN" / "ລາວ". The text stays, so each button's name is still the language, and the flags are `aria-hidden`.

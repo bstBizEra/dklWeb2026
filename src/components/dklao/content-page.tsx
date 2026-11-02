@@ -11,6 +11,7 @@ import { TrustedBy } from "@/components/dklao/trusted-by";
 import { QuoteRequestForm } from "@/components/dklao/quote-request-form";
 import { PartsRequestForm } from "@/components/dklao/parts-request-form";
 import { ServiceBookingForm } from "@/components/dklao/service-booking-form";
+import { WarehouseInquiryForm } from "@/components/dklao/warehouse-inquiry-form";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -295,6 +296,13 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
       return (
         <div className="max-w-[820px]">
           <PartsRequestForm labels={messages.partsForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
+        </div>
+      );
+    }
+    if (pageId === "warehouse") {
+      return (
+        <div className="max-w-[820px]">
+          <WarehouseInquiryForm labels={messages.warehouseForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
         </div>
       );
     }
