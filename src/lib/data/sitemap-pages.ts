@@ -372,6 +372,11 @@ export const sitemapPageList: PageContent[] = [
           },
         ],
       },
+      {
+        kind: "form",
+        title: "Tell us what forklift you need",
+        items: [],
+      },
     ],
     closing: {
       title: "Get your quotation",

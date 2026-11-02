@@ -254,6 +254,7 @@ export const loSitemapPages: Partial<Record<string, DeepPartial<PageContent>>> =
           { title: "ມີການຮັບປະກັນບໍ?" },
         ],
       },
+      { title: "ບອກພວກເຮົາວ່າທ່ານຕ້ອງການລົດຍົກແບບໃດ" },
     ],
     closing: { ...quoteClosing, primary: { label: "ຂໍໃບສະເໜີລາຄາ" } },
   },
