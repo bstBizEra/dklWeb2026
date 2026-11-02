@@ -77,6 +77,9 @@ importers:
       react-hook-form:
         specifier: 7.79.0
         version: 7.79.0(react@19.2.7)
+      sharp:
+        specifier: 0.34.5
+        version: 0.34.5
       simple-icons:
         specifier: 16.35.0
         version: 16.35.0
@@ -5976,8 +5979,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@img/colour@1.1.0':
-    optional: true
+  '@img/colour@1.1.0': {}
 
   '@img/sharp-darwin-arm64@0.34.5':
     optionalDependencies:
@@ -10184,7 +10186,6 @@ snapshots:
       '@img/sharp-win32-arm64': 0.34.5
       '@img/sharp-win32-ia32': 0.34.5
       '@img/sharp-win32-x64': 0.34.5
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:

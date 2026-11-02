@@ -560,4 +560,14 @@ export const lo: Messages = {
       requirementMax: "ກະລຸນາຂຽນບໍ່ເກີນ 500 ຕົວອັກສອນ",
     },
   },
+  photoUpload: {
+    label: "ຮູບພາບ",
+    hint: "ສູງສຸດ 2 ຮູບ ຂອງເຄື່ອງ, ປ້າຍຂໍ້ມູນເຄື່ອງ ຫຼື ອາໄຫຼ່. ໄຟລ໌ JPEG, PNG ຫຼື WebP, ບໍ່ເກີນ 5 MB ຕໍ່ຮູບ.",
+    remove: "ລຶບອອກ",
+    errors: {
+      "too-many": "ແນບໄດ້ສູງສຸດ 2 ຮູບ.",
+      "too-large": "ແຕ່ລະຮູບຕ້ອງບໍ່ເກີນ 5 MB.",
+      "wrong-type": "ແນບໄດ້ສະເພາະຮູບ JPEG, PNG ຫຼື WebP.",
+    },
+  },
 };

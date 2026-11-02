@@ -7,6 +7,7 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
 import { Articles } from "./payload/collections/articles";
+import { LeadPhotos } from "./payload/collections/lead-photos";
 import { Leads } from "./payload/collections/leads";
 import { Pages } from "./payload/collections/pages";
 import { Users } from "./payload/collections/users";
@@ -25,7 +26,7 @@ export default buildConfig({
     importMap: { baseDir: dirname, importMapFile: path.resolve(dirname, "app/(payload)/admin/importMap.ts") },
     meta: { titleSuffix: " | DK LAO CMS" },
   },
-  collections: [Users, Pages, Articles, Leads],
+  collections: [Users, Pages, Articles, Leads, LeadPhotos],
   globals: [SiteFacts, Navigation],
   editor: lexicalEditor(),
   // English and Lao. Lao pages ask for locale "lo"; a Lao field left empty shows the English text.

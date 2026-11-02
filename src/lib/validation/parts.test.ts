@@ -5,6 +5,8 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { photoNote } from "@/lib/leads/photos";
+
 import { partsRequestSchema, partsToLead } from "./parts";
 
 const minimal = {
@@ -61,7 +63,8 @@ describe("spare parts request", () => {
       location: "x".repeat(120),
     });
 
-    expect(partsToLead(longest).message.length).toBeLessThanOrEqual(1200);
+    // With two photos the pipeline adds a line (lib/leads/intake.ts); that must fit too.
+    expect(`${partsToLead(longest).message}\n${photoNote(2)}`.length).toBeLessThanOrEqual(1200);
   });
 
   it("refuses over-long or missing answers", () => {

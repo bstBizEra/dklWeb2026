@@ -291,21 +291,21 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
     if (pageId === "maintenance") {
       return (
         <div className="max-w-[820px]">
-          <ServiceBookingForm labels={messages.serviceForm} contact={messages.contactForm} shared={form} />
+          <ServiceBookingForm labels={messages.serviceForm} contact={messages.contactForm} shared={form} photos={messages.photoUpload} />
         </div>
       );
     }
     if (pageId === "parts") {
       return (
         <div className="max-w-[820px]">
-          <PartsRequestForm labels={messages.partsForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
+          <PartsRequestForm labels={messages.partsForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} photos={messages.photoUpload} />
         </div>
       );
     }
     if (pageId === "warehouse") {
       return (
         <div className="max-w-[820px]">
-          <WarehouseInquiryForm labels={messages.warehouseForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
+          <WarehouseInquiryForm labels={messages.warehouseForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} photos={messages.photoUpload} />
         </div>
       );
     }

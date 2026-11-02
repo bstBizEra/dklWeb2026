@@ -7,12 +7,19 @@
 // the length (or sends none, with chunked encoding) still cannot make the server hold more than maxBytes.
 
 export type BodyResult = { ok: true; text: string } | { ok: false; reason: "too-large" };
+export type BytesResult = { ok: true; bytes: Uint8Array } | { ok: false; reason: "too-large" };
 
 export async function readLimitedText(request: Request, maxBytes: number): Promise<BodyResult> {
+  const result = await readLimitedBytes(request, maxBytes);
+  return result.ok ? { ok: true, text: new TextDecoder().decode(result.bytes) } : result;
+}
+
+// The same reading for a body that is not text, such as a form with photos (multipart/form-data).
+export async function readLimitedBytes(request: Request, maxBytes: number): Promise<BytesResult> {
   const declared = Number(request.headers.get("content-length"));
   if (Number.isFinite(declared) && declared > maxBytes) return { ok: false, reason: "too-large" };
 
-  if (!request.body) return { ok: true, text: "" };
+  if (!request.body) return { ok: true, bytes: new Uint8Array(0) };
 
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -35,5 +42,5 @@ export async function readLimitedText(request: Request, maxBytes: number): Promi
     bytes.set(chunk, offset);
     offset += chunk.byteLength;
   }
-  return { ok: true, text: new TextDecoder().decode(bytes) };
+  return { ok: true, bytes };
 }

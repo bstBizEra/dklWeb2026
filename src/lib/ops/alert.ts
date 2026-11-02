@@ -22,6 +22,8 @@ export type AlertKind =
   | "lead.not_in_cms"
   | "lead.email_failed"
   | "lead.webhook_failed"
+  | "lead.photos_failed"
+  | "lead.photos_not_in_cms"
   | "ratelimit.no_address"
   | "ratelimit.store_failed";
 
@@ -43,6 +45,14 @@ const catalogue: Record<AlertKind, { severity: Severity; message: string }> = {
   "lead.webhook_failed": {
     severity: "warning",
     message: "A quote request was saved, but the new-lead webhook failed. Check LEAD_NOTIFY_WEBHOOK_URL and the receiving service.",
+  },
+  "lead.photos_not_in_cms": {
+    severity: "warning",
+    message: "A lead is in the CMS, but the CMS refused its photos, so they are only in data/lead-photos on the server. Check the disk (LEAD_PHOTOS_DIR or data/cms-lead-photos), then run pnpm cms:import-fallback-leads.",
+  },
+  "lead.photos_failed": {
+    severity: "warning",
+    message: "A request came with photos, but they could not be saved, so its message mentions photos the CMS does not have. Check the disk (LEAD_PHOTOS_DIR or data/cms-lead-photos) and the database, then ask the customer to resend them.",
   },
   "ratelimit.no_address": {
     severity: "warning",

@@ -22,6 +22,12 @@ export const Leads: CollectionConfig = {
         return data;
       },
     ],
+    // A deleted lead takes its photos with it, rows and stored files (Payload deletes an upload's file).
+    beforeDelete: [
+      async ({ id, req }) => {
+        await req.payload.delete({ collection: "lead-photos", where: { lead: { equals: id } }, overrideAccess: true, req });
+      },
+    ],
   },
   fields: [
     { name: "leadId", type: "text", unique: true, index: true, admin: { readOnly: true } },
@@ -36,5 +42,8 @@ export const Leads: CollectionConfig = {
     { name: "sourcePage", type: "text", defaultValue: "/" },
     { name: "submittedAt", type: "date", admin: { date: { pickerAppearance: "dayAndTime" } } },
     { name: "internalNotes", type: "textarea", admin: { description: "Staff only. Never shown to the customer." } },
+    // Photos the customer attached (lead-photos.ts). A join reads them from the photos' "lead" link; no column here.
+    // No "Add new" button: photos come only from the customer's form (staff cannot create them, see access).
+    { name: "photos", type: "join", collection: "lead-photos", on: "lead", admin: { allowCreate: false, defaultColumns: ["filename", "createdAt"] } },
   ],
 };

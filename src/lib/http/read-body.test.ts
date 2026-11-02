@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { readLimitedText } from "./read-body";
+import { readLimitedBytes, readLimitedText } from "./read-body";
 
 const post = (body: BodyInit | null, headers: Record<string, string> = {}) =>
   new Request("http://localhost/api/x", { method: "POST", body, headers, ...(body instanceof ReadableStream ? { duplex: "half" } : {}) } as RequestInit);
@@ -60,5 +60,18 @@ describe("readLimitedText", () => {
     expect(result).toEqual({ ok: false, reason: "too-large" });
     // The third 40-byte chunk passes 100; the other 47 are never pulled.
     expect(pulled.count).toBe(3);
+  });
+});
+
+// Photo uploads read the raw bytes (a multipart body is not text) under the same rules.
+describe("readLimitedBytes", () => {
+  it("returns the exact bytes of a body within the limit", async () => {
+    const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0x00, 0x80]);
+    const result = await readLimitedBytes(post(bytes), 10);
+    expect(result.ok && Array.from(result.bytes)).toEqual([0xff, 0xd8, 0xff, 0x00, 0x80]);
+  });
+
+  it("refuses a body over the limit", async () => {
+    expect(await readLimitedBytes(post(new Uint8Array(11)), 10)).toEqual({ ok: false, reason: "too-large" });
   });
 });

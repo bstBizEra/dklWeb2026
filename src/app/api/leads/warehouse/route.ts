@@ -9,5 +9,5 @@ export function POST(request: Request) {
   return receiveLead(request, (body) => {
     const parsed = warehouseInquirySchema.safeParse(body);
     return parsed.success ? { success: true, data: warehouseToLead(parsed.data) } : { success: false, issues: parsed.error.issues };
-  });
+  }, { photos: true });
 }

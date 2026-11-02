@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { leadRequestInit, PhotoField } from "@/components/dklao/photo-field";
 import { describedBy, Field } from "@/components/dklao/quote-request-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -44,16 +45,19 @@ type WarehouseInquiryFormProps = {
   service?: Messages["serviceForm"];
   contact?: Messages["contactForm"];
   shared?: Messages["quoteForm"];
+  photos?: Messages["photoUpload"];
 };
 
 export function WarehouseInquiryForm({
   labels: t = en.warehouseForm,
   service: s = en.serviceForm,
   contact: c = en.contactForm,
-  shared: q = en.quoteForm,
+  shared: q = en.quoteForm, photos: p = en.photoUpload,
 }: WarehouseInquiryFormProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoError, setPhotoError] = useState("");
   const [schema] = useState(() => warehouseInquirySchemaFor(t.validation));
 
   const {
@@ -73,9 +77,7 @@ export function WarehouseInquiryForm({
     let result: WarehouseResponse;
     try {
       const response = await fetch("/api/leads/warehouse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, sourcePage: window.location.pathname || "/warehouse-equipment" }),
+        ...leadRequestInit({ ...values, sourcePage: window.location.pathname || "/warehouse-equipment" }, photos),
       });
       result = (await response.json()) as WarehouseResponse;
     } catch {
@@ -85,8 +87,13 @@ export function WarehouseInquiryForm({
 
     if (!result.ok) {
       let placed = false;
-      for (const detail of result.error.details as { path?: unknown[]; message?: string }[]) {
+      for (const detail of result.error.details as { path?: unknown[]; message?: string; code?: string }[]) {
         const field = detail.path?.[0];
+        if (field === "photos") {
+          setPhotoError(p.errors[detail.code as keyof typeof p.errors] ?? detail.message ?? "");
+          placed = true;
+          continue;
+        }
         if (typeof field === "string" && field in values && field !== "sourcePage") {
           setError(field as keyof WarehouseInquiryInput, { message: detail.message }, { shouldFocus: !placed });
           placed = true;
@@ -98,6 +105,8 @@ export function WarehouseInquiryForm({
 
     setSuccessMessage(`${q.received || result.message} ${q.reference} ${result.data.leadId}.`);
     reset(emptyValues());
+    setPhotos([]);
+    setPhotoError("");
   }
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -190,6 +199,7 @@ export function WarehouseInquiryForm({
           <Field id="wh-budgetRange" label={t.budgetRange} error={errors.budgetRange} optional={q.optional} wide>
             <Input id="wh-budgetRange" maxLength={60} {...describedBy("wh-budgetRange", errors.budgetRange, false)} {...register("budgetRange")} />
           </Field>
+          <PhotoField id="wh-photos" files={photos} error={photoError} labels={p} optional={q.optional} onChange={setPhotos} onError={setPhotoError} />
           <Field id="wh-companyName" label={q.companyName} error={errors.companyName}>
             <Input id="wh-companyName" autoComplete="organization" {...describedBy("wh-companyName", errors.companyName)} {...register("companyName")} />
           </Field>

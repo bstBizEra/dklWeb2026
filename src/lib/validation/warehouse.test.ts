@@ -6,6 +6,8 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { photoNote } from "@/lib/leads/photos";
+
 import { warehouseInquirySchema, warehouseNeeds, warehouseToLead } from "./warehouse";
 
 const minimal = {
@@ -54,7 +56,8 @@ describe("warehouse inquiry", () => {
       requirementDetail: "x".repeat(500),
     });
 
-    expect(warehouseToLead(longest).message.length).toBeLessThanOrEqual(1200);
+    // With two photos the pipeline adds a line (lib/leads/intake.ts); that must fit too.
+    expect(`${warehouseToLead(longest).message}\n${photoNote(2)}`.length).toBeLessThanOrEqual(1200);
   });
 
   it("refuses over-long or missing answers", () => {

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Wrench } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { leadRequestInit, PhotoField } from "@/components/dklao/photo-field";
 import { describedBy, Field } from "@/components/dklao/quote-request-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,11 +51,14 @@ type ServiceBookingFormProps = {
   labels?: Messages["serviceForm"];
   contact?: Messages["contactForm"];
   shared?: Messages["quoteForm"];
+  photos?: Messages["photoUpload"];
 };
 
-export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en.contactForm, shared: q = en.quoteForm }: ServiceBookingFormProps) {
+export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en.contactForm, shared: q = en.quoteForm, photos: p = en.photoUpload }: ServiceBookingFormProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoError, setPhotoError] = useState("");
   const [schema] = useState(() => serviceBookingSchemaFor(t.validation));
 
   const {
@@ -74,9 +78,7 @@ export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en
     let result: ServiceResponse;
     try {
       const response = await fetch("/api/leads/service", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, sourcePage: window.location.pathname || "/maintenance-service" }),
+        ...leadRequestInit({ ...values, sourcePage: window.location.pathname || "/maintenance-service" }, photos),
       });
       result = (await response.json()) as ServiceResponse;
     } catch {
@@ -86,8 +88,13 @@ export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en
 
     if (!result.ok) {
       let placed = false;
-      for (const detail of result.error.details as { path?: unknown[]; message?: string }[]) {
+      for (const detail of result.error.details as { path?: unknown[]; message?: string; code?: string }[]) {
         const field = detail.path?.[0];
+        if (field === "photos") {
+          setPhotoError(p.errors[detail.code as keyof typeof p.errors] ?? detail.message ?? "");
+          placed = true;
+          continue;
+        }
         if (typeof field === "string" && field in values && field !== "sourcePage") {
           setError(field as keyof ServiceBookingInput, { message: detail.message }, { shouldFocus: !placed });
           placed = true;
@@ -99,6 +106,8 @@ export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en
 
     setSuccessMessage(`${q.received || result.message} ${q.reference} ${result.data.leadId}.`);
     reset(emptyValues());
+    setPhotos([]);
+    setPhotoError("");
   }
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -189,6 +198,7 @@ export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en
               ))}
             </NativeSelect>
           </Field>
+          <PhotoField id="service-photos" files={photos} error={photoError} labels={p} optional={q.optional} onChange={setPhotos} onError={setPhotoError} />
           <Field id="service-companyName" label={q.companyName} error={errors.companyName}>
             <Input id="service-companyName" autoComplete="organization" {...describedBy("service-companyName", errors.companyName)} {...register("companyName")} />
           </Field>

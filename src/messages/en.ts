@@ -568,6 +568,16 @@ export const en = {
       requirementMax: "Keep the description under 500 characters",
     },
   },
+  photoUpload: {
+    label: "Photos",
+    hint: "Up to 2 photos of the machine, its nameplate or the part. JPEG, PNG or WebP, 5 MB each.",
+    remove: "Remove",
+    errors: {
+      "too-many": "Attach at most 2 photos.",
+      "too-large": "Each photo must be 5 MB or smaller.",
+      "wrong-type": "Attach JPEG, PNG or WebP photos only.",
+    },
+  },
 };
 
 export type Messages = typeof en;

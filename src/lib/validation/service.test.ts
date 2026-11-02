@@ -6,6 +6,8 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { photoNote } from "@/lib/leads/photos";
+
 import { serviceBookingSchema, serviceToLead, serviceTypes } from "./service";
 
 const minimal = {
@@ -64,7 +66,8 @@ describe("service booking", () => {
       requirementDetail: "x".repeat(500),
     });
 
-    expect(serviceToLead(longest).message.length).toBeLessThanOrEqual(1200);
+    // With two photos the pipeline adds a line (lib/leads/intake.ts); that must fit too.
+    expect(`${serviceToLead(longest).message}\n${photoNote(2)}`.length).toBeLessThanOrEqual(1200);
   });
 
   it("refuses over-long answers", () => {

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Package } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { leadRequestInit, PhotoField } from "@/components/dklao/photo-field";
 import { describedBy, Field } from "@/components/dklao/quote-request-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,16 +48,19 @@ type PartsRequestFormProps = {
   service?: Messages["serviceForm"];
   contact?: Messages["contactForm"];
   shared?: Messages["quoteForm"];
+  photos?: Messages["photoUpload"];
 };
 
 export function PartsRequestForm({
   labels: t = en.partsForm,
   service: s = en.serviceForm,
   contact: c = en.contactForm,
-  shared: q = en.quoteForm,
+  shared: q = en.quoteForm, photos: p = en.photoUpload,
 }: PartsRequestFormProps) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoError, setPhotoError] = useState("");
   const [schema] = useState(() => partsRequestSchemaFor(t.validation));
 
   const {
@@ -76,9 +80,7 @@ export function PartsRequestForm({
     let result: PartsResponse;
     try {
       const response = await fetch("/api/leads/spare-parts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, sourcePage: window.location.pathname || "/spare-parts" }),
+        ...leadRequestInit({ ...values, sourcePage: window.location.pathname || "/spare-parts" }, photos),
       });
       result = (await response.json()) as PartsResponse;
     } catch {
@@ -88,8 +90,13 @@ export function PartsRequestForm({
 
     if (!result.ok) {
       let placed = false;
-      for (const detail of result.error.details as { path?: unknown[]; message?: string }[]) {
+      for (const detail of result.error.details as { path?: unknown[]; message?: string; code?: string }[]) {
         const field = detail.path?.[0];
+        if (field === "photos") {
+          setPhotoError(p.errors[detail.code as keyof typeof p.errors] ?? detail.message ?? "");
+          placed = true;
+          continue;
+        }
         if (typeof field === "string" && field in values && field !== "sourcePage") {
           setError(field as keyof PartsRequestInput, { message: detail.message }, { shouldFocus: !placed });
           placed = true;
@@ -101,6 +108,8 @@ export function PartsRequestForm({
 
     setSuccessMessage(`${q.received || result.message} ${q.reference} ${result.data.leadId}.`);
     reset(emptyValues());
+    setPhotos([]);
+    setPhotoError("");
   }
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -204,6 +213,7 @@ export function PartsRequestForm({
           <Field id="parts-location" label={t.location} error={errors.location} wide>
             <Input id="parts-location" maxLength={120} {...describedBy("parts-location", errors.location)} {...register("location")} />
           </Field>
+          <PhotoField id="parts-photos" files={photos} error={photoError} labels={p} optional={q.optional} onChange={setPhotos} onError={setPhotoError} />
           <Field id="parts-companyName" label={q.companyName} error={errors.companyName}>
             <Input id="parts-companyName" autoComplete="organization" {...describedBy("parts-companyName", errors.companyName)} {...register("companyName")} />
           </Field>
