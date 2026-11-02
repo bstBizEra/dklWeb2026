@@ -192,6 +192,34 @@ fails on the pnpm layout. The app runs outside cPanel instead. Backups of every 
       address changes, then `/usr/local/cpanel/scripts/ea-nginx clear_cache dklao`.
 - [x] The app sends `Cache-Control: private, no-store` for `/api` and `/admin`, because the host's nginx cache
       keys on the URL alone (`next.config.ts`).
+- [ ] Photo uploads: requests up to about 11 MB must reach the app on `/api/leads/service`,
+      `/api/leads/spare-parts` and `/api/leads/warehouse` (two 5 MB photos plus the form). The app enforces
+      the limits itself: about 10.1 MB on those three routes and 20 KB on the other lead forms
+      (`src/lib/leads/intake.ts`). So nginx only has to let these requests through; nothing else changes.
+      Not checked from the development PC: no SSH access, and preview.dklao.com did not answer on
+      2026-11-02. As root:
+      1. Find the current limit. cPanel's ea-nginx sets one value for the whole server:
+         `grep -h client_max_body_size /etc/nginx/ea-nginx/settings.json /etc/nginx/conf.d/*.conf /etc/nginx/nginx.conf`.
+         If it is `0` (no limit) or `12m` or more, leave it; nginx already passes the photos.
+      2. Only if it is smaller: add `/etc/nginx/conf.d/users/dklao/dklao.com/photo-uploads.conf` (and the same
+         under `.../dklao/preview.dklao.com/` while the preview runs). cPanel includes these files inside the
+         domain's `server` block, so other paths keep the default:
+         ```nginx
+         location ~ ^/api/leads/(service|spare-parts|warehouse)$ {
+             client_max_body_size 12m;
+             # Copy here the proxy lines from the domain's `location /` in /etc/nginx/conf.d/users/dklao.conf,
+             # so this location is passed to Apache in the same way.
+         }
+         ```
+         Then `nginx -t && /scripts/restartsrv_nginx`.
+      3. Apache: `grep -Rh LimitRequestBody /etc/apache2/conf /etc/apache2/conf.d`. No match means Apache's
+         default (1 GiB since 2.4.54), which is fine.
+      4. Check from outside with a body that the app refuses and does not save. Make an 11 MB file of zero
+         bytes with `head -c 11534336 /dev/zero > eleven.bin`, then:
+         `curl -s -o - -w ' HTTP %{http_code}\n' -X POST -H 'Content-Type: application/json' --data-binary @eleven.bin https://dklao.com/api/leads/quote`.
+         Expected: the app's JSON `"Request is too large"` with HTTP 400. nginx's HTML "413 Request Entity Too
+         Large" means step 2 is still needed. (`/api/leads/quote` is used because its 20 KB cap refuses the body
+         without saving anything; the same nginx limit applies to the photo routes.)
 - [ ] Settings in `/home/dklao/.config/dklao-site.env` (owner `dklao`, mode 600; edit with `nano -B` over
       SSH or File Manager, never committed), then `systemctl restart dklao-site`:
 
