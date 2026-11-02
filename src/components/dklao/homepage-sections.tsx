@@ -30,7 +30,8 @@ export function SolutionOverview({ locale }: { locale: Locale }) {
     <Section id="solutions">
       <Container>
         <SectionHeader eyebrow={t.eyebrow} title={t.title} copy={t.copy} />
-        <div className={cardGrid}>
+        {/* Six cards: three across, so no row is left half empty. */}
+        <div className="grid grid-cols-3 gap-[18px] max-[1120px]:grid-cols-2 max-[780px]:grid-cols-1">
           {solutionCards.map((card) => (
             <ServiceCard key={card.title} item={card} />
           ))}

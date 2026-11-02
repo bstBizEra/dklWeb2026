@@ -56,7 +56,7 @@ export const homepageCtas: Cta[] = [
   },
   {
     label: "Book Maintenance Service",
-    href: "/maintenance-service",
+    href: "/maintenance-service#service-booking",
     variant: "dark",
   },
 ];
@@ -65,28 +65,28 @@ export const quickQuoteActions: FeatureCard[] = [
   {
     title: "Rental inquiry",
     description: "Share capacity, lift height, site conditions, and rental period.",
-    href: "/forklift-rental",
+    href: "/forklift-rental#rental-inquiry",
     ctaLabel: "Ask for Rental Price",
     icon: Forklift,
   },
   {
     title: "Service booking",
     description: "Request on-site or workshop support for forklift maintenance.",
-    href: "/maintenance-service",
+    href: "/maintenance-service#service-booking",
     ctaLabel: "Book Maintenance Service",
     icon: Wrench,
   },
   {
     title: "Spare parts",
     description: "Send part type, brand, model, serial number, and urgency.",
-    href: "/spare-parts",
+    href: "/spare-parts#parts-request",
     ctaLabel: "Request Spare Parts",
     icon: PackageCheck,
   },
   {
     title: "Site survey",
     description: "Plan racking, warehouse flow, cleaning equipment, or fleet needs.",
-    href: "/request-quote",
+    href: "/warehouse-equipment#warehouse-inquiry",
     ctaLabel: "Schedule Site Survey",
     icon: ClipboardCheck,
   },
@@ -120,6 +120,22 @@ export const solutionCards: FeatureCard[] = [
     href: "/spare-parts",
     ctaLabel: "Request Spare Parts",
     icon: PackageCheck,
+  },
+  // Warehouse and cleaning cards ported from feature/services-all-products (stage 8), worded from this
+  // branch's own warehouse and cleaning pages.
+  {
+    title: "Warehouse equipment",
+    description: "Plan racking, handling and cleaning together for safer, faster material flow.",
+    href: "/warehouse-equipment",
+    ctaLabel: "Plan Your Warehouse",
+    icon: Warehouse,
+  },
+  {
+    title: "Professional cleaning equipment",
+    description: "Nilfisk scrubber dryers, sweepers, vacuums and pressure washers matched to your site.",
+    href: "/cleaning-equipment#cleaning-request",
+    ctaLabel: "Get a Recommendation",
+    icon: Sparkles,
   },
 ];
 
