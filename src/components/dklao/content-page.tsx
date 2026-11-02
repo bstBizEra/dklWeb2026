@@ -10,6 +10,7 @@ import { SiteHeader } from "@/components/dklao/site-header";
 import { TrustedBy } from "@/components/dklao/trusted-by";
 import { QuoteRequestForm } from "@/components/dklao/quote-request-form";
 import { PartsRequestForm } from "@/components/dklao/parts-request-form";
+import { RentalInquiryForm } from "@/components/dklao/rental-inquiry-form";
 import { SalesInquiryForm } from "@/components/dklao/sales-inquiry-form";
 import { ServiceBookingForm } from "@/components/dklao/service-booking-form";
 import { WarehouseInquiryForm } from "@/components/dklao/warehouse-inquiry-form";
@@ -311,6 +312,13 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
       return (
         <div className="max-w-[820px]">
           <SalesInquiryForm labels={messages.salesForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
+        </div>
+      );
+    }
+    if (pageId === "rental") {
+      return (
+        <div className="max-w-[820px]">
+          <RentalInquiryForm labels={messages.rentalForm} sales={messages.salesForm} service={messages.serviceForm} contact={messages.contactForm} shared={form} />
         </div>
       );
     }

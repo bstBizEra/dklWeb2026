@@ -220,6 +220,7 @@ export const loPages: Partial<Record<string, DeepPartial<PageContent>>> = {
           { title: "ຂ້ອຍສາມາດຊື້ລົດຍົກຫຼັງຈາກເຊົ່າໄດ້ບໍ?" },
         ],
       },
+      { title: "ບອກພວກເຮົາກ່ຽວກັບການເຊົ່າຂອງທ່ານ" },
     ],
     closing: {
       title: "ຮັບໃບສະເໜີລາຄາເຊົ່າຂອງທ່ານ",

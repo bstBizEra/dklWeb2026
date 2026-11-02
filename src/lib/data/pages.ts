@@ -447,6 +447,7 @@ export const forkliftRentalPage: PageContent = {
         { title: "Can I buy the forklift after renting?", fact: "rentToBuyTerms" },
       ],
     },
+    { kind: "form", title: "Tell us about your rental", items: [] },
   ],
   closing: {
     title: "Get your rental quotation",
