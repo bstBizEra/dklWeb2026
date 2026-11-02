@@ -62,7 +62,7 @@ export default async function AboutPage({ params }: { params: Params }) {
       <AboutFinalCTA locale={locale} />
       </main>
       <IndustrialFooter locale={locale} />
-      <FloatingContactActions />
+      <FloatingContactActions locale={locale} />
     </div>
   );
 }

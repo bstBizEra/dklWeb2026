@@ -589,7 +589,7 @@ export async function ContentPage({ page, locale, children, showClients = false 
 
       </main>
       <IndustrialFooter locale={locale} />
-      <FloatingContactActions />
+      <FloatingContactActions locale={locale} />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { getSiteFacts } from "@/lib/cms/site-facts";
 import { footerGroups, orderFooterChannels } from "@/lib/data/footer";
 import { contactChannels, type ContactChannel } from "@/lib/data/site-facts";
 import { siteFooterMetadata } from "@/lib/site-metadata";
+import { getMessages } from "@/messages";
 import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ export async function IndustrialFooter({ locale }: { locale: Locale }) {
   const chips = orderFooterChannels(channels.filter((channel) => !socialLabels.has(channel.label)));
   const social = channels.filter((channel) => socialLabels.has(channel.label));
   const groups = footerGroups(locale);
+  const t = getMessages(locale).footer;
 
   return (
     <FooterMotion>
@@ -65,17 +67,17 @@ export async function IndustrialFooter({ locale }: { locale: Locale }) {
           <div className="contents">
             <div className="industrial-footer__lead col-span-full flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-b border-white/20 pb-6">
               <h2 id="footer-contact-title" className="m-0 text-[clamp(1.5rem,3vw,2rem)] font-[850] tracking-[-0.01em] text-white">
-                Talk to us
+                {t.talkToUs}
               </h2>
               <nav
-                aria-label="Footer lead actions"
+                aria-label={t.leadActions}
                 className="industrial-footer__actions flex flex-wrap items-center gap-5 font-bold max-[640px]:gap-x-6 max-[640px]:gap-y-3"
               >
                 <Link href={quoteHref("warehouse")} className={cn("inline-flex min-h-10 items-center text-white/85 hover:text-white", pressable, focusRing)}>
-                  Schedule Site Survey
+                  {t.siteSurvey}
                 </Link>
                 <Link href="/contact" className={cn("inline-flex min-h-10 items-center text-white/85 hover:text-white", pressable, focusRing)}>
-                  Talk to a DK LAO Advisor
+                  {t.advisor}
                 </Link>
                 <Link
                   href={quoteHref()}
@@ -85,13 +87,13 @@ export async function IndustrialFooter({ locale }: { locale: Locale }) {
                     focusRing,
                   )}
                 >
-                  Request a Quote
+                  {t.requestQuote}
                 </Link>
               </nav>
             </div>
             {chips.length > 0 ? (
               <nav
-                aria-label="Footer contact channels"
+                aria-label={t.channels}
                 className="industrial-footer__chips col-start-1 row-start-2 mt-6 grid grid-cols-[repeat(2,minmax(0,320px))] gap-x-4 gap-y-3 max-[640px]:flex max-[640px]:flex-wrap max-[640px]:gap-3"
               >
                 {chips.map((channel) => {
@@ -131,7 +133,7 @@ export async function IndustrialFooter({ locale }: { locale: Locale }) {
                   </p>
                 ) : null}
                 {social.length > 0 ? (
-                  <nav aria-label="Footer social links" className="industrial-footer__social flex gap-3">
+                  <nav aria-label={t.social} className="industrial-footer__social flex gap-3">
                     {social.map((channel) => (
                       <a
                         key={channel.href}
@@ -173,7 +175,7 @@ export async function IndustrialFooter({ locale }: { locale: Locale }) {
         {groups.map((group) => (
           <div key={group.title}>
             <h2 className="mt-0 mb-4 text-[0.72rem] font-[850] tracking-[0.14em] text-white/60 uppercase">{group.title}</h2>
-            <nav aria-label={`Footer: ${group.title}`} className="grid gap-1 font-semibold text-white/80 max-[760px]:gap-0">
+            <nav aria-label={`${t.groupPrefix} ${group.title}`} className="grid gap-1 font-semibold text-white/80 max-[760px]:gap-0">
               {group.links.map((item) => (
                 <Link
                   key={item.id}
@@ -189,12 +191,12 @@ export async function IndustrialFooter({ locale }: { locale: Locale }) {
       </Container>
       <Container className="industrial-footer__meta flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-white/15 pt-5 pr-[76px] pb-6 text-[0.85rem] font-[760] text-white/70 max-[780px]:grid max-[780px]:justify-items-start max-[760px]:gap-y-0">
         <p className="industrial-footer__copyright m-0 leading-[1.4]">
-          {siteFooterMetadata.copyrightPrefix} Since{" "}
+          {t.copyrightPrefix} {t.since}{" "}
           {siteFooterMetadata.foundedYear}-{siteFooterMetadata.currentYear}, v
           {siteFooterMetadata.version}
         </p>
         <p className="industrial-footer__credit m-0 text-right text-[0.78rem] leading-[1.4] max-[780px]:text-left">
-          {siteFooterMetadata.developerLabel}{" "}
+          {t.developedBy}{" "}
           <a
             href={siteFooterMetadata.developerUrl}
             target="_blank"

@@ -45,7 +45,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <FinalHomepageCTA locale={locale} />
       </main>
       <IndustrialFooter locale={locale} />
-      <FloatingContactActions />
+      <FloatingContactActions locale={locale} />
     </div>
   );
 }
