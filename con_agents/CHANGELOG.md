@@ -13,6 +13,23 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
   - Checked: Lighthouse accessibility **100 in dark** on the homepage, `/about`, `/forklift-rental`, `/request-quote` and `/lo/spare-parts`, and **100 in light** on the homepage, with the pages seen in the browser in both schemes. Two real faults were found this way and fixed — the stat tiles on the solution pages kept a white background under light text (3 of them, 1.3:1), and the "Company snapshot" eyebrows were red-on-dark at 3.3:1.
   - The phone app at `/app` already had its own light and dark themes and is untouched; the CMS admin stays dark.
 
+### Deployment decision
+
+- **www.dklao.com gets its own instance (owner, 2026-11-03).** Asked how to move the live domain off the
+  "coming soon" page onto what preview.dklao.com shows, the owner chose option A of
+  `docs/deploy-checklist.md` section 3b: `~/dklao-live`, service `dklao-live`, port 3120, its own database and
+  settings file, released only by hand through Deploy production; preview.dklao.com keeps following `main` on
+  3110. Recorded in section 3b, and section 7 ("Go live") is now the ordered runbook for it — the live
+  instance is proved on `127.0.0.1:3120` before the Apache include and the Cloudflare records move, and
+  `~/public_html` is kept for the one-command rollback in section 8.
+- Nothing is live yet: measured on 2026-11-03, `https://www.dklao.com/` and `https://dklao.com/` both still
+  serve the static page, and none of section 3b's server steps is done. The code needs no change — `APP_URL`
+  already defaults to `https://www.dklao.com` in `robots.ts`, `sitemap.ts` and both site layouts.
+- Found while checking: the preview instance's `APP_URL` is the live address, so preview.dklao.com's
+  `/robots.txt` reports `Host: https://www.dklao.com` and its canonicals and sitemap name the live site. It
+  is harmless while www serves a static page and a duplicate-content risk once www is the app, so section 7
+  sets the preview's own `APP_URL` as part of go-live.
+
 ## [0.23.0] - 2026-10-31
 
 ### Minor Changed

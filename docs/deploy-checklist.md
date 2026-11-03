@@ -135,6 +135,10 @@ deploys straight to the live site and runs its migrations on the live database.
 | **A. Separate production instance (recommended)** | Own folder (`~/dklao-live`), service (`dklao-live`, port 3120), settings file and database. The preview keeps following `main`; the live site changes only on an approved release | One more Node process (210 MB of memory measured after warm-up, 2026-10-31) and one more database on the shared server; one-time root setup below |
 | B. Production on the preview instance | `dklao-site` becomes the live site. Preview deploys are switched off by the script (`SHARED_WITH_PREVIEW=yes`), so unmerged work can no longer be previewed | No extra resources; loses the preview |
 
+**Decided 2026-11-03 (owner): option A.** www.dklao.com gets its own instance (`~/dklao-live`, service
+`dklao-live`, port 3120, own database and settings file); preview.dklao.com keeps following `main` on 3110.
+The steps for it are the unticked boxes below, and then section 7 puts the domain on it.
+
 `.github/workflows/deploy-production.yml` runs only when started by hand from `main` with the version to
 release. It checks that `main` is at that version, runs every gate including the build, waits for approval in
 the GitHub `production` environment, sends tag `production-<run>-<sha>` to `~/bin/dklao-deploy production`,
@@ -288,11 +292,50 @@ Test on a temporary address first: `preview.dklao.com` (done 2026-10-26). Cloudf
 
 ## 7. Go live (needs the owner's approval)
 
-- [ ] Keep a copy of the current `public_html` ("coming soon" page): `cp -a ~/public_html ~/public_html.before-site`.
-- [ ] Copy the Apache include to `dklao.com` (section 4), set `APP_URL=https://www.dklao.com`, restart the service.
-- [ ] Cloudflare: SSL mode **Full (strict)** (the server has an AutoSSL certificate), and a page rule or
-      redirect so `dklao.com` and `www.dklao.com` end up on one address that matches `APP_URL`.
-- [ ] Re-check section 6 on the real domain, plus `/sitemap.xml` and `/robots.txt`.
+Moving the live domain off the "coming soon" page onto the app, with option A decided in section 3b. The
+order matters: the live instance answers on `127.0.0.1:3120` before anything public changes, and
+`public_html` is kept, so one command puts the old page back (section 8).
+
+Checked 2026-11-03 from a developer PC: `https://www.dklao.com/` and `https://dklao.com/` both still serve
+the static "DK LAO — Under Construction" page out of `~/public_html`, and `https://preview.dklao.com/` serves
+the app. The app's own defaults already name the live site (`APP_URL ?? "https://www.dklao.com"` in
+`robots.ts`, `sitemap.ts` and both layouts), so no code change belongs to this step.
+
+- [ ] Section 3b option A is finished first: `~/dklao-live`, its database and settings file, the `dklao-live`
+      service and its restart path unit, `~/.config/dklao-deploy-production.conf`, the production deploy key,
+      and the GitHub `production` environment with its three secrets. Without them there is nothing to point
+      the domain at.
+- [ ] As `dklao`, keep the coming-soon page: `cp -a ~/public_html ~/public_html.before-site`.
+- [ ] Put the release on the live instance **before** the domain moves: Actions > Deploy production > Run
+      workflow, on `main`, with the version in `package.json`, then approve it in the `production`
+      environment. Expect the last step ("Check the live site") to fail on this first run, because
+      www.dklao.com still answers with the static page; everything before it — gates, database dump, build,
+      restart — has already run. Confirm on the server instead, as `dklao`:
+      `curl -s http://127.0.0.1:3120/ | grep -o 'favicon.ico?v=[0-9.]*'` must print the released version.
+      Build log: `~/deploy-logs/build-production-*.log`.
+- [ ] Root: copy the preview's Apache includes to the live domain, with port 3120 —
+      `/etc/apache2/conf.d/userdata/{std,ssl}/2_4/dklao/dklao.com/dklao-live.conf` proxying to
+      `http://127.0.0.1:3120/`, keeping the `/.well-known/` exception for AutoSSL. Decide the `/admin` and
+      `/api/users` lock in the same file: on the live domain it should stay restricted to the owner's address
+      (the same `LocationMatch` block as section 4) unless the owner wants editors to sign in from anywhere.
+      Then `/scripts/rebuildhttpdconf && /scripts/restartsrv_httpd --graceful`.
+- [ ] Check the server answers for the live name before touching DNS, bypassing Cloudflare:
+      `curl -sI --resolve www.dklao.com:443:50.6.224.71 https://www.dklao.com/` (200, and
+      `curl -s --resolve ... | grep favicon.ico?v=` shows the version).
+- [ ] Cloudflare: SSL mode **Full (strict)** (the server has an AutoSSL certificate), `A` records for `@` and
+      `www` → `50.6.224.71`, proxied, and a redirect rule sending `dklao.com/*` to `https://www.dklao.com/$1`
+      (301), so one address matches `APP_URL`. Then clear the host cache:
+      `/usr/local/cpanel/scripts/ea-nginx clear_cache dklao`.
+- [ ] Stop the preview claiming the live address: `~/.config/dklao-site.env` carries
+      `APP_URL=https://www.dklao.com` (section 4), so preview.dklao.com's `/robots.txt` says
+      `Host: https://www.dklao.com` and its canonicals and sitemap name the live site — measured 2026-11-03.
+      Set it to `https://preview.dklao.com` and `systemctl restart dklao-site`. If the preview should also
+      stay out of search results, that needs a `Disallow: /` for it in the app (`src/app/robots.ts` reads the
+      same `APP_URL`); it is not there today.
+- [ ] Re-check section 6 on the real domain, plus `/sitemap.xml` and `/robots.txt` (both must name
+      `https://www.dklao.com`), and that `/admin` still answers only from the owner's address.
+- [ ] Re-run the production workflow once the domain is live, so its final check passes and the version is
+      confirmed from outside. From then on every release ends with "www.dklao.com serves X.Y.Z".
 - [ ] Keep the ngrok preview off once the site is live.
 
 ## 8. Rollback
