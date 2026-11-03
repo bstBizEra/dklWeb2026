@@ -144,32 +144,130 @@ release. It checks that `main` is at that version, runs every gate including the
 the GitHub `production` environment, sends tag `production-<run>-<sha>` to `~/bin/dklao-deploy production`,
 which always dumps the database first, and then checks that the live site serves the version.
 
-Setup for option A (root steps need the owner's go-ahead on the day):
+### Decide first: what content does the live database start with?
 
-- [ ] As `dklao`: `git clone ~/dklao-app ~/dklao-live`, and `~/.config/dklao-live.env` (mode 600) with the section 4
-      settings, `PORT=3120`, the production `DATABASE_URL` and its own `PAYLOAD_SECRET`. It must also carry
-      `APP_URL=https://www.dklao.com`: since 0.24.2 the deploy refuses to build without it, because that one
-      value becomes the sitemap, every canonical and every `og:url` in the bundle. Set the preview's
-      `~/.config/dklao-site.env` to `APP_URL=https://preview.dklao.com` at the same time, so the two
-      instances stop advertising the same URLs.
-- [ ] Database: a new database and user for production (as in section 2), so preview migrations never touch it.
-- [ ] Root: `/etc/systemd/system/dklao-live.service` (copy of `dklao-site.service` with `dklao-live` paths,
-      `PORT=3120` and `EnvironmentFile=/home/dklao/.config/dklao-live.env`), plus `dklao-live-restart.path`
-      watching `/home/dklao/.deploy/restart-live` and `dklao-live-restart.service` (as in section 3a). Port 3120
-      closed in the firewall.
-- [ ] `~/.config/dklao-deploy-production.conf` (mode 600):
+The live instance gets its own empty database, so this is a real choice and not a formality.
+
+| | What you get | Cost |
+|---|---|---|
+| **Seed fresh** (`pnpm cms:seed`, step 7) | The 24 built-in pages and the default menu; facts unfilled | Any edit made in the preview's admin is re-entered by hand |
+| **Copy the preview database** | preview.dklao.com's content exactly as it is | Test leads and draft edits come too, and are deleted afterwards |
+
+**Do not open the domain on an unseeded database.** With `DATABASE_URL` set and the tables empty, the site
+does not fall back to its built-in facts — read on; this is measured, not assumed:
+
+- Pages and the menu are safe. `getPageContent` finds no published row and returns the built-in page;
+  `loadNavigation` gets an empty menu, `navIsComplete` fails and the built-in menu renders.
+- **Every site fact disappears.** `cmsEnabled()` is true whenever `DATABASE_URL` is set, and Payload's
+  `findGlobal` answers for a never-saved global with an empty object rather than throwing (its own
+  `entityDocExists` tests exactly that), so `loadSiteFacts` never reaches the `catch` that would return
+  the built-in facts. `sanitizeFacts({})` makes every fact `null`, and the site hides anything bound to
+  one. The globals declare no `defaultValue`, so nothing fills the gap. Nothing crashes — every consumer
+  guards — but the result is a site with no phone number, no WhatsApp, no email, no address and no
+  opening hours:
+
+| Page | What a visitor sees on an empty database |
+|---|---|
+| Home | "Trusted by" disappears entirely (`TrustedBy` returns `null` when `referenceClients` is empty). The proof strip keeps only "Since 2010" — the 24/7 and service-area tiles are fact-bound — leaving one figure in a three-column grid |
+| Footer, every page | No contact chips and no social badges (`contactChannels` returns `[]`), and no address block. The "Talk to us" heading, the quote and advisor links and the BizEra credit stay, because they come from the message files |
+| `/contact` | Of the four quick cards only "Request a quote" survives; call, WhatsApp and "Visit us" are each dropped with their fact. The inquiry form and the response steps are unaffected |
+| Content pages (`/forklift-rental`, `/about`, …) | Built-in copy renders, but `visibleSections` drops every item whose `fact` is empty — so rows such as delivery coverage, maintenance terms and reply times vanish from the cards |
+| `/app` | Same facts, same gaps, on the contact rows |
+
+Setup for option A, in order (root steps need the owner's go-ahead on the day). Step 0: `~/bin/dklao-deploy`
+must already be the 0.24.2 script — see section 7, it is not updated by a deploy.
+
+- [ ] **Database** (cPanel, owner): a new database and user with all privileges, so preview migrations never
+      touch it (as in section 2). Use all-lowercase names — `dklao_live` and `dklao_liveapp` — because the
+      capital A in `dklao_dklApp` has been a recurring trap. Let cPanel generate the password, then
+      percent-encode it as `dklao`, never pasting the plain password into the URL:
+      ```bash
+      node -e "console.log(encodeURIComponent(process.argv[1]))" 'the-password'
       ```
+- [ ] **The live folder** (as `dklao`). The first deploy overwrites the checkout, so only a populated tree
+      matters; if the `ls` fails the clone landed on a detached HEAD, so run
+      `git -C ~/dklao-live checkout --force main` and check again:
+      ```bash
+      git clone ~/dklao-app ~/dklao-live && ls ~/dklao-live/package.json
+      ```
+- [ ] **Its settings file** (as `dklao`), starting from the preview's so the SMTP and lead settings carry over:
+      ```bash
+      cp ~/.config/dklao-site.env ~/.config/dklao-live.env && chmod 600 ~/.config/dklao-live.env && nano -B ~/.config/dklao-live.env
+      ```
+      Change exactly four values: `APP_URL=https://www.dklao.com`, `PORT=3120`, the new `DATABASE_URL`
+      (`postgres://dklao_liveapp:<encoded password>@127.0.0.1:5432/dklao_live`), and a `PAYLOAD_SECRET` of its
+      own — `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. `APP_URL` is
+      mandatory: since 0.24.2 the deploy refuses to build without it, because that one value becomes the
+      sitemap, every canonical and every `og:url` in the bundle.
+- [ ] **Move the preview to its own address** at the same time, so the two instances stop advertising the same
+      URLs: set `APP_URL=https://preview.dklao.com` in `~/.config/dklao-site.env`, then redeploy the preview
+      (a restart changes `robots.txt` only — section 7).
+- [ ] **The systemd units** (root). Derive them from the files that already work, so the hardening
+      (`NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=full`) is inherited rather than retyped:
+      ```bash
+      sed -e 's|dklao-app|dklao-live|g' -e 's|dklao-site|dklao-live|g' -e 's|3110|3120|g' /etc/systemd/system/dklao-site.service > /etc/systemd/system/dklao-live.service
+      sed -e 's|dklao-site|dklao-live|g' -e 's|restart-request|restart-live|g' /etc/systemd/system/dklao-site-restart.path > /etc/systemd/system/dklao-live-restart.path
+      sed -e 's|dklao-site|dklao-live|g' -e 's|restart-request|restart-live|g' /etc/systemd/system/dklao-site-restart.service > /etc/systemd/system/dklao-live-restart.service
+      ```
+      Read all three before enabling anything — the `sed` is only as good as the originals' wording. Check
+      that `ExecStart` names `/home/dklao/dklao-live/server.mjs`, `EnvironmentFile` names `dklao-live.env`,
+      `PORT=3120`, `HOSTNAME=127.0.0.1`, and that the restart service runs `systemctl restart dklao-live`:
+      ```bash
+      cat /etc/systemd/system/dklao-live.service /etc/systemd/system/dklao-live-restart.path /etc/systemd/system/dklao-live-restart.service
+      ```
+      Then enable them, but do **not** start `dklao-live`: there is no build in `~/dklao-live` until the first
+      deploy. Port 3120 needs no firewall rule (it binds `127.0.0.1`), but leave it closed if ports are listed
+      explicitly:
+      ```bash
+      systemctl daemon-reload && systemctl enable --now dklao-live-restart.path && systemctl enable dklao-live
+      ```
+- [ ] **Point the deploy script at the target** (as `dklao`). Without this file it refuses production deploys:
+      ```bash
+      install -m 600 /dev/null ~/.config/dklao-deploy-production.conf && nano -B ~/.config/dklao-deploy-production.conf
+      ```
+      ```txt
       APP=~/dklao-live
       PORT=3120
       ENV_FILE=~/.config/dklao-live.env
       RESTART_REQUEST=~/.deploy/restart-live
       ```
-      Without this file the script refuses production deploys.
-- [ ] A second deploy key, used only for production:
-      `restrict,command="/home/dklao/bin/dklao-deploy production" ssh-ed25519 AAAA... github-actions-dklao-production`.
-- [ ] GitHub > Settings > Environments > `production`: the owner as **Required reviewer**, deployment branches
-      `main` only, secrets `PRODUCTION_SSH_KEY`, `PRODUCTION_SSH_KNOWN_HOSTS`, `PRODUCTION_SSH_HOST`, optional
-      `PRODUCTION_SSH_PORT`, and optionally the variable `PRODUCTION_URL` (default `https://www.dklao.com`).
+- [ ] **A second deploy key, production only** (root). The forced command is what stops the key doing anything
+      else:
+      ```bash
+      mkdir -p /root/dklao-production-deploy && ssh-keygen -t ed25519 -N '' -C github-actions-dklao-production -f /root/dklao-production-deploy/id_ed25519
+      printf 'restrict,command="/home/dklao/bin/dklao-deploy production" %s\n' "$(cat /root/dklao-production-deploy/id_ed25519.pub)" >> /home/dklao/.ssh/authorized_keys
+      ```
+      Copy the private half straight into the GitHub secret below — into the browser, never into chat or a file
+      on a PC — then delete `/root/dklao-production-deploy/`. To revoke: remove the line and the secret.
+- [ ] **GitHub > Settings > Environments > `production`**: the owner as **Required reviewer** (this is the gate
+      that makes production manual), deployment branches `main` only, secrets `PRODUCTION_SSH_KEY` (the private
+      key), `PRODUCTION_SSH_HOST` = `50.6.224.71`, `PRODUCTION_SSH_KNOWN_HOSTS` =
+      `50.6.224.71 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILYxCy02CJ58JH9bYKibk5xrVsgew2KWF7ZyuWA4QQM3`, optional
+      `PRODUCTION_SSH_PORT` (leave unset for 22), and optionally the variable `PRODUCTION_URL` (default
+      `https://www.dklao.com`).
+- [ ] **First release and content.** Actions > Deploy production > Run workflow on `main` with the version in
+      `package.json`, then approve it. Expect the final "Check the live site" step to fail while www still
+      serves the static page (section 7 explains why); confirm on the server instead, as `dklao`:
+      ```bash
+      curl -s http://127.0.0.1:3120/ | grep -o 'favicon.ico?v=[0-9.]*'
+      ```
+      Then act on the content decision above. Seed fresh:
+      ```bash
+      set -a; . ~/.config/dklao-live.env; set +a; cd ~/dklao-live && npx -y pnpm@10.29.3 cms:seed
+      ```
+      Or copy the preview's content, which leaves the preview database untouched (it is only read):
+      ```bash
+      pg_dump --dbname="$(grep -m1 '^DATABASE_URL=' ~/.config/dklao-site.env | cut -d= -f2- | tr -d '"')" --no-owner --no-acl --clean --if-exists > ~/backups/preview-to-live-$(date +%F).sql
+      psql --dbname="$(grep -m1 '^DATABASE_URL=' ~/.config/dklao-live.env | cut -d= -f2- | tr -d '"')" --set ON_ERROR_STOP=on -f ~/backups/preview-to-live-$(date +%F).sql
+      ```
+      `--no-owner --no-acl` is what makes this work when the live user does not own the preview's objects: the
+      dump then carries no `ALTER ... OWNER TO dklao_app` or `GRANT` lines, so every object is created owned by
+      whoever runs the restore. `--clean --if-exists` drops the empty tables the migration made, so the restore
+      does not collide with them; `ON_ERROR_STOP=on` stops at the first real error instead of leaving a
+      half-restored database. Afterwards delete any test leads in `/admin`.
+- [ ] **Register the owner account** at `/admin` on the live instance. The first account registered becomes the
+      owner, so the owner does it personally and immediately (section 5), then creates the editor and advisor
+      accounts.
 - [ ] In section 7, point the `dklao.com` Apache include at `http://127.0.0.1:3120/` instead of 3110.
 
 For option B, the production settings file names the preview instance and confirms it

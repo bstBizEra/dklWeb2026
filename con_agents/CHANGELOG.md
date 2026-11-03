@@ -30,6 +30,27 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
     with the reminder that `~/bin/dklao-deploy` on the server is not updated by a deploy and must be copied
     from the repo by hand.
 
+### Deployment decision
+
+- **Section 3b option A is now a command-level runbook** rather than a list of things to arrange: the
+  database and its percent-encoded password, the `~/dklao-live` clone, the settings file derived from the
+  preview's with the four values that differ, the three systemd units derived by `sed` from the units that
+  already work (so the hardening is inherited, with a mandatory `cat` before enabling), the production deploy
+  config and forced-command key, the GitHub `production` environment, the first release, and registering the
+  owner account.
+- **Recorded finding: an empty-but-reachable CMS database hides every site fact**, which the runbook now
+  warns about before the domain moves. `cmsEnabled()` is true whenever `DATABASE_URL` is set, and Payload's
+  `findGlobal` answers for a never-saved global with an empty object instead of throwing (its own
+  `entityDocExists` relies on exactly that), so `loadSiteFacts` never reaches the `catch` that would return
+  the built-in facts; `sanitizeFacts({})` nulls every key and the globals declare no `defaultValue`. Pages
+  and the menu are unaffected — they fall back to the built-in content — but the phone numbers, WhatsApp,
+  email, address and opening hours all disappear, taking "Trusted by", two of the three home proof tiles,
+  three of the four contact quick cards, the footer's contact chips, social badges and address block, and
+  every fact-bound card row with them. Nothing crashes; each consumer guards. Section 3b carries the
+  per-page table and the content decision (seed fresh, or copy the preview database with
+  `--no-owner --no-acl --clean --if-exists`, which is what makes the restore work when the live user does
+  not own the preview's objects).
+
 ## [0.24.1] - 2026-11-03
 
 ### Patch Changed
