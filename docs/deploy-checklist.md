@@ -296,18 +296,31 @@ Moving the live domain off the "coming soon" page onto the app, with option A de
 order matters: the live instance answers on `127.0.0.1:3120` before anything public changes, and
 `public_html` is kept, so one command puts the old page back (section 8).
 
-Checked 2026-11-03 from a developer PC: `https://www.dklao.com/` serves the static "DK LAO — Under
-Construction" page out of `~/public_html`; `https://dklao.com/` (the apex) serves **Apache's directory
-listing** instead — `Index of /`, with `backup/`, `cgi-bin/` and `preview.dklao.com/` in it — so the two
-names do not even share a document root today, and the apex has no index file. `backup/` is an older copy of
-the coming-soon page, not a dump. `https://preview.dklao.com/` serves the app (0.24.0). The app's own
-defaults already name the live site (`APP_URL ?? "https://www.dklao.com"` in `robots.ts`, `sitemap.ts` and
-both layouts), so no code change belongs to this step.
+Checked 2026-11-03 from a developer PC, after the owner moved the coming-soon page to
+`~/public_html/backup/`: `https://preview.dklao.com/` serves the app (0.24.0), and both `dklao.com` and
+`www.dklao.com` now answer **Apache's directory listing** — `Index of /`, with `backup/`, `cgi-bin/` and
+`preview.dklao.com/` in it. `backup/` is that old page, not a database dump. The app's own defaults already
+name the live site (`APP_URL ?? "https://www.dklao.com"` in `robots.ts`, `sitemap.ts` and both layouts), so
+no code change belongs to this step.
 
-- [ ] Turn the apex listing off when the domain moves. The Cloudflare redirect below (`dklao.com/*` →
-      `https://www.dklao.com/$1`) hides it, but the origin would still answer it for anything that reaches
-      the server directly, so also add `Options -Indexes` for that document root (or an `index.html`), and
-      check whether the apex should simply share the `www` virtual host.
+**The host's nginx cache will show you the old page for a while, and it is not Cloudflare.** Measured the
+same day: `https://www.dklao.com/` still returned the removed page with `Last-Modified: Thu, 11 Dec 2025`,
+while `https://www.dklao.com/?nocache=1` returned the current listing and `/index.html` answered 404 —
+`cf-cache-status: DYNAMIC` on all three, so Cloudflare was caching none of it. cPanel's ea-nginx cache keys
+on the URL alone (section 4), so `/` was stale while any URL with a query was fresh.
+
+- [ ] After any change to what the domain serves — removing the placeholder, adding the Apache include —
+      clear that cache as root: `/usr/local/cpanel/scripts/ea-nginx clear_cache dklao`. Then check with a
+      query string (`curl -s 'https://www.dklao.com/?nocache=1' | grep -o '<title>[^<]*</title>'`), because
+      the plain URL can be stale in your browser too.
+- [ ] While the app is not yet on this domain, do not leave the listing public: either put the placeholder
+      back (`cp ~/public_html/backup/index.html ~/public_html/index.html`) or set `Options -Indexes` for that
+      document root, so visitors get a page or a 403 instead of a file listing. The stale cache above is the
+      only thing hiding it in the meantime.
+- [ ] At go-live the listing stops mattering for visitors — the Cloudflare redirect below sends
+      `dklao.com/*` to `https://www.dklao.com/$1` and the include proxies `www` to the app — but the origin
+      would still answer it directly, so keep `Options -Indexes` (or the apex sharing the `www` virtual
+      host) rather than relying on the redirect.
 
 - [ ] Section 3b option A is finished first: `~/dklao-live`, its database and settings file, the `dklao-live`
       service and its restart path unit, `~/.config/dklao-deploy-production.conf`, the production deploy key,
