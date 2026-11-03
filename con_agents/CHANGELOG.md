@@ -50,6 +50,18 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
   per-page table and the content decision (seed fresh, or copy the preview database with
   `--no-owner --no-acl --clean --if-exists`, which is what makes the restore work when the live user does
   not own the preview's objects).
+- **Decided 2026-11-03 (owner): copy the preview database** rather than seed fresh, so the live site starts
+  with preview.dklao.com's content as it stands. Section 3b now carries the full sequence for it, including
+  three things the plain dump-and-restore would have got wrong: the live service is stopped first, because
+  the restore drops every table while Payload holds open connections; a `TRUNCATE` removes the preview's
+  leads, rate-limit counters, sessions, admin UI state and user accounts, keeping only the content tables and
+  `payload_migrations`; and `lead_photos` has to be emptied because photos are files on disk under the app
+  folder (`LEAD_PHOTOS_DIR` or `data/cms-lead-photos`), so the live instance's folder is a different one and
+  the copied rows would point at files that are not there. Checked against the migrations: only
+  `users_sessions`, `payload_locked_documents_rels` and `payload_preferences_rels` reference `users`, so the
+  `CASCADE` cannot reach a content table. Emptying `users` also restores the "register the owner account"
+  step, which a copied accounts table would otherwise skip — and a fresh `PAYLOAD_SECRET` is safe with
+  copied accounts, since no field here is declared `encrypted` and password hashes live in the row.
 
 ## [0.24.1] - 2026-11-03
 

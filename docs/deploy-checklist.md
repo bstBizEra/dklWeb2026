@@ -153,6 +153,9 @@ The live instance gets its own empty database, so this is a real choice and not 
 | **Seed fresh** (`pnpm cms:seed`, step 7) | The 24 built-in pages and the default menu; facts unfilled | Any edit made in the preview's admin is re-entered by hand |
 | **Copy the preview database** | preview.dklao.com's content exactly as it is | Test leads and draft edits come too, and are deleted afterwards |
 
+**Decided 2026-11-03 (owner): copy the preview database.** The live site starts with preview.dklao.com's
+content exactly as it is, and the clean-up below removes what should not travel with it.
+
 **Do not open the domain on an unseeded database.** With `DATABASE_URL` set and the tables empty, the site
 does not fall back to its built-in facts — read on; this is measured, not assumed:
 
@@ -255,7 +258,9 @@ must already be the 0.24.2 script — see section 7, it is not updated by a depl
       ```bash
       set -a; . ~/.config/dklao-live.env; set +a; cd ~/dklao-live && npx -y pnpm@10.29.3 cms:seed
       ```
-      Or copy the preview's content, which leaves the preview database untouched (it is only read):
+      **Or — the owner's choice — copy the preview database.** The preview is only read, never written. Stop
+      the live service first: the restore drops and recreates every table, and Payload holds open connections
+      that make those drops wait or fail. As root: `systemctl stop dklao-live`. Then as `dklao`:
       ```bash
       pg_dump --dbname="$(grep -m1 '^DATABASE_URL=' ~/.config/dklao-site.env | cut -d= -f2- | tr -d '"')" --no-owner --no-acl --clean --if-exists > ~/backups/preview-to-live-$(date +%F).sql
       psql --dbname="$(grep -m1 '^DATABASE_URL=' ~/.config/dklao-live.env | cut -d= -f2- | tr -d '"')" --set ON_ERROR_STOP=on -f ~/backups/preview-to-live-$(date +%F).sql
@@ -264,7 +269,34 @@ must already be the 0.24.2 script — see section 7, it is not updated by a depl
       dump then carries no `ALTER ... OWNER TO dklao_app` or `GRANT` lines, so every object is created owned by
       whoever runs the restore. `--clean --if-exists` drops the empty tables the migration made, so the restore
       does not collide with them; `ON_ERROR_STOP=on` stops at the first real error instead of leaving a
-      half-restored database. Afterwards delete any test leads in `/admin`.
+      half-restored database. `payload_migrations` comes across too, so the live instance's migration state
+      matches the preview's and the next release does not try to re-run anything.
+- [ ] **Clean up what must not travel with the copy** (only for the copy route), before the service starts
+      again. A full copy brings the preview's customer leads, its admin accounts and their password hashes,
+      its open sessions and its admin UI state:
+      ```sql
+      TRUNCATE lead_photos, leads, lead_rate_limits, users_sessions,
+               payload_locked_documents_rels, payload_locked_documents,
+               payload_preferences_rels, payload_preferences, users
+      RESTART IDENTITY CASCADE;
+      ```
+      Checked against the migrations: only `users_sessions`, `payload_locked_documents_rels` and
+      `payload_preferences_rels` reference `users`, all three `ON DELETE cascade` and all three already in the
+      list, so no content table can be reached by the `CASCADE`. `pages`, `pages_locales`, `navigation`,
+      `site_facts`, `articles` and `payload_migrations` are deliberately untouched — they are the content being
+      copied.
+      - **`users` is in that list on purpose.** The preview's credentials should not become the live site's,
+        and emptying the table restores the "register the owner account" box below: Payload shows the
+        create-first-user screen again. Leave `users` out of the `TRUNCATE` only if the owner wants to keep
+        signing in with the preview's accounts and passwords.
+      - A **new `PAYLOAD_SECRET` is safe** with copied accounts: no field in this project is declared
+        `encrypted`, and Payload stores a per-user password hash in the row, so the secret only invalidates
+        existing sessions (which the `TRUNCATE` clears anyway).
+      - **Lead photos are files on disk, not rows**, in `LEAD_PHOTOS_DIR` or `<app folder>/data/cms-lead-photos`
+        — so the live instance's folder is `~/dklao-live/data/cms-lead-photos`, a different folder from the
+        preview's. Emptying `lead_photos` is what keeps the admin from listing photos whose files are not
+        there. If leads ever do need to be carried over, copy that folder with the database.
+      Then start the service as root: `systemctl start dklao-live`.
 - [ ] **Register the owner account** at `/admin` on the live instance. The first account registered becomes the
       owner, so the owner does it personally and immediately (section 5), then creates the editor and advisor
       accounts.
