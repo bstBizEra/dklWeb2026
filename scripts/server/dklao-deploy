@@ -96,7 +96,17 @@ git fetch --quiet "$bundle" "refs/tags/$tag:refs/tags/$tag"
 
 # Each step is chained: inside an if condition bash ignores set -e.
 build() {
-  git checkout --quiet --force "$1" && pnpm install --frozen-lockfile && pnpm build
+  # The build bakes APP_URL in: the sitemap, every page's canonical and OG URL (metadataBase in both site
+  # layouts) and the breadcrumb JSON-LD are all read at build time, and this shell does not have the
+  # service's settings file in its environment. Without it the bundle carries the default www address, so a
+  # preview or staging instance would advertise the live site's URLs however its env file reads. Only this
+  # one key is passed through; the rest of the file (database, SMTP, secrets) has no business in a build.
+  # Refusing beats defaulting: an empty value would also defeat `?? "https://www.dklao.com"`, since "" is
+  # not null.
+  local app_url
+  app_url="$(grep -m1 '^APP_URL=' "$ENV_FILE" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')"
+  [[ -n "$app_url" ]] || { echo "APP_URL not found in $ENV_FILE: add APP_URL=https://<this instance's host> before deploying" >&2; return 1; }
+  git checkout --quiet --force "$1" && pnpm install --frozen-lockfile && APP_URL="$app_url" pnpm build
 }
 
 healthy() {

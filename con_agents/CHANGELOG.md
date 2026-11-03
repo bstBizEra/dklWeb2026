@@ -2,6 +2,34 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.24.2] - 2026-11-03
+
+### Patch Changed
+
+- **The deploy now passes `APP_URL` into the build, so each instance advertises its own address.**
+  `scripts/server/dklao-deploy`'s `build()` reads `APP_URL` out of that target's `$ENV_FILE` — the same
+  `grep -m1 … | cut -d= -f2- | sed` extraction the script already uses for `DATABASE_URL` — and runs
+  `APP_URL=… pnpm build`. Only that one key is passed through; the database, SMTP and secret values in the
+  file have no business in a build.
+  - Why it was needed: 0.24.1 fixed `robots.txt` by making it per-request, but four other things read
+    `APP_URL` at module scope and are therefore baked in by the build — `src/app/sitemap.ts`, the
+    `metadataBase` in `src/app/(site)/[locale]/layout.tsx` and `src/app/(app)/layout.tsx` (so every
+    `canonical` and `og:url`), and the breadcrumb JSON-LD in `src/components/dklao/content-page.tsx`. The
+    build shell has never had the settings file in its environment, so all four fell back to the www default
+    whatever an instance's env file said, and no restart could change them.
+  - **It refuses to deploy when `APP_URL` is missing or empty** instead of defaulting. An empty value would
+    also defeat `?? "https://www.dklao.com"`, because `""` is not nullish and `new URL("")` throws. The
+    error names the file and the line to add.
+  - Verified 2026-11-03 on a build given `APP_URL=https://preview.dklao.com`: the sitemap's `<loc>` and
+    `hreflang` entries, `/about`'s `canonical` and `og:url`, and `/forklift-rental`'s breadcrumb JSON-LD
+    `item` URLs all carried the preview host, and neither prerendered page contained `www.dklao.com`. The
+    extraction itself was checked against seven env-file shapes (unquoted, double-quoted, trailing slash,
+    absent key, empty value, commented-out key, duplicate key).
+  - Consequence for the runbook: changing an instance's `APP_URL` now needs a **redeploy**, not a restart —
+    only `robots.txt` follows a restart. Recorded in `docs/deploy-checklist.md` sections 3b and 7, together
+    with the reminder that `~/bin/dklao-deploy` on the server is not updated by a deploy and must be copied
+    from the repo by hand.
+
 ## [0.24.1] - 2026-11-03
 
 ### Patch Changed

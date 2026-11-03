@@ -147,7 +147,11 @@ which always dumps the database first, and then checks that the live site serves
 Setup for option A (root steps need the owner's go-ahead on the day):
 
 - [ ] As `dklao`: `git clone ~/dklao-app ~/dklao-live`, and `~/.config/dklao-live.env` (mode 600) with the section 4
-      settings, `PORT=3120`, the production `DATABASE_URL` and its own `PAYLOAD_SECRET`.
+      settings, `PORT=3120`, the production `DATABASE_URL` and its own `PAYLOAD_SECRET`. It must also carry
+      `APP_URL=https://www.dklao.com`: since 0.24.2 the deploy refuses to build without it, because that one
+      value becomes the sitemap, every canonical and every `og:url` in the bundle. Set the preview's
+      `~/.config/dklao-site.env` to `APP_URL=https://preview.dklao.com` at the same time, so the two
+      instances stop advertising the same URLs.
 - [ ] Database: a new database and user for production (as in section 2), so preview migrations never touch it.
 - [ ] Root: `/etc/systemd/system/dklao-live.service` (copy of `dklao-site.service` with `dklao-live` paths,
       `PORT=3120` and `EnvironmentFile=/home/dklao/.config/dklao-live.env`), plus `dklao-live-restart.path`
@@ -414,14 +418,20 @@ Three things in the zone are not about go-live but were found while checking it 
       `Host: https://preview.dklao.com`; if it still names www, the settings file did not take. The live
       domain is unaffected — it keeps `Allow: /` with `/admin` and `/api` disallowed.
 
-      No rebuild is needed for this, but only because 0.24.1 made the route `force-dynamic`. Before that
-      `robots.txt` was prerendered (`○` in the build output) and `dklao-deploy`'s `build()` does not source
-      `$ENV_FILE`, so the live address was baked into the bundle and no restart could have changed it. Keep
-      that in mind for anything else that reads `APP_URL`: **`/sitemap.xml` is still prerendered** (`○`, with
-      a one-hour revalidate), so after the restart it keeps naming the old address until it first
-      regenerates. Page canonicals come from the two site layouts and have the same build-time problem on
-      statically rendered routes. Neither matters once each instance's `APP_URL` is right at build time; if
-      the preview's sitemap must name itself immediately, redeploy it rather than waiting.
+      `robots.txt` alone is served per request (`force-dynamic` since 0.24.1), so a restart is enough for
+      it. **Everything else that reads `APP_URL` is baked in by the build** — `/sitemap.xml`, every page's
+      `canonical` and `og:url` (`metadataBase` in both site layouts) and the breadcrumb JSON-LD — so those
+      need a **redeploy**, not a restart. Since 0.24.2 `dklao-deploy`'s `build()` reads `APP_URL` out of the
+      instance's `$ENV_FILE` and passes it to `pnpm build`, and **refuses to deploy if that key is missing
+      or empty** rather than quietly baking in the www default. So the order is: edit the env file, then
+      re-run that instance's deploy workflow. Measured on 2026-11-03 with a build given
+      `APP_URL=https://preview.dklao.com`: the sitemap's `<loc>` entries, `/about`'s canonical and `og:url`,
+      and the breadcrumb JSON-LD on `/forklift-rental` all carried the preview host, and no page contained
+      `www.dklao.com`.
+
+      The server's copy of that script is `~/bin/dklao-deploy`, which is **not** updated by a deploy — it is
+      the thing that runs the deploy. Copy it from `scripts/server/dklao-deploy` in the repo (`chmod 700`)
+      before relying on this behaviour, and keep its old copy until the next deploy has succeeded.
 - [ ] Re-check section 6 on the real domain, plus `/sitemap.xml` and `/robots.txt` (both must name
       `https://www.dklao.com`), and that `/admin` still answers only from the owner's address.
 - [ ] Re-run the production workflow once the domain is live, so its final check passes and the version is

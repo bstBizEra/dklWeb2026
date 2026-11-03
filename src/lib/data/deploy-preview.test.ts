@@ -92,8 +92,24 @@ describe("server deploy script", () => {
     // Healthy means the new build is served, so an old process that has not restarted never passes.
     expect(script).toContain('id="$(cat "$APP/.next/BUILD_ID")"');
     expect(script).toContain('"$code" == "200" && "$page" == *"$id"*');
-    expect(script).toContain('git checkout --quiet --force "$1" && pnpm install --frozen-lockfile && pnpm build');
+    expect(script).toContain(
+      'git checkout --quiet --force "$1" && pnpm install --frozen-lockfile && APP_URL="$app_url" pnpm build',
+    );
     expect(script).toContain('build "$previous"');
     expect(script).toMatch(/exit 1\n$/);
+  });
+
+  it("builds with this instance's APP_URL, and refuses rather than baking in the live address", () => {
+    // The sitemap, every canonical and og:url (metadataBase) and the breadcrumb JSON-LD read APP_URL at
+    // build time, and the build shell does not have the settings file in its environment. Read the one key
+    // out of it, the same way DATABASE_URL already is.
+    expect(script).toContain(
+      'app_url="$(grep -m1 \'^APP_URL=\' "$ENV_FILE" | cut -d= -f2- | sed -e \'s/^"//\' -e \'s/"$//\')"',
+    );
+    // An empty value is as bad as a wrong one: "" is not nullish, so it defeats the app's default and
+    // new URL("") throws. Refuse instead.
+    expect(script).toMatch(/\[\[ -n "\$app_url" \]\] \|\| \{ echo "APP_URL not found in \$ENV_FILE/);
+    // Only APP_URL crosses into the build: no secret from the settings file may be exported there.
+    expect(script).not.toMatch(/^\s*(export\s+)?(DATABASE_URL|PAYLOAD_SECRET|SMTP_\w+)=.*pnpm build/m);
   });
 });

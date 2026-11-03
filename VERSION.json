@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "status": "local-preview",
   "releaseDate": "2026-11-03",
   "changeLevel": "patch",
-  "summary": "Only the live address is indexable: any other host the app is served from answers Disallow: / and names itself in robots.txt.",
+  "summary": "Each instance now advertises its own address: the deploy passes APP_URL into the build, so the sitemap, canonicals and og:url follow the instance instead of the live site.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
