@@ -296,10 +296,18 @@ Moving the live domain off the "coming soon" page onto the app, with option A de
 order matters: the live instance answers on `127.0.0.1:3120` before anything public changes, and
 `public_html` is kept, so one command puts the old page back (section 8).
 
-Checked 2026-11-03 from a developer PC: `https://www.dklao.com/` and `https://dklao.com/` both still serve
-the static "DK LAO — Under Construction" page out of `~/public_html`, and `https://preview.dklao.com/` serves
-the app. The app's own defaults already name the live site (`APP_URL ?? "https://www.dklao.com"` in
-`robots.ts`, `sitemap.ts` and both layouts), so no code change belongs to this step.
+Checked 2026-11-03 from a developer PC: `https://www.dklao.com/` serves the static "DK LAO — Under
+Construction" page out of `~/public_html`; `https://dklao.com/` (the apex) serves **Apache's directory
+listing** instead — `Index of /`, with `backup/`, `cgi-bin/` and `preview.dklao.com/` in it — so the two
+names do not even share a document root today, and the apex has no index file. `backup/` is an older copy of
+the coming-soon page, not a dump. `https://preview.dklao.com/` serves the app (0.24.0). The app's own
+defaults already name the live site (`APP_URL ?? "https://www.dklao.com"` in `robots.ts`, `sitemap.ts` and
+both layouts), so no code change belongs to this step.
+
+- [ ] Turn the apex listing off when the domain moves. The Cloudflare redirect below (`dklao.com/*` →
+      `https://www.dklao.com/$1`) hides it, but the origin would still answer it for anything that reaches
+      the server directly, so also add `Options -Indexes` for that document root (or an `index.html`), and
+      check whether the apex should simply share the `www` virtual host.
 
 - [ ] Section 3b option A is finished first: `~/dklao-live`, its database and settings file, the `dklao-live`
       service and its restart path unit, `~/.config/dklao-deploy-production.conf`, the production deploy key,
