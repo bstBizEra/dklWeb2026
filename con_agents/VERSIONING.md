@@ -26,9 +26,9 @@ pnpm version:status
 ## 3. Current Version
 
 ```txt
-Current version: 0.24.0
+Current version: 0.24.1
 Status: local-preview
-Change level: minor
+Change level: patch
 Release date: 2026-11-03
 ```
 

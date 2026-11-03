@@ -334,25 +334,94 @@ on the URL alone (section 4), so `/` was stale while any URL with a query was fr
       restart — has already run. Confirm on the server instead, as `dklao`:
       `curl -s http://127.0.0.1:3120/ | grep -o 'favicon.ico?v=[0-9.]*'` must print the released version.
       Build log: `~/deploy-logs/build-production-*.log`.
-- [ ] Root: copy the preview's Apache includes to the live domain, with port 3120 —
-      `/etc/apache2/conf.d/userdata/{std,ssl}/2_4/dklao/dklao.com/dklao-live.conf` proxying to
-      `http://127.0.0.1:3120/`, keeping the `/.well-known/` exception for AutoSSL. Decide the `/admin` and
-      `/api/users` lock in the same file: on the live domain it should stay restricted to the owner's address
-      (the same `LocationMatch` block as section 4) unless the owner wants editors to sign in from anywhere.
-      Then `/scripts/rebuildhttpdconf && /scripts/restartsrv_httpd --graceful`.
+- [ ] Root: add the live domain's Apache includes, the same shape as the preview's (section 4) with port
+      3120. Two files, identical contents — `std` is the port-80 virtual host and `ssl` the port-443 one, and
+      a request arriving on either must reach the app:
+
+      ```txt
+      /etc/apache2/conf.d/userdata/std/2_4/dklao/dklao.com/dklao-live.conf
+      /etc/apache2/conf.d/userdata/ssl/2_4/dklao/dklao.com/dklao-live.conf
+      ```
+
+      Contents, with `<owner IP>` the address allowed to reach the admin:
+
+      ```apache
+      ProxyPreserveHost On
+      ProxyTimeout 60
+
+      # AutoSSL writes its challenge files into the document root, so this path must NOT be proxied.
+      # Exclusions have to come before the general rule.
+      ProxyPass /.well-known/ !
+
+      ProxyPass / http://127.0.0.1:3120/
+      ProxyPassReverse / http://127.0.0.1:3120/
+
+      <LocationMatch "^/(admin|api/users)(/|$)">
+          Require expr "%{HTTP:X-Real-IP} == '<owner IP>'"
+          Header always set Cache-Control "private, no-store"
+          ErrorDocument 403 "Forbidden"
+      </LocationMatch>
+      ```
+
+      This was written from section 4's description of the preview includes, not copied off the server, so
+      `diff` it against
+      `/etc/apache2/conf.d/userdata/ssl/2_4/dklao/preview.dklao.com/dklao-site.conf` before the rebuild and
+      keep whatever that file carries beyond this. The `LocationMatch` block is the same decision as section
+      4: on the live domain keep `/admin` and `/api/users` restricted to the owner's address unless the owner
+      wants editors to sign in from anywhere. Without its `Cache-Control` and `ErrorDocument` lines Apache
+      answers with the app's 404 page, which nginx caches under `/admin` and then replays to the owner too.
+
+      Then, as root:
+
+      ```bash
+      /scripts/rebuildhttpdconf && /scripts/restartsrv_httpd --graceful
+      /usr/local/cpanel/scripts/ea-nginx clear_cache dklao
+      ```
 - [ ] Check the server answers for the live name before touching DNS, bypassing Cloudflare:
       `curl -sI --resolve www.dklao.com:443:50.6.224.71 https://www.dklao.com/` (200, and
       `curl -s --resolve ... | grep favicon.ico?v=` shows the version).
-- [ ] Cloudflare: SSL mode **Full (strict)** (the server has an AutoSSL certificate), `A` records for `@` and
-      `www` → `50.6.224.71`, proxied, and a redirect rule sending `dklao.com/*` to `https://www.dklao.com/$1`
-      (301), so one address matches `APP_URL`. Then clear the host cache:
+- [ ] Cloudflare: **the records already point here and need no change** — read from the zone on 2026-11-03,
+      `dklao.com` is an `A` to `50.6.224.71`, proxied, and `www.dklao.com` is a **`CNAME` to `dklao.com`**,
+      proxied. A CNAME is correct for `www`; flattening only matters at the apex, which has the `A` record.
+      What does still need setting: SSL mode **Full (strict)** — the server has an AutoSSL certificate, and
+      Flexible would send plain HTTP to the origin — and a redirect rule sending `dklao.com/*` to
+      `https://www.dklao.com/$1` (301), so one address matches `APP_URL`. Then clear the host cache:
       `/usr/local/cpanel/scripts/ea-nginx clear_cache dklao`.
+
+Three things in the zone are not about go-live but were found while checking it (2026-11-03, 33 records):
+
+- [ ] **Three SPF records name hosts that have nothing to do with DK LAO or this server:**
+      `and.dklao.com` → `"v=spf1 ip4:45.11.89.32/29 ~all"`, `bin.dklao.com` →
+      `"v=spf1 include:lithegvg.cc -all"`, and `card.dklao.com` → `"v=spf1 ip4:154.52.122.114 … ~all"`.
+      `and`, `bin` and `card` are not names anyone chooses, and each record authorizes a stranger's servers
+      to send mail that passes SPF as `someone@<that name>.dklao.com`; `_dmarc` carries `sp=none`, so
+      subdomain spoofing is not blocked either. Ask whoever held DNS before this; if nobody claims them,
+      delete all three. The owner decides — never remove mail records on a guess.
+- [ ] `ftp` and `webdisk` are **Proxied**, which breaks them. Cloudflare's proxy only carries HTTP/HTTPS on
+      a fixed port list, and FTP (21) and Web Disk (2077/2078) are not on it, so set both to **DNS only**.
+      `cpanel`, `whm` and `webmail` use ports that are on the list (2083, 2087, 2096) so they do work
+      proxied, but cPanel's own guidance is DNS only for all of them, because the proxy interferes with
+      AutoSSL renewal.
+- [ ] `50-6-224-71.unifiedlayer.com.dklao.com` is a malformed record — a hostname typed into a name field,
+      so the zone name got appended. Harmless; delete it.
 - [ ] Stop the preview claiming the live address: `~/.config/dklao-site.env` carries
       `APP_URL=https://www.dklao.com` (section 4), so preview.dklao.com's `/robots.txt` says
       `Host: https://www.dklao.com` and its canonicals and sitemap name the live site — measured 2026-11-03.
-      Set it to `https://preview.dklao.com` and `systemctl restart dklao-site`. If the preview should also
-      stay out of search results, that needs a `Disallow: /` for it in the app (`src/app/robots.ts` reads the
-      same `APP_URL`); it is not there today.
+      Set it to `APP_URL=https://preview.dklao.com` and `systemctl restart dklao-site`. Since 0.24.1 that one
+      change also keeps the preview out of search results: `src/app/robots.ts` serves `Disallow: /` for any
+      host that is not `https://www.dklao.com`, so no second setting is needed. After the restart,
+      `https://preview.dklao.com/robots.txt` must read `User-Agent: *` / `Disallow: /` with
+      `Host: https://preview.dklao.com`; if it still names www, the settings file did not take. The live
+      domain is unaffected — it keeps `Allow: /` with `/admin` and `/api` disallowed.
+
+      No rebuild is needed for this, but only because 0.24.1 made the route `force-dynamic`. Before that
+      `robots.txt` was prerendered (`○` in the build output) and `dklao-deploy`'s `build()` does not source
+      `$ENV_FILE`, so the live address was baked into the bundle and no restart could have changed it. Keep
+      that in mind for anything else that reads `APP_URL`: **`/sitemap.xml` is still prerendered** (`○`, with
+      a one-hour revalidate), so after the restart it keeps naming the old address until it first
+      regenerates. Page canonicals come from the two site layouts and have the same build-time problem on
+      statically rendered routes. Neither matters once each instance's `APP_URL` is right at build time; if
+      the preview's sitemap must name itself immediately, redeploy it rather than waiting.
 - [ ] Re-check section 6 on the real domain, plus `/sitemap.xml` and `/robots.txt` (both must name
       `https://www.dklao.com`), and that `/admin` still answers only from the owner's address.
 - [ ] Re-run the production workflow once the domain is live, so its final check passes and the version is

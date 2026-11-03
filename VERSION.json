@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "status": "local-preview",
   "releaseDate": "2026-11-03",
-  "changeLevel": "minor",
-  "summary": "Dark theme for the website, the 404 page served as HTML, the footer readable while it travels in, and the CMS admin in BizEra's identity.",
+  "changeLevel": "patch",
+  "summary": "Only the live address is indexable: any other host the app is served from answers Disallow: / and names itself in robots.txt.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

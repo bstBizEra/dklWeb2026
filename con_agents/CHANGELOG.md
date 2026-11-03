@@ -2,6 +2,50 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.24.1] - 2026-11-03
+
+### Patch Changed
+
+- **Only the live address is indexable.** `src/app/robots.ts` now serves `User-Agent: * / Disallow: /` for
+  any host whose `APP_URL` is not `https://www.dklao.com`, and `Host:` and `Sitemap:` name that host rather
+  than the live site. The live domain's output is unchanged (`Allow: /`, with `/admin` and `/api`
+  disallowed), so this only affects preview.dklao.com and any future staging name. A trailing slash on
+  `APP_URL` is stripped first — the same `.replace(/\/$/, "")` already used in `src/lib/leads/notify.ts` and
+  `src/lib/ops/alert.ts` — so `https://www.dklao.com/` is still read as the live site and cannot
+  accidentally de-index it. Covered by `src/app/robots.test.ts` (5 cases: live, preview, trailing slash,
+  `APP_URL` unset, and the route being dynamic).
+- **The route is now `force-dynamic`, which is what makes the above usable.** `robots.txt` was prerendered
+  (`○` in the build output) and `scripts/server/dklao-deploy`'s `build()` does not source `$ENV_FILE`, so
+  the address was baked in at build time and setting `APP_URL` in `~/.config/dklao-site.env` plus a restart
+  could never have changed it. `APP_URL` is now read inside the handler, per request. Verified on one build
+  made with no `APP_URL`: served from `next start` with `APP_URL=https://preview.dklao.com` it answered
+  `Disallow: /` and `Host: https://preview.dklao.com`; the same build with the variable unset answered
+  `Allow: /` with `/admin` and `/api` disallowed and `Host: https://www.dklao.com`.
+  - Still build-time, deliberately left alone: `/sitemap.xml` is prerendered with a one-hour revalidate, and
+    page canonicals come from the two site layouts, so on a statically rendered route both carry whatever
+    `APP_URL` was at build time. Noted in `docs/deploy-checklist.md` section 7 rather than changed, since
+    each instance builds with its own settings once section 3b option A is in place.
+  - Why: measured on 2026-11-03, preview.dklao.com carries `APP_URL=https://www.dklao.com`, so its
+    `/robots.txt` reported `Host: https://www.dklao.com` and its canonicals and sitemap named the live site.
+    Harmless while www serves a static page, a duplicate-content risk once www is the app. Setting the
+    preview's own `APP_URL` is now the single change that fixes both, instead of needing a second switch.
+
+### Deployment decision
+
+- **The Cloudflare records already point at this server and need no change** (read from the zone,
+  2026-11-03, 33 records). `dklao.com` is an `A` to `50.6.224.71`, proxied; `www.dklao.com` is a `CNAME` to
+  `dklao.com`, proxied, which is correct for `www` — flattening only matters at the apex. The earlier
+  section 7 entry asked for `A` records for both and was over-specified; corrected. What go-live still needs
+  in Cloudflare is SSL mode Full (strict) and the `dklao.com/*` → `https://www.dklao.com/$1` redirect.
+- Section 7 now carries the dklao.com Apache includes in full — both `std` and `ssl` paths, the
+  `127.0.0.1:3120` proxy, the `/.well-known/` exclusion before the general rule, and the `/admin` lock — so
+  the server half is copy-pasteable rather than described. It is written from section 4's account of the
+  preview includes, not read off the server, so it says to `diff` it against the live preview file first.
+- Found while checking the zone, unrelated to go-live and recorded in section 7 for the owner to decide:
+  three SPF records (`and`, `bin`, `card`) authorize mail from hosts unrelated to DK LAO while `_dmarc` has
+  `sp=none`; `ftp` and `webdisk` are proxied, which cannot work because FTP and Web Disk ports are not on
+  Cloudflare's proxied list; and `50-6-224-71.unifiedlayer.com.dklao.com` is a malformed leftover record.
+
 ## [0.24.0] - 2026-11-03
 
 ### Minor Changed
