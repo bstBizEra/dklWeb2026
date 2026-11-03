@@ -32,11 +32,11 @@ export function ServiceCard({ item, href, tone = "default", className }: Service
         <Icon size={24} aria-hidden="true" />
       </IconBadge>
       {"eyebrow" in item ? (
-        <p className="mt-[18px] mb-0 text-[13px] font-[850] uppercase text-action-red">{item.eyebrow}</p>
+        <p className="mt-[18px] mb-0 text-[13px] font-[850] uppercase text-action-red-text">{item.eyebrow}</p>
       ) : null}
       <h3
         className={cn(
-          "mt-[18px] mb-0 text-[1.22rem] font-[750] leading-[1.18] text-navy-950",
+          "mt-[18px] mb-0 text-[1.22rem] font-[750] leading-[1.18] text-foreground",
           feature && "text-white min-[981px]:text-[clamp(1.6rem,2.4vw,2.1rem)] min-[981px]:tracking-[-0.02em]",
         )}
       >
@@ -48,7 +48,7 @@ export function ServiceCard({ item, href, tone = "default", className }: Service
       <Link
         href={targetHref}
         className={cn(
-          "service-card__link mt-auto inline-flex min-h-6 items-center max-[760px]:min-h-10 gap-2 text-[15px] font-[850] text-brand-blue active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue",
+          "service-card__link mt-auto inline-flex min-h-6 items-center max-[760px]:min-h-10 gap-2 text-[15px] font-[850] text-accent active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue",
           feature && "text-white",
         )}
       >

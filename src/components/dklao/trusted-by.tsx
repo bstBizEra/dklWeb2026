@@ -19,11 +19,11 @@ export async function TrustedBy({ title = "Trusted by businesses and public bodi
   if (groups.length === 0) return null;
 
   return (
-    <section className="border-b border-slate-100 bg-white py-11 max-[780px]:py-8" aria-labelledby="trusted-by-title">
+    <section className="border-b border-border bg-card py-11 max-[780px]:py-8" aria-labelledby="trusted-by-title">
       <Container>
         <h2
           id="trusted-by-title"
-          className="trusted-by__title mt-0 mb-6 text-[clamp(1.35rem,2.2vw,1.7rem)] font-[850] tracking-[-0.02em] text-navy-950 max-[780px]:mb-[18px]"
+          className="trusted-by__title mt-0 mb-6 text-[clamp(1.35rem,2.2vw,1.7rem)] font-[850] tracking-[-0.02em] text-foreground max-[780px]:mb-[18px]"
         >
           {title}
         </h2>
@@ -38,7 +38,7 @@ export async function TrustedBy({ title = "Trusted by businesses and public bodi
                   return (
                     <li key={name}>
                       {logo ? (
-                        <span className="flex h-[72px] w-[144px] items-center justify-center rounded-card border border-slate-200 bg-white p-2 max-[780px]:h-14 max-[780px]:w-[104px]">
+                        <span className="flex h-[72px] w-[144px] items-center justify-center rounded-card border border-border bg-white p-2 max-[780px]:h-14 max-[780px]:w-[104px]">
                           <Image src={logo} alt={name} width={500} height={250} className="h-full w-full object-contain" />
                         </span>
                       ) : (

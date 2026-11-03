@@ -2,6 +2,17 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.24.0] - 2026-11-03
+
+### Minor Changed
+
+- **The website has a dark theme** (owner request, 2026-11-03). A visitor whose phone or computer is set to dark now gets dark pages instead of a bright one; nothing about the light pages changes. The brand stays put in both: the navy sections, the red actions and the blue fills are the same colours as before.
+  - How it is built: `src/app/(site)/globals.css` already mapped every utility through variables (`@theme inline`), so one `@media (prefers-color-scheme: dark)` block redefines the surfaces (`--dk-color-surface` → `#0a1322`, `--dk-color-card` → `#111d31`), the three text weights (`slate-700/500` now light), the hairlines, the card shadow (black, not slate) and the shadcn roles. 67 fixed colour utilities in 24 components became the semantic ones (`text-foreground`, `text-muted-foreground`, `text-accent`, `bg-card`, `bg-muted`, `border-border`) so that block reaches them; the light rendering is unchanged except `text-slate-600`, which is now the slightly darker `muted-foreground`.
+  - Two colours needed a dark-only variant, both measured: brand blue as text or focus ring reads 2.4:1 on the dark ground, so `--accent` lifts to `#4da3ff` (the blue the phone app already uses) while filled blue surfaces keep `#0061af`; brand red as small text reads 3.3:1, so a new `--dk-color-action-red-text` lifts to `#ff6b63` in dark (6.6:1 on the page, 6.0:1 on a card) while `bg-action-red` buttons keep `#d91a21`.
+  - Deliberately still white in dark: the client logo plates in the trusted-by strip and the round social badges in the footer, because those marks are drawn for a white ground. The footer badges' icons stay navy with them.
+  - Checked: Lighthouse accessibility **100 in dark** on the homepage, `/about`, `/forklift-rental`, `/request-quote` and `/lo/spare-parts`, and **100 in light** on the homepage, with the pages seen in the browser in both schemes. Two real faults were found this way and fixed — the stat tiles on the solution pages kept a white background under light text (3 of them, 1.3:1), and the "Company snapshot" eyebrows were red-on-dark at 3.3:1.
+  - The phone app at `/app` already had its own light and dark themes and is untouched; the CMS admin stays dark.
+
 ## [0.23.0] - 2026-10-31
 
 ### Minor Changed

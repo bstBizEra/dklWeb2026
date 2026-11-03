@@ -142,7 +142,7 @@ export function WarehouseInquiryForm({
             <Input id="wh-siteLocation" maxLength={120} {...describedBy("wh-siteLocation", errors.siteLocation)} {...register("siteLocation")} />
           </Field>
           <Field id="wh-warehouseSize" label={t.warehouseSize} error={errors.warehouseSize} optional={q.optional}>
-            <p id="wh-warehouseSize-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="wh-warehouseSize-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.warehouseSizeHint}
             </p>
             <Input
@@ -160,7 +160,7 @@ export function WarehouseInquiryForm({
             <Input id="wh-goodsType" maxLength={100} {...describedBy("wh-goodsType", errors.goodsType, false)} {...register("goodsType")} />
           </Field>
           <Field id="wh-requirementDetail" label={t.requirementDetail} error={errors.requirementDetail} wide>
-            <p id="wh-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="wh-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.requirementHint}
             </p>
             <Textarea

@@ -31,6 +31,7 @@
   --color-brand-blue: var(--dk-color-brand-blue);
   --color-brand-blue-deep: var(--dk-color-brand-blue-deep);
   --color-action-red: var(--dk-color-action-red);
+  --color-action-red-text: var(--dk-color-action-red-text);
   --color-action-red-bright: var(--dk-color-action-red-bright);
   --color-action-orange: var(--dk-color-action-orange);
   --color-surface: var(--dk-color-surface);
@@ -60,6 +61,8 @@
   --dk-color-brand-blue-icon: #0060ae;
   --dk-color-action-red: #d91a21;
   --dk-color-action-red-bright: #ef3937;
+  /* The same red as words rather than as a surface: lifted in dark, where #d91a21 reads 3.3:1. */
+  --dk-color-action-red-text: var(--dk-color-action-red);
   --dk-color-action-orange: #e74422;
   --dk-color-neutral-white: #ffffff;
   --dk-color-neutral-silver: #f1f2f2;
@@ -121,6 +124,43 @@
   --border: rgba(203, 213, 225, 0.75);
   --input: var(--dk-color-slate-300);
   --ring: var(--dk-color-brand-blue);
+}
+
+/* The same site after dark. Only the surfaces and the text on them change: the navy sections, the red
+   actions and the brand blue fills are the brand and stay as they are in both schemes. Because the theme
+   above maps every utility through these variables (@theme inline), redefining them here turns
+   bg-surface, text-slate-700, bg-card and the shadcn colours over without touching a component.
+   Checked with Lighthouse in both schemes; the ratios are in con_agents/CHANGELOG.md 0.24.0. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dk-color-surface: #0a1322;
+    --dk-color-card: #111d31;
+    /* Was dark text on light paper, now light text on dark paper, at the same three weights. */
+    --dk-color-slate-700: #d6dfec;
+    --dk-color-slate-500: #a3b3c8;
+    --dk-color-slate-300: #2d3e59;
+    --dk-color-slate-100: #16243b;
+    --dk-color-neutral-silver: #16243b;
+    --dk-color-neutral-silver-soft: #1b2a41;
+    --dk-color-action-red-text: #ff6b63;
+    /* A page-wide shadow on a dark ground has to come from black, not from slate. */
+    --dk-shadow-card: 0 18px 44px rgba(0, 0, 0, 0.5);
+
+    --background: var(--dk-color-surface);
+    --foreground: #e9eff8;
+    --card: var(--dk-color-card);
+    --card-foreground: #e9eff8;
+    --popover: var(--dk-color-card);
+    --popover-foreground: #e9eff8;
+    --muted: var(--dk-color-slate-100);
+    --muted-foreground: #a3b3c8;
+    /* Brand blue as text or outline: #0061af reads 2.4:1 on this ground, so links take the lifted blue
+       the phone app already uses in dark. Filled blue surfaces keep #0061af, which white still clears. */
+    --accent: #4da3ff;
+    --ring: #4da3ff;
+    --border: rgba(148, 163, 184, 0.22);
+    --input: rgba(148, 163, 184, 0.34);
+  }
 }
 
 /* Hero forklift: drives in from the right, runs a little past its mark and settles back, like a truck braking. */

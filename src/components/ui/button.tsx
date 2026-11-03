@@ -13,9 +13,9 @@ const buttonVariants = cva(
         primary:
           "bg-[linear-gradient(135deg,var(--dk-color-action-red)_0%,var(--dk-color-action-orange)_58%,var(--dk-color-action-red-bright)_100%)] text-white shadow-cta",
         secondary: "border-white/30 bg-white/10 text-white hover:bg-white/15",
-        light: "border-slate-300 bg-white text-navy-900 hover:border-navy-900/40",
+        light: "border-slate-300 bg-card text-foreground hover:border-navy-900/40",
         dark: "bg-navy-950 text-white",
-        link: "min-h-0 border-0 px-0 py-0 text-brand-blue underline-offset-4 hover:translate-y-0 hover:underline",
+        link: "min-h-0 border-0 px-0 py-0 text-accent underline-offset-4 hover:translate-y-0 hover:underline",
       },
       size: {
         default: "",

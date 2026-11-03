@@ -26,7 +26,7 @@ export function QuickQuoteBar({ actions, labels: t }: QuickQuoteBarProps) {
           <Eyebrow>{t.eyebrow}</Eyebrow>
           <h2
             id="quick-quote-title"
-            className="m-0 text-[clamp(1.8rem,3vw,2.5rem)] font-[850] leading-[1.2] tracking-[-0.025em] text-navy-950 max-[560px]:text-[1.6rem]"
+            className="m-0 text-[clamp(1.8rem,3vw,2.5rem)] font-[850] leading-[1.2] tracking-[-0.025em] text-foreground max-[560px]:text-[1.6rem]"
           >
             {t.title}
           </h2>

@@ -183,7 +183,7 @@ export function QuoteRequestForm({
         {showHeader ? (
           <div className="mb-6 grid gap-3">
             <Eyebrow>{t.eyebrow}</Eyebrow>
-            <h2 className="m-0 text-[2.5rem] font-[850] leading-[1.06] tracking-[-0.03em] text-navy-950 max-[780px]:text-[2rem]">
+            <h2 className="m-0 text-[2.5rem] font-[850] leading-[1.06] tracking-[-0.03em] text-foreground max-[780px]:text-[2rem]">
               {t.title}
             </h2>
             <p className="m-0 leading-[1.75] text-slate-700">{t.copy}</p>
@@ -228,7 +228,7 @@ export function QuoteRequestForm({
             </NativeSelect>
           </Field>
           <Field id="message" label={t.message} error={errors.message} wide>
-            <p id="message-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="message-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.messageHint}
             </p>
             <Textarea

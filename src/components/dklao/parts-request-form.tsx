@@ -151,7 +151,7 @@ export function PartsRequestForm({
             </NativeSelect>
           </Field>
           <Field id="parts-equipmentType" label={t.equipmentType} error={errors.equipmentType} wide>
-            <p id="parts-equipmentType-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="parts-equipmentType-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.equipmentTypeHint}
             </p>
             <Input
@@ -175,7 +175,7 @@ export function PartsRequestForm({
             <Input id="parts-quantity" maxLength={40} inputMode="numeric" {...describedBy("parts-quantity", errors.quantity)} {...register("quantity")} />
           </Field>
           <Field id="parts-partDescription" label={t.partDescription} error={errors.partDescription} wide>
-            <p id="parts-partDescription-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="parts-partDescription-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.partDescriptionHint}
             </p>
             <Textarea

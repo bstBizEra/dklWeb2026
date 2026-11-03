@@ -59,10 +59,10 @@ type ContentPageProps = {
 const gridClass = "page-grid m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-[18px] p-0";
 const cardClass =
   "page-card relative grid content-start gap-2.5 p-6 transition-[transform,box-shadow] duration-[260ms] ease-premium hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(11,27,51,0.14)] motion-reduce:hover:translate-y-0";
-const cardTitleClass = "m-0 text-[1.15rem] font-[750] leading-[1.2] text-navy-950";
+const cardTitleClass = "m-0 text-[1.15rem] font-[750] leading-[1.2] text-foreground";
 const cardCopyClass = "m-0 leading-[1.65] text-slate-700";
 const linkClass =
-  "service-card__link mt-auto inline-flex min-h-6 items-center max-[760px]:min-h-10 gap-2 text-[15px] font-[850] text-brand-blue active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue";
+  "service-card__link mt-auto inline-flex min-h-6 items-center max-[760px]:min-h-10 gap-2 text-[15px] font-[850] text-accent active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue";
 
 // Card photo from the shared library. Decorative: the card heading already names the subject.
 // Photos show in their original colour. On hover (or keyboard focus inside the card) a DK LAO blue layer
@@ -167,16 +167,16 @@ function CardDetail({ item, pageId, shaded, locale, t }: { item: DetailItem; pag
               ) : null}
             </div>
           ) : null}
-          <h2 className="m-0 text-[2rem] font-[850] leading-[1.1] tracking-[-0.02em] text-balance text-navy-950 max-[760px]:text-[1.6rem]">
+          <h2 className="m-0 text-[2rem] font-[850] leading-[1.1] tracking-[-0.02em] text-balance text-foreground max-[760px]:text-[1.6rem]">
             {item.title}
           </h2>
           <p className="m-0 text-lg leading-[1.65] text-slate-700 max-[760px]:text-[17px]">{lead}</p>
           {facts.length > 0 ? (
             <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
               {facts.map((fact) => (
-                <div key={fact.label} className="flex flex-col-reverse gap-1.5 rounded-card border border-slate-300/70 bg-white px-3.5 py-3.5">
+                <div key={fact.label} className="flex flex-col-reverse gap-1.5 rounded-card border border-slate-300/70 bg-card px-3.5 py-3.5">
                   <dt className="text-[13px] leading-snug text-slate-700">{fact.label}</dt>
-                  <dd className="m-0 text-[1.2rem] font-[850] leading-none tracking-[-0.01em] whitespace-nowrap text-brand-blue">{fact.value}</dd>
+                  <dd className="m-0 text-[1.2rem] font-[850] leading-none tracking-[-0.01em] whitespace-nowrap text-accent">{fact.value}</dd>
                 </div>
               ))}
             </dl>
@@ -201,17 +201,17 @@ function CardDetail({ item, pageId, shaded, locale, t }: { item: DetailItem; pag
         <div className="grid gap-8">
           {topics.map((entry) => (
             <article key={entry.heading} className="grid gap-2.5 border-l-[3px] border-action-orange pl-5">
-              <h3 className="m-0 text-[1.3rem] font-[800] leading-[1.25] text-navy-950">{entry.heading}</h3>
+              <h3 className="m-0 text-[1.3rem] font-[800] leading-[1.25] text-foreground">{entry.heading}</h3>
               <p className="m-0 text-[17px] leading-[1.75] text-slate-700 max-[760px]:text-base">{entry.body}</p>
             </article>
           ))}
           {checklist && checklist.items.length > 0 ? (
             <Card className="grid gap-4 p-6">
-              <h3 className="m-0 text-[1.1rem] font-[800] leading-[1.3] text-navy-950">{checklist.heading}</h3>
+              <h3 className="m-0 text-[1.1rem] font-[800] leading-[1.3] text-foreground">{checklist.heading}</h3>
               <ul className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-3 p-0 max-[640px]:grid-cols-1">
                 {checklist.items.map((point) => (
                   <li key={point} className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 leading-[1.5] text-slate-700">
-                    <CheckCircle2 size={20} aria-hidden="true" className="mt-0.5 text-brand-blue" />
+                    <CheckCircle2 size={20} aria-hidden="true" className="mt-0.5 text-accent" />
                     {point}
                   </li>
                 ))}
@@ -235,7 +235,7 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
             key={item.title}
             className="relative grid gap-1 pl-[22px] before:absolute before:top-2 before:left-0 before:size-2 before:rounded-[2px] before:bg-action-orange before:content-['']"
           >
-            <strong className="text-[17px] font-[750] leading-[1.3] text-navy-950">{item.title}</strong>
+            <strong className="text-[17px] font-[750] leading-[1.3] text-foreground">{item.title}</strong>
             {item.description ? <span className="text-base leading-[1.6] text-slate-700"> {item.description}</span> : null}
           </li>
         ))}
@@ -260,7 +260,7 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
       <dl className="page-stats m-0 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-[18px]">
         {section.items.map((item) => (
           <Card className="flex flex-col-reverse gap-1.5 px-6 py-[22px]" key={item.title}>
-            <dd className="m-0 text-[1.6rem] font-[850] leading-[1.15] text-brand-blue">{item.description}</dd>
+            <dd className="m-0 text-[1.6rem] font-[850] leading-[1.15] text-accent">{item.description}</dd>
             <dt className="font-[750] text-slate-700">{item.title}</dt>
           </Card>
         ))}
@@ -379,16 +379,16 @@ function SectionBody({ section, pageId, t, messages }: { section: ResolvedSectio
           {section.items.map((item) => (
             <div
               key={item.title}
-              className="grid grid-cols-[minmax(140px,0.35fr)_minmax(0,1fr)] gap-4 border-b border-slate-100 py-3.5 last:border-b-0 max-[560px]:grid-cols-1 max-[560px]:gap-1"
+              className="grid grid-cols-[minmax(140px,0.35fr)_minmax(0,1fr)] gap-4 border-b border-border py-3.5 last:border-b-0 max-[560px]:grid-cols-1 max-[560px]:gap-1"
             >
-              <dt className="font-[850] text-navy-900">{item.title}</dt>
+              <dt className="font-[850] text-foreground">{item.title}</dt>
               <dd className="m-0 leading-[1.6] [overflow-wrap:anywhere] text-slate-700">
                 {item.description?.startsWith("https://") ? (
                   <a
                     href={item.description}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-6 items-center text-brand-blue hover:underline max-[760px]:min-h-10"
+                    className="inline-flex min-h-6 items-center text-accent hover:underline max-[760px]:min-h-10"
                   >
                     {item.description.replace(/^https:\/\/(www\.)?/, "")}
                   </a>
@@ -465,17 +465,17 @@ export async function ContentPage({ page, locale, children, showClients = false 
       <main id="main-content" tabIndex={-1} className="scroll-mt-[90px] focus:outline-none">
 
       {trail.length > 2 ? (
-        <nav className="page-breadcrumb border-b border-slate-100 bg-surface" aria-label={t.breadcrumb}>
+        <nav className="page-breadcrumb border-b border-border bg-surface" aria-label={t.breadcrumb}>
           <Container asChild>
             <ol className="flex list-none flex-wrap items-center gap-y-1 py-3 text-[15px]">
               {trail.map((route, index) => (
                 <li key={route.id} className="[&+&]:before:mx-2.5 [&+&]:before:text-slate-300 [&+&]:before:content-['/']">
                   {index < trail.length - 1 ? (
-                    <Link href={route.href} className="inline-flex min-h-6 items-center font-[750] text-brand-blue hover:underline max-[760px]:min-h-10">
+                    <Link href={route.href} className="inline-flex min-h-6 items-center font-[750] text-accent hover:underline max-[760px]:min-h-10">
                       {route.label}
                     </Link>
                   ) : (
-                    <span aria-current="page" className="font-[850] text-navy-900">
+                    <span aria-current="page" className="font-[850] text-foreground">
                       {route.label}
                     </span>
                   )}

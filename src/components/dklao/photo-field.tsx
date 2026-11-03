@@ -43,11 +43,11 @@ export function PhotoField({ id, files, error, labels: t, optional, onChange, on
 
   return (
     <Field id={id} label={t.label} error={fieldError} optional={optional} wide>
-      <p id={`${id}-hint`} className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+      <p id={`${id}-hint`} className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
         {t.hint}
       </p>
       <label
-        className="flex cursor-pointer items-center gap-2.5 rounded-button border border-dashed border-slate-400 bg-slate-50 px-3.5 py-3 text-[14px] font-[750] text-slate-700 focus-within:ring-2 focus-within:ring-ring hover:bg-slate-100"
+        className="flex cursor-pointer items-center gap-2.5 rounded-button border border-dashed border-input bg-muted px-3.5 py-3 text-[14px] font-[750] text-slate-700 focus-within:ring-2 focus-within:ring-ring hover:bg-muted"
       >
         <ImagePlus size={18} aria-hidden="true" />
         <span>{t.label}</span>
@@ -65,12 +65,12 @@ export function PhotoField({ id, files, error, labels: t, optional, onChange, on
       {files.length ? (
         <ul className="m-0 grid list-none gap-1.5 p-0">
           {files.map((file, index) => (
-            <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-button bg-slate-100 px-3 py-2 text-[14px]">
+            <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-button bg-muted px-3 py-2 text-[14px]">
               <span className="truncate">{file.name}</span>
               <button
                 type="button"
                 aria-label={`${t.remove} ${file.name}`}
-                className="inline-flex items-center gap-1 text-[13px] font-[750] text-slate-600 hover:text-destructive"
+                className="inline-flex items-center gap-1 text-[13px] font-[750] text-muted-foreground hover:text-destructive"
                 onClick={() => onChange(files.filter((_, other) => other !== index))}
               >
                 <X size={14} aria-hidden="true" />

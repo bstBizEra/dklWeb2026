@@ -32,14 +32,14 @@ function Section({
 }
 
 function Eyebrow({ className, ...props }: React.ComponentProps<"p">) {
-  return <p className={cn("m-0 text-[13px] font-extrabold uppercase leading-tight text-action-red", className)} {...props} />;
+  return <p className={cn("m-0 text-[13px] font-extrabold uppercase leading-tight text-action-red-text", className)} {...props} />;
 }
 
 function SectionTitle({ className, ...props }: React.ComponentProps<"h2">) {
   return (
     <h2
       className={cn(
-        "m-0 text-[2.5rem] font-[850] leading-[1.05] tracking-[-0.03em] text-balance text-navy-950 max-[760px]:text-[2rem] max-[560px]:text-[1.6rem] max-[560px]:leading-[1.12]",
+        "m-0 text-[2.5rem] font-[850] leading-[1.05] tracking-[-0.03em] text-balance text-foreground max-[760px]:text-[2rem] max-[560px]:text-[1.6rem] max-[560px]:leading-[1.12]",
         className,
       )}
       {...props}
@@ -76,7 +76,7 @@ function SectionHeader({
 function IconBadge({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
-      className={cn("inline-grid size-12 place-items-center rounded-2xl bg-brand-blue/10 text-brand-blue", className)}
+      className={cn("inline-grid size-12 place-items-center rounded-2xl bg-brand-blue/10 text-accent", className)}
       {...props}
     />
   );

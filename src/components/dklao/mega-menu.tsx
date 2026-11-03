@@ -35,7 +35,7 @@ function MegaMenuLink({ link }: { link: MenuLink }) {
   return (
     <NavigationMenuLink
       asChild
-      className="group/link flex-row items-start gap-3 rounded-xl p-2.5 text-navy-950 hover:bg-surface hover:text-navy-950 focus:bg-surface focus:text-navy-950"
+      className="group/link flex-row items-start gap-3 rounded-xl p-2.5 text-foreground hover:bg-surface hover:text-foreground focus:bg-surface focus:text-foreground"
     >
       <Link href={link.href}>
         <IconBadge className="size-10 shrink-0 rounded-xl transition-colors duration-[260ms] ease-premium group-hover/link:bg-brand-blue group-hover/link:text-white motion-reduce:transition-none">
@@ -45,7 +45,7 @@ function MegaMenuLink({ link }: { link: MenuLink }) {
           <span className="inline-flex items-center gap-1.5 text-[15px] leading-tight font-[750]">
             {link.label}
             <ArrowRight
-              className="size-3.5 -translate-x-1 text-action-red opacity-0 transition-[opacity,transform] duration-[260ms] ease-premium group-hover/link:translate-x-0 group-hover/link:opacity-100 motion-reduce:transition-none"
+              className="size-3.5 -translate-x-1 text-action-red-text opacity-0 transition-[opacity,transform] duration-[260ms] ease-premium group-hover/link:translate-x-0 group-hover/link:opacity-100 motion-reduce:transition-none"
               aria-hidden="true"
             />
           </span>
@@ -100,7 +100,7 @@ export function MegaMenu({ label, groups, promo }: { label: string; groups: Menu
       <NavigationMenuContent
         className={cn(
           "w-[min(760px,calc(100vw_-_48px))] p-3 pt-4 md:w-[min(760px,calc(100vw_-_48px))]",
-          "group-data-[viewport=false]/navigation-menu:mt-[25px] group-data-[viewport=false]/navigation-menu:rounded-card group-data-[viewport=false]/navigation-menu:border-slate-300/60 group-data-[viewport=false]/navigation-menu:bg-white group-data-[viewport=false]/navigation-menu:shadow-card",
+          "group-data-[viewport=false]/navigation-menu:mt-[25px] group-data-[viewport=false]/navigation-menu:rounded-card group-data-[viewport=false]/navigation-menu:border-slate-300/60 group-data-[viewport=false]/navigation-menu:bg-card group-data-[viewport=false]/navigation-menu:shadow-card",
           // Brand stripe along the top edge, as on the navy page sections.
           "before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-[linear-gradient(90deg,var(--dk-color-brand-blue),var(--dk-color-action-red),var(--dk-color-action-orange))]",
         )}

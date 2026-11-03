@@ -19,7 +19,7 @@ import { ServiceCard } from "./service-card";
 
 // Faint blueprint grid on white, shared by the rental and knowledge sections.
 const paperGrid =
-  "bg-[linear-gradient(rgba(7,17,31,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(7,17,31,0.04)_1px,transparent_1px)] bg-[size:42px_42px] bg-white";
+  "bg-[linear-gradient(rgba(7,17,31,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(7,17,31,0.04)_1px,transparent_1px)] bg-[size:42px_42px] bg-card";
 const cardGrid = "grid grid-cols-4 gap-[18px] max-[1120px]:grid-cols-2 max-[780px]:grid-cols-1";
 const tile = "rounded-[22px] border border-slate-300/80 bg-card shadow-card";
 
@@ -70,9 +70,9 @@ export function RentalHighlight({ locale }: { locale: Locale }) {
             const Icon = rentalIcons[index];
             return (
             <div key={label} className={`${tile} grid grid-cols-[auto_1fr] items-center gap-x-3.5 gap-y-1.5 p-[22px]`}>
-              <Icon size={28} aria-hidden="true" className="row-span-2 text-action-red" />
+              <Icon size={28} aria-hidden="true" className="row-span-2 text-action-red-text" />
               <span className="text-[0.88rem] font-extrabold text-slate-500">{label}</span>
-              <strong className="text-[1.2rem] text-navy-950">{value}</strong>
+              <strong className="text-[1.2rem] text-foreground">{value}</strong>
             </div>
             );
           })}
@@ -133,9 +133,9 @@ export function KnowledgeCenterPreview({ locale }: { locale: Locale }) {
               href={article.href}
               className={`${tile} group grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-[18px] px-5 py-[18px] transition-[transform,border-color] duration-150 ease-premium hover:-translate-y-0.5 hover:border-brand-blue/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
             >
-              <span className="text-[0.8rem] font-[850] text-action-red uppercase">{article.category}</span>
-              <strong className="text-[1.05rem] text-navy-950">{article.title}</strong>
-              <ArrowRight size={16} aria-hidden="true" className="col-start-2 row-span-2 row-start-1 text-brand-blue" />
+              <span className="text-[0.8rem] font-[850] text-action-red-text uppercase">{article.category}</span>
+              <strong className="text-[1.05rem] text-foreground">{article.title}</strong>
+              <ArrowRight size={16} aria-hidden="true" className="col-start-2 row-span-2 row-start-1 text-accent" />
             </Link>
           ))}
         </div>

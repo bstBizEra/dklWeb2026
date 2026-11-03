@@ -170,7 +170,7 @@ export function ServiceBookingForm({ labels: t = en.serviceForm, contact: c = en
             <Input id="siteLocation" maxLength={120} {...describedBy("siteLocation", errors.siteLocation)} {...register("siteLocation")} />
           </Field>
           <Field id="requirementDetail" label={t.requirementDetail} error={errors.requirementDetail} wide>
-            <p id="requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.requirementHint}
             </p>
             <Textarea

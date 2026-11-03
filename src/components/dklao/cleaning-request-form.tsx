@@ -168,7 +168,7 @@ export function CleaningRequestForm({
             <Input id="cl-location" maxLength={120} {...describedBy("cl-location", errors.location)} {...register("location")} />
           </Field>
           <Field id="cl-areaSize" label={t.areaSize} error={errors.areaSize} optional={q.optional}>
-            <p id="cl-areaSize-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="cl-areaSize-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.areaSizeHint}
             </p>
             <Input
@@ -180,7 +180,7 @@ export function CleaningRequestForm({
             />
           </Field>
           <Field id="cl-requirementDetail" label={t.requirementDetail} error={errors.requirementDetail} wide>
-            <p id="cl-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="cl-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.requirementHint}
             </p>
             <Textarea

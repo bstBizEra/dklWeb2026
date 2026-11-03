@@ -143,7 +143,7 @@ export function RentalInquiryForm({
             </NativeSelect>
           </Field>
           <Field id="rt-capacity" label={t.capacity} error={errors.capacity}>
-            <p id="rt-capacity-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="rt-capacity-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.capacityHint}
             </p>
             <Input
@@ -155,7 +155,7 @@ export function RentalInquiryForm({
             />
           </Field>
           <Field id="rt-liftHeight" label={t.liftHeight} error={errors.liftHeight}>
-            <p id="rt-liftHeight-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="rt-liftHeight-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.liftHeightHint}
             </p>
             <Input
@@ -189,7 +189,7 @@ export function RentalInquiryForm({
             <Input id="rt-workingHours" maxLength={40} {...describedBy("rt-workingHours", errors.workingHours, false)} {...register("workingHours")} />
           </Field>
           <Field id="rt-requirementDetail" label={t.requirementDetail} error={errors.requirementDetail} wide>
-            <p id="rt-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="rt-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.requirementHint}
             </p>
             <Textarea

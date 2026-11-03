@@ -140,7 +140,7 @@ export function SalesInquiryForm({
             </NativeSelect>
           </Field>
           <Field id="fs-capacity" label={t.capacity} error={errors.capacity} optional={q.optional}>
-            <p id="fs-capacity-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="fs-capacity-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.capacityHint}
             </p>
             <Input
@@ -152,7 +152,7 @@ export function SalesInquiryForm({
             />
           </Field>
           <Field id="fs-liftHeight" label={t.liftHeight} error={errors.liftHeight} optional={q.optional}>
-            <p id="fs-liftHeight-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="fs-liftHeight-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.liftHeightHint}
             </p>
             <Input
@@ -170,7 +170,7 @@ export function SalesInquiryForm({
             <Input id="fs-application" maxLength={100} {...describedBy("fs-application", errors.application, false)} {...register("application")} />
           </Field>
           <Field id="fs-requirementDetail" label={t.requirementDetail} error={errors.requirementDetail} wide>
-            <p id="fs-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="fs-requirementDetail-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.requirementHint}
             </p>
             <Textarea

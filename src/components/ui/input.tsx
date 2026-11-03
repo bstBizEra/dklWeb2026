@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 // Shared field look for inputs, selects and text areas. aria-invalid turns the border red.
 export const fieldClass =
-  "w-full min-h-12 rounded-[14px] border border-input bg-white px-3.5 py-[13px] text-base text-navy-950 transition-colors placeholder:text-slate-500 focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue/40 aria-invalid:border-destructive aria-invalid:outline-destructive/40 disabled:opacity-60";
+  "w-full min-h-12 rounded-[14px] border border-input bg-card px-3.5 py-[13px] text-base text-foreground transition-colors placeholder:text-slate-500 focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue/40 aria-invalid:border-destructive aria-invalid:outline-destructive/40 disabled:opacity-60";
 
 function Input({ className, ...props }: React.ComponentProps<"input">) {
   return <input data-slot="input" className={cn(fieldClass, className)} {...props} />;

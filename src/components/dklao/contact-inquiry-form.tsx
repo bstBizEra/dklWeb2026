@@ -130,7 +130,7 @@ export function ContactInquiryForm({ labels: t = en.contactForm, shared: q = en.
       <form onSubmit={submit} id="contact-inquiry" className="scroll-mt-[110px]" noValidate>
         <div className="mb-6 grid gap-3">
           <Eyebrow>{t.eyebrow}</Eyebrow>
-          <h2 className="m-0 text-[2.2rem] font-[850] leading-[1.08] tracking-[-0.03em] text-navy-950 max-[780px]:text-[1.8rem]">
+          <h2 className="m-0 text-[2.2rem] font-[850] leading-[1.08] tracking-[-0.03em] text-foreground max-[780px]:text-[1.8rem]">
             {t.title}
           </h2>
           <p className="m-0 leading-[1.75] text-slate-700">{t.copy}</p>
@@ -228,7 +228,7 @@ export function ContactInquiryForm({ labels: t = en.contactForm, shared: q = en.
             <Input id="contact-location" maxLength={120} {...describedBy("contact-location", errors.location, false)} {...register("location")} />
           </Field>
           <Field id="contact-message" label={q.message} error={errors.message} wide>
-            <p id="contact-message-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-slate-600">
+            <p id="contact-message-hint" className="-mt-1 mb-0 text-[13px] leading-snug text-muted-foreground">
               {t.messageHint}
             </p>
             <Textarea

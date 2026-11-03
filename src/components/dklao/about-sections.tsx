@@ -16,11 +16,11 @@ const aboutText = (locale: Locale) => getMessages(locale).about;
 const navyGrid =
   "relative bg-[linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(135deg,var(--dk-color-navy-950),var(--dk-color-navy-800))] bg-[size:44px_44px,44px_44px,cover] text-white";
 const paperGrid =
-  "bg-[linear-gradient(rgba(7,17,31,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(7,17,31,0.04)_1px,transparent_1px)] bg-[size:42px_42px] bg-white";
+  "bg-[linear-gradient(rgba(7,17,31,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(7,17,31,0.04)_1px,transparent_1px)] bg-[size:42px_42px] bg-card";
 // Brand stripe along the bottom edge of the navy sections.
 const brandStripe =
   "after:absolute after:inset-x-0 after:bottom-0 after:h-[5px] after:bg-[linear-gradient(90deg,var(--dk-color-brand-blue),var(--dk-color-action-red),var(--dk-color-action-orange))] after:content-['']";
-const cardTitle = "mt-[18px] mb-0 text-[1.15rem] font-[750] leading-[1.18] text-navy-950";
+const cardTitle = "mt-[18px] mb-0 text-[1.15rem] font-[750] leading-[1.18] text-foreground";
 const cardCopy = "leading-[1.66] text-slate-700";
 
 export function AboutHero({ locale }: { locale: Locale }) {
@@ -79,8 +79,8 @@ export function CompanySnapshot({ locale }: { locale: Locale }) {
           {companySnapshot.map((metric) => (
             <Card asChild key={metric.label} className="about-snapshot__card grid min-h-[180px] content-start p-6">
               <article>
-                <span className="text-[0.78rem] font-[850] text-action-red uppercase">{metric.label}</span>
-                <strong className="mt-3 text-[1.3rem] leading-[1.18] text-navy-950">{metric.value}</strong>
+                <span className="text-[0.78rem] font-[850] text-action-red-text uppercase">{metric.label}</span>
+                <strong className="mt-3 text-[1.3rem] leading-[1.18] text-foreground">{metric.value}</strong>
                 <p className="mt-3 mb-0 leading-[1.6] text-slate-700">{metric.detail}</p>
               </article>
             </Card>
@@ -96,7 +96,7 @@ const collageTile = "overflow-hidden rounded-[20px] border border-slate-300/78 b
 export function AboutStory({ locale }: { locale: Locale }) {
   const t = aboutText(locale).story;
   return (
-    <Section className="bg-white">
+    <Section className="bg-card">
       <Container className="grid grid-cols-[minmax(0,0.86fr)_minmax(380px,0.74fr)] items-center gap-12 max-[1120px]:grid-cols-1">
         <div className="[&>p:not(:first-child)]:mt-4">
           <Eyebrow>{t.eyebrow}</Eyebrow>
@@ -124,9 +124,9 @@ export function AboutStory({ locale }: { locale: Locale }) {
             className={`${collageTile} h-[230px] w-full object-cover max-[780px]:h-auto`}
           />
           <div
-            className={`${collageTile} grid content-center gap-4 bg-[linear-gradient(rgba(0,97,175,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(0,97,175,0.07)_1px,transparent_1px)] bg-surface bg-[size:34px_34px] p-[22px] leading-[1.35] font-[850] text-navy-950`}
+            className={`${collageTile} grid content-center gap-4 bg-[linear-gradient(rgba(0,97,175,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(0,97,175,0.07)_1px,transparent_1px)] bg-surface bg-[size:34px_34px] p-[22px] leading-[1.35] font-[850] text-foreground`}
           >
-            <ClipboardCheck size={28} aria-hidden="true" className="text-action-red" />
+            <ClipboardCheck size={28} aria-hidden="true" className="text-action-red-text" />
             <span>{t.caption}</span>
           </div>
         </div>
@@ -180,7 +180,7 @@ export function AboutWhatWeDo({ locale }: { locale: Locale }) {
                   {solution.href && solution.ctaLabel ? (
                     <Link
                       href={solution.href}
-                      className="mt-auto inline-flex items-center gap-2 text-[0.9rem] font-[850] text-brand-blue hover:underline hover:underline-offset-4 max-[760px]:min-h-10"
+                      className="mt-auto inline-flex items-center gap-2 text-[0.9rem] font-[850] text-accent hover:underline hover:underline-offset-4 max-[760px]:min-h-10"
                     >
                       {solution.ctaLabel}
                       <ArrowRight size={16} aria-hidden="true" />
@@ -209,7 +209,7 @@ export function WhyChooseDKLAO({ locale }: { locale: Locale }) {
 
             return (
               <article key={point.title} className="rounded-[20px] border border-slate-300/78 bg-card p-[22px]">
-                <Icon size={22} aria-hidden="true" className="text-action-red" />
+                <Icon size={22} aria-hidden="true" className="text-action-red-text" />
                 <h3 className={cardTitle}>{point.title}</h3>
                 <p className={cardCopy}>{point.description}</p>
               </article>
@@ -274,8 +274,8 @@ export function ServicePromise({ locale }: { locale: Locale }) {
               key={step}
               className="grid min-h-[220px] content-start gap-3 rounded-[20px] border border-slate-300/80 bg-card p-[18px] shadow-card max-[780px]:min-h-0"
             >
-              <span className="text-[0.8rem] font-black text-action-red">{String(index + 1).padStart(2, "0")}</span>
-              <CheckCircle2 size={20} aria-hidden="true" className="text-brand-blue" />
+              <span className="text-[0.8rem] font-black text-action-red-text">{String(index + 1).padStart(2, "0")}</span>
+              <CheckCircle2 size={20} aria-hidden="true" className="text-accent" />
               <p className="m-0 text-[0.92rem] leading-[1.55] font-[750] text-slate-700">{step}</p>
             </li>
           ))}
