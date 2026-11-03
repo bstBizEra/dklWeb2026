@@ -277,7 +277,7 @@ must already be the 0.24.2 script — see section 7, it is not updated by a depl
       ```sql
       TRUNCATE lead_photos, leads, lead_rate_limits, users_sessions,
                payload_locked_documents_rels, payload_locked_documents,
-               payload_preferences_rels, payload_preferences, users
+               payload_preferences_rels, payload_preferences
       RESTART IDENTITY CASCADE;
       ```
       Checked against the migrations: only `users_sessions`, `payload_locked_documents_rels` and
@@ -285,21 +285,31 @@ must already be the 0.24.2 script — see section 7, it is not updated by a depl
       list, so no content table can be reached by the `CASCADE`. `pages`, `pages_locales`, `navigation`,
       `site_facts`, `articles` and `payload_migrations` are deliberately untouched — they are the content being
       copied.
-      - **`users` is in that list on purpose.** The preview's credentials should not become the live site's,
-        and emptying the table restores the "register the owner account" box below: Payload shows the
-        create-first-user screen again. Leave `users` out of the `TRUNCATE` only if the owner wants to keep
-        signing in with the preview's accounts and passwords.
-      - A **new `PAYLOAD_SECRET` is safe** with copied accounts: no field in this project is declared
-        `encrypted`, and Payload stores a per-user password hash in the row, so the secret only invalidates
-        existing sessions (which the `TRUNCATE` clears anyway).
+      - **`users` is deliberately NOT in that list (owner, 2026-11-03): the preview's accounts are kept**, so
+        the same people sign in to the live admin with the same passwords and no account has to be recreated.
+        The consequence to accept is that preview credentials become production credentials; the clean-up
+        below is to change those passwords once the live site is up. Adding `users` to the `TRUNCATE` is the
+        other route: Payload then shows the create-first-user screen and the accounts are made fresh.
+      - `users_sessions` **is** truncated, so everyone signs in again once. That is wanted: it drops any
+        session opened against the preview.
+      - A **new `PAYLOAD_SECRET` is safe** with the copied accounts: no field in this project is declared
+        `encrypted`, and Payload stores a per-user password hash in the row, so the new secret only
+        invalidates existing sessions, which the `TRUNCATE` clears anyway.
       - **Lead photos are files on disk, not rows**, in `LEAD_PHOTOS_DIR` or `<app folder>/data/cms-lead-photos`
         — so the live instance's folder is `~/dklao-live/data/cms-lead-photos`, a different folder from the
         preview's. Emptying `lead_photos` is what keeps the admin from listing photos whose files are not
         there. If leads ever do need to be carried over, copy that folder with the database.
       Then start the service as root: `systemctl start dklao-live`.
-- [ ] **Register the owner account** at `/admin` on the live instance. The first account registered becomes the
-      owner, so the owner does it personally and immediately (section 5), then creates the editor and advisor
-      accounts.
+- [ ] **Check the accounts instead of registering one.** The copy route keeps `users`, so `/admin` on the live
+      instance shows a sign-in page, not the create-first-user screen of section 5 — the owner, editor and
+      advisor accounts are already there with the passwords they have on the preview. Sign in and:
+      - **Change the password of every account**, the owner's first. These are production credentials now,
+        and they were last set for a preview that was only ever meant to be seen by the team. Keep the new
+        ones in the password manager.
+      - Confirm each account's role is what it should be on the live site (section 6 checks this from the
+        other side: an editor cannot open Leads, an advisor cannot open Pages or Users).
+      - Delete any account that only ever existed for testing.
+      - Everyone signs in again anyway, because `users_sessions` was truncated.
 - [ ] In section 7, point the `dklao.com` Apache include at `http://127.0.0.1:3120/` instead of 3110.
 
 For option B, the production settings file names the preview instance and confirms it

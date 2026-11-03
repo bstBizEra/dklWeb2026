@@ -59,9 +59,15 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
   folder (`LEAD_PHOTOS_DIR` or `data/cms-lead-photos`), so the live instance's folder is a different one and
   the copied rows would point at files that are not there. Checked against the migrations: only
   `users_sessions`, `payload_locked_documents_rels` and `payload_preferences_rels` reference `users`, so the
-  `CASCADE` cannot reach a content table. Emptying `users` also restores the "register the owner account"
-  step, which a copied accounts table would otherwise skip — and a fresh `PAYLOAD_SECRET` is safe with
-  copied accounts, since no field here is declared `encrypted` and password hashes live in the row.
+  `CASCADE` cannot reach a content table. A fresh `PAYLOAD_SECRET` is safe with copied accounts, since no
+  field here is declared `encrypted` and password hashes live in the row.
+- **Decided 2026-11-03 (owner): keep the preview's admin accounts.** `users` is therefore not in the
+  `TRUNCATE`, so the same people sign in to the live admin with the same passwords and nothing has to be
+  recreated. The accepted consequence is that preview credentials become production credentials, so the
+  account step changed from "register the owner account" (section 5's create-first-user screen, which a
+  populated `users` table never shows) to signing in and changing every password, confirming each role, and
+  deleting accounts that only existed for testing. `users_sessions` is still truncated, so everyone signs in
+  once more and no session opened against the preview survives.
 
 ## [0.24.1] - 2026-11-03
 
