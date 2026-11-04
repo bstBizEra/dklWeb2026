@@ -4,7 +4,8 @@
 #
 # When it runs: only by hand (Actions > Deploy production > Run workflow), from main, naming the version to
 # release. The run checks that main is at that version, checks that preview has already deployed that exact
-# commit from a push to main, runs every gate including the build, then waits for approval in the "production" environment before anything reaches the server.
+# commit from a push to main, runs every gate including the build, then waits for
+# approval in the "production" environment before anything reaches the server.
 #
 # The code travels as a git bundle over one SSH connection. The production deploy key may run nothing but
 # `~/bin/dklao-deploy production` on the server (a forced command), which dumps the database, builds,
