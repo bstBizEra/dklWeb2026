@@ -140,8 +140,9 @@ deploys straight to the live site and runs its migrations on the live database.
 The steps for it are the unticked boxes below, and then section 7 puts the domain on it.
 
 `.github/workflows/deploy-production.yml` runs only when started by hand from `main` with the version to
-release. It checks that `main` is at that version, runs every gate including the build, waits for approval in
-the GitHub `production` environment, sends tag `production-<run>-<sha>` to `~/bin/dklao-deploy production`,
+release. It checks that `main` is at that version and that preview.dklao.com has already deployed that exact
+commit (so wait for Deploy preview on `main` to pass, and check the preview, before releasing), runs every gate
+including the build, waits for approval in the GitHub `production` environment, sends tag `production-<run>-<sha>` to `~/bin/dklao-deploy production`,
 which always dumps the database first, and then checks that the live site serves the version.
 
 ### Decide first: what content does the live database start with?
