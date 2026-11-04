@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 # One production deploy at a time, and never cancelled halfway. Separate from the preview queue.
 concurrency:
@@ -58,6 +59,16 @@ jobs:
             echo "::error::main is at $actual, not $REQUESTED. Merge the release first, or ask for $actual."; exit 1
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Preview already runs this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          # Production is a promotion: it ships only what preview.dklao.com last deployed successfully.
+          previewed="$(gh run list -R "$GITHUB_REPOSITORY" --workflow deploy-preview.yml --branch main --event push --status success --limit 1 --json headSha --jq '.[0].headSha')"
+          if [ "$previewed" != "$RELEASE_SHA" ]; then
+            echo "::error::preview.dklao.com has not deployed $RELEASE_SHA yet; wait for Deploy preview on main to pass, check the preview, then release."; exit 1
+          fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
