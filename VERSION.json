@@ -4,7 +4,7 @@
   "status": "local-preview",
   "releaseDate": "2026-11-05",
   "changeLevel": "patch",
-  "summary": "The CMS sign-in and editing surfaces now use BizEra's official brandkit colours, typography, and light/dark themes while keeping DK LAO as the only logo and preserving authentication behavior.",
+  "summary": "The CMS login pairs DK LAO product imagery with BizEra brandkit colours in a responsive left/right layout, while preserving authentication behavior.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

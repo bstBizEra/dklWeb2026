@@ -16,5 +16,16 @@ export default function LoginLandmark() {
     };
   }, []);
 
-  return null;
+  return (
+    <div className="bizera-login-intro">
+      <h2>Welcome to your workspace</h2>
+      <p>Manage content, enquiries, and the details that keep DK LAO moving.</p>
+      <p className="bizera-login-intro__credit">
+        A DK LAO workspace developed by{" "}
+        <a href="https://www.bizera.la/" target="_blank" rel="noopener noreferrer">
+          BizEra
+        </a>
+      </p>
+    </div>
+  );
 }

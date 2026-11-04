@@ -6,7 +6,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 
 ### Patch Changed
 
-- Refined the CMS sign-in with a focused panel, stronger hierarchy and responsive spacing. The CMS now uses BizEra's official brandkit colour tokens, Outfit/Inter type, and paired light and dark themes. DK LAO remains the only logo; BizEra is credited in text as the developer. Editor navigation and primary controls inherit the brandkit colours. Authentication and content behavior are unchanged.
+- Refined the CMS sign-in into a responsive left/right layout: DK LAO product imagery and its approved slogan on the left, the login form on the right. A BizEra green overlay, official brandkit colour tokens, Outfit/Inter type, and paired light and dark themes shape the interface. DK LAO remains the only logo; BizEra is credited in text as the developer. Editor navigation and primary controls inherit the brandkit colours. Authentication and content behavior are unchanged.
 
 ## [0.24.2] - 2026-11-03
 
