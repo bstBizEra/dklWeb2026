@@ -88,7 +88,7 @@ app="$HOME/dklao-app"; [[ "$port" == "3120" ]] && app="$HOME/dklao-live"
 printf 'page %s\\n200' "$(cat "$app/.next/BUILD_ID" 2>/dev/null)"
 `, 0o755);
   write(join(bin, "pg_dump"), `#!/usr/bin/env bash\necho "$*" >> "$HOME/pg_dump.calls"\necho "-- dump"\n`, 0o755);
-  write(join(home, ".config", "dklao-site.env"), "DATABASE_URL=postgresql://preview\n");
+  write(join(home, ".config", "dklao-site.env"), "DATABASE_URL=postgresql://preview\nAPP_URL=https://preview.dklao.com\n");
 });
 
 afterEach(() => rmSync(home, { recursive: true, force: true }));
@@ -146,7 +146,7 @@ describe.skipIf(process.platform === "win32")("server deploy script (sandbox)", 
 
   it("deploys a separate production instance and always dumps its database first", () => {
     makeInstance(join(home, "dklao-live"));
-    write(join(home, ".config", "dklao-live.env"), 'DATABASE_URL="postgresql://live"\n');
+    write(join(home, ".config", "dklao-live.env"), 'DATABASE_URL="postgresql://live"\nAPP_URL="https://www.dklao.com"\n');
     write(
       join(home, ".config", "dklao-deploy-production.conf"),
       "# production instance\nAPP=~/dklao-live\nPORT=3120\nENV_FILE=~/.config/dklao-live.env\nRESTART_REQUEST=~/.deploy/restart-live\n",
@@ -178,6 +178,16 @@ describe.skipIf(process.platform === "win32")("server deploy script (sandbox)", 
     const refused = deploy("preview", `deploy ${preview}`, bundle(preview));
     expect(refused.status).toBe(5);
     expect(refused.output).toContain("preview deploys are closed");
+  });
+
+  it("refuses to build when the env file has no APP_URL", () => {
+    write(join(home, ".config", "dklao-site.env"), "DATABASE_URL=postgresql://preview\n");
+    const tag = release("preview", 11);
+    const result = deploy("preview", `deploy ${tag}`, bundle(tag));
+
+    expect(result.status).not.toBe(0);
+    expect(result.output).toContain("APP_URL not found in");
+    expect(git(join(home, "dklao-app"), "describe", "--tags")).toBe("v-initial");
   });
 
   it("stops on a setting it does not know", () => {
