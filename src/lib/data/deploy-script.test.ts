@@ -80,6 +80,7 @@ beforeEach(() => {
 [[ "$1" == "build" ]] || exit 0
 [[ -n "\${FAIL_TAG:-}" && "$(git describe --tags)" == "$FAIL_TAG" ]] && { echo "build broke"; exit 1; }
 mkdir -p .next && git rev-parse HEAD > .next/BUILD_ID
+printf '%s' "$APP_URL" > .next/APP_URL
 `, 0o755);
   // curl: the running site serves the build ID of whichever instance owns that port.
   write(join(bin, "curl"), `#!/usr/bin/env bash
@@ -102,6 +103,7 @@ describe.skipIf(process.platform === "win32")("server deploy script (sandbox)", 
     expect(result.output).toContain(`deployed ${tag}`);
     expect(git(join(home, "dklao-app"), "describe", "--tags")).toBe(tag);
     expect(readFileSync(join(home, ".deploy", "restart-request"), "utf8")).toContain(tag);
+    expect(readFileSync(join(home, "dklao-app", ".next", "APP_URL"), "utf8")).toBe("https://preview.dklao.com");
     // No migration changed: no dump.
     expect(existsSync(join(home, "pg_dump.calls"))).toBe(false);
   });
@@ -156,6 +158,8 @@ describe.skipIf(process.platform === "win32")("server deploy script (sandbox)", 
 
     expect(result.status, result.output).toBe(0);
     expect(git(join(home, "dklao-live"), "describe", "--tags")).toBe(tag);
+    // The quoted APP_URL in the env file reaches the build without its quotes.
+    expect(readFileSync(join(home, "dklao-live", ".next", "APP_URL"), "utf8")).toBe("https://www.dklao.com");
     // The preview instance is untouched.
     expect(git(join(home, "dklao-app"), "describe", "--tags")).toBe("v-initial");
     expect(readFileSync(join(home, "pg_dump.calls"), "utf8")).toContain("--dbname=postgresql://live");

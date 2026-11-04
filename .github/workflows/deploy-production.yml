@@ -3,8 +3,8 @@
 # deploy-preview.yml; CI (ci.yml) stays check-only.
 #
 # When it runs: only by hand (Actions > Deploy production > Run workflow), from main, naming the version to
-# release. The run checks that main is at that version, runs every gate including the build, then waits for
-# approval in the "production" environment before anything reaches the server.
+# release. The run checks that main is at that version, checks that preview has already deployed that exact
+# commit from a push to main, runs every gate including the build, then waits for approval in the "production" environment before anything reaches the server.
 #
 # The code travels as a git bundle over one SSH connection. The production deploy key may run nothing but
 # `~/bin/dklao-deploy production` on the server (a forced command), which dumps the database, builds,
@@ -59,15 +59,16 @@ jobs:
             echo "::error::main is at $actual, not $REQUESTED. Merge the release first, or ask for $actual."; exit 1
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - name: Preview already runs this commit
+      - name: Preview has deployed this commit from main
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_SHA: ${{ steps.release.outputs.sha }}
         run: |
-          # Production is a promotion: it ships only what preview.dklao.com last deployed successfully.
+          # Production is a promotion: the last successful push run of Deploy preview on main must have deployed this SHA.
+          # That proves preview deployed it, not that preview is serving it right now.
           previewed="$(gh run list -R "$GITHUB_REPOSITORY" --workflow deploy-preview.yml --branch main --event push --status success --limit 1 --json headSha --jq '.[0].headSha')"
           if [ "$previewed" != "$RELEASE_SHA" ]; then
-            echo "::error::preview.dklao.com has not deployed $RELEASE_SHA yet; wait for Deploy preview on main to pass, check the preview, then release."; exit 1
+            echo "::error::The last successful push run of Deploy preview on main is for a different commit than $RELEASE_SHA (a manual Run workflow preview does not count); wait for Deploy preview on main to pass, check the preview, then release."; exit 1
           fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
