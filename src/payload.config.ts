@@ -28,9 +28,7 @@ export default buildConfig({
       titleSuffix: " | DK LAO CMS",
       icons: [{ url: "/images/fav-icon/FAV-Icon.png", type: "image/png" }],
     },
-    // BizEra's identity, which the panel wears as its developer: see app/(payload)/custom.scss. Their
-    // own site is dark only, so a light admin would be an identity they do not have.
-    theme: "dark",
+    // The official BizEra brandkit provides both light and dark roles. Let editors choose either.
     components: {
       graphics: { Logo: "/payload/admin/logo", Icon: "/payload/admin/icon" },
       beforeLogin: ["/payload/admin/login-landmark"],

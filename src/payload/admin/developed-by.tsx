@@ -1,4 +1,4 @@
-// Sits at the end of the menu: who to contact when the panel itself, rather than its content, needs work.
+// Developer credit at the end of the CMS navigation.
 export default function DevelopedBy() {
   return (
     <p className="bizera-credit">

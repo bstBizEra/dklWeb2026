@@ -1,47 +1,68 @@
 /**
- * BizEra's corporate identity for the DK LAO CMS, which BizEra develops.
- *
- * BizEra publishes no brand kit, logo file or favicon, so the identity here is the one their own site
- * wears (bizera.la, read 2026-11-03): a deep navy ground, a mint accent, Noto Sans Lao, and a text ramp
- * that steps from #ccd6f6 down through #a8b2d1 to #8892b0. Their site is dark only, so the admin is too
- * (payload.config.ts sets theme "dark"); a light variant would be an identity they do not have.
- *
- * Payload builds both themes out of one --color-base-* ramp: in dark it reads the ramp backwards, so
- * base-900 becomes the page and base-0 becomes the text. The ramp below is therefore written navy first.
- * Elevations are pinned for the light theme as well, so a first paint before the theme attribute lands
- * never flashes white. Contrast of every text step is checked in src/lib/data/admin-theme.test.ts.
+ * BizEra brandkit adaptation for the DK LAO CMS.
+ * Source: https://bizera.la/bizera_brandkit/ (tokens.css, 2026-11-05).
  */
 @layer payload {
   :root {
-    --bizera-ink: #0d1a26;
-    --bizera-mint: #64ffda;
-    --bizera-mint-dim: #3fd9b6;
+    --color-base-0: #ffffff;
+    --color-base-50: #f3f8f6;
+    --color-base-100: #e6f2ee;
+    --color-base-150: #d6e4e0;
+    --color-base-200: #c3dad3;
+    --color-base-250: #9fbdb4;
+    --color-base-300: #8aa19a;
+    --color-base-350: #6f8c82;
+    --color-base-400: #5f7f76;
+    --color-base-450: #4a625b;
+    --color-base-500: #3e574d;
+    --color-base-550: #2e463e;
+    --color-base-600: #24403a;
+    --color-base-650: #1f3730;
+    --color-base-700: #1a3028;
+    --color-base-750: #152b23;
+    --color-base-800: #12261f;
+    --color-base-850: #10221c;
+    --color-base-900: #0b1a16;
+    --color-base-950: #07130f;
+    --color-base-1000: #05100c;
 
-    --color-base-0: #eef3ff;
-    --color-base-50: #e4ebfb;
-    --color-base-100: #d8e0f8;
-    --color-base-150: #ccd6f6;
-    --color-base-200: #b9c2dd;
-    --color-base-250: #a8b2d1;
-    --color-base-300: #98a3c0;
-    --color-base-350: #8892b0;
-    --color-base-400: #7d96b8;
-    --color-base-450: #6b86a8;
-    --color-base-500: #5c7897;
-    --color-base-550: #495670;
-    --color-base-600: #3a5a7d;
-    --color-base-650: #2f4c6b;
-    --color-base-700: #26405a;
-    --color-base-750: #1e3449;
-    --color-base-800: #17293c;
-    --color-base-850: #132234;
-    --color-base-900: #0d1a26;
-    --color-base-950: #0a141e;
-    --color-base-1000: #060d14;
+    --font-body: var(--font-bizera-text), var(--font-lao-admin), system-ui, sans-serif;
+    --font-title: var(--font-bizera-display), var(--font-lao-admin), system-ui, sans-serif;
 
-    --font-body: var(--font-lao-admin), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --theme-elevation-0: var(--color-base-0);
+    --theme-elevation-50: var(--color-base-50);
+    --theme-elevation-100: var(--color-base-100);
+    --theme-elevation-150: var(--color-base-150);
+    --theme-elevation-200: var(--color-base-200);
+    --theme-elevation-250: var(--color-base-250);
+    --theme-elevation-300: var(--color-base-300);
+    --theme-elevation-350: var(--color-base-350);
+    --theme-elevation-400: var(--color-base-400);
+    --theme-elevation-450: var(--color-base-450);
+    --theme-elevation-500: var(--color-base-500);
+    --theme-elevation-550: var(--color-base-550);
+    --theme-elevation-600: var(--color-base-600);
+    --theme-elevation-650: var(--color-base-650);
+    --theme-elevation-700: var(--color-base-700);
+    --theme-elevation-750: var(--color-base-750);
+    --theme-elevation-800: var(--color-base-800);
+    --theme-elevation-850: var(--color-base-850);
+    --theme-elevation-900: var(--color-base-900);
+    --theme-elevation-950: var(--color-base-950);
+    --theme-elevation-1000: var(--color-base-1000);
 
-    // Payload's own dark mapping, pinned here so the light theme cannot paint white before hydration.
+    --theme-bg: var(--color-surface-page);
+    --theme-text: var(--color-text-primary);
+    --theme-input-bg: var(--color-surface-raised);
+    --theme-border-color: var(--color-border-default);
+    --accessibility-outline: 2px solid var(--color-focus-ring);
+    --bizera-action-hover: var(--color-palette-ink);
+    --bizera-login-bg: var(--color-palette-mist);
+    --bizera-login-border: transparent;
+    --bizera-login-shadow: 0 18px 50px rgba(14, 42, 34, 0.12);
+  }
+
+  :root[data-theme="dark"] {
     --theme-elevation-0: var(--color-base-900);
     --theme-elevation-50: var(--color-base-850);
     --theme-elevation-100: var(--color-base-800);
@@ -64,150 +85,105 @@
     --theme-elevation-950: var(--color-base-0);
     --theme-elevation-1000: var(--color-base-0);
 
-    --theme-bg: var(--color-base-900);
-    --theme-text: var(--color-base-0);
-    --theme-input-bg: var(--color-base-850);
-    --theme-border-color: var(--color-base-750);
-    --theme-overlay: rgba(6, 13, 20, 0.78);
-    --accessibility-outline: 2px solid var(--bizera-mint);
+    --theme-bg: var(--color-surface-page);
+    --theme-text: var(--color-text-primary);
+    --theme-input-bg: var(--color-surface-raised);
+    --theme-border-color: var(--color-border-default);
+    --bizera-action-hover: var(--color-palette-mint);
+    --bizera-login-bg: var(--color-palette-night);
+    --bizera-login-border: var(--color-palette-night-line);
+    --bizera-login-shadow: none;
   }
 
-  html {
-    color-scheme: dark;
-    background: var(--theme-bg);
-  }
+  html { background: var(--color-surface-page); }
 
-  // Mint is the one accent: what you can act on, and what the panel is pointing at.
   .btn--style-primary {
-    --bg-color: var(--bizera-mint);
-    --color: var(--bizera-ink);
-    --hover-bg: var(--bizera-mint-dim);
-    --hover-color: var(--bizera-ink);
+    --bg-color: var(--color-action-bg);
+    --color: var(--color-action-fg);
+    --hover-bg: var(--bizera-action-hover);
+    --hover-color: var(--color-action-fg);
   }
 
   .nav__link:hover,
   .nav__link--active,
   .step-nav a:hover,
-  .doc-tab--active .doc-tab__link {
-    color: var(--bizera-mint);
-  }
+  .doc-tab--active .doc-tab__link { color: var(--color-accent-text); }
 
-  :focus-visible {
-    outline: 2px solid var(--bizera-mint);
-    outline-offset: 2px;
-  }
+  :focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+  ::selection { background: var(--color-action-bg); color: var(--color-action-fg); }
 
-  ::selection {
-    background: var(--bizera-mint);
-    color: var(--bizera-ink);
-  }
-
-  .bizera-brand--login {
-    display: grid;
-    justify-items: start;
-    gap: 0;
-    text-align: left;
-  }
-
-  .bizera-brand--login img {
-    width: 210px;
-    height: auto;
-    margin-bottom: 2.4rem;
-  }
-
+  .bizera-brand--login { display: grid; justify-items: start; text-align: left; }
+  .bizera-brand--login > img { width: 210px; height: auto; margin-bottom: 2.4rem; }
   .bizera-brand__heading {
     max-width: 18ch;
     margin: 0;
-    color: var(--color-base-0);
+    color: var(--color-text-primary);
+    font-family: var(--font-title);
     font-size: clamp(1.7rem, 3vw, 2.15rem);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.025em;
   }
-
   .bizera-brand__description {
     max-width: 43ch;
     margin: 0.85rem 0 0;
-    color: var(--color-base-250);
+    color: var(--color-text-secondary);
     font-size: 0.95rem;
     line-height: 1.6;
   }
-
   .bizera-brand__line {
-    margin: 1.3rem 0 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin: 1.25rem 0 0;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
-    letter-spacing: 0.01em;
-    color: var(--color-base-250);
   }
-
   .bizera-brand__line a,
   .bizera-credit a {
-    color: var(--bizera-mint);
+    color: var(--color-accent-text);
     font-weight: 700;
-    text-decoration-color: color-mix(in srgb, var(--bizera-mint) 45%, transparent);
+    text-decoration-color: currentColor;
     text-underline-offset: 3px;
-
-    &:hover {
-      text-decoration-color: var(--bizera-mint);
-    }
   }
-
-  .bizera-brand__icon {
-    border-radius: var(--style-radius-s);
-  }
-
+  .bizera-brand__icon { border-radius: var(--style-radius-s); }
   .bizera-credit {
     margin: calc(var(--base) * 0.8) 0 0;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: var(--color-base-450);
   }
 
-  // Give the sign-in flow a deliberate surface without changing Payload's form or auth behavior.
   .template-minimal:has(.login__form) {
     min-height: 100vh;
     padding: clamp(1.25rem, 5vw, 4rem);
-    background:
-      radial-gradient(circle at 9% 13%, rgba(100, 255, 218, 0.06) 0 4px, transparent 5px),
-      radial-gradient(circle at 88% 84%, rgba(100, 255, 218, 0.07) 0 6px, transparent 7px),
-      var(--color-base-950);
+    background: var(--bizera-login-bg);
   }
-
   .template-minimal:has(.login__form) .template-minimal__wrap {
     width: min(100%, 500px);
     max-width: none;
     padding: clamp(1.7rem, 5vw, 3rem);
-    background: var(--color-base-900);
-    border: 1px solid var(--color-base-750);
+    background: var(--color-surface-page);
+    border: 1px solid var(--bizera-login-border);
     border-radius: 16px;
-    box-shadow: 0 24px 64px rgba(1, 7, 13, 0.32);
+    box-shadow: var(--bizera-login-shadow);
   }
-
+  :root[data-theme="dark"] .template-minimal:has(.login__form) .template-minimal__wrap {
+    background: var(--color-surface-raised);
+  }
   .template-minimal:has(.login__form) .login__brand {
     justify-content: flex-start;
     margin-bottom: 2rem;
   }
-
-  .login__form__inputWrap {
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-  }
-
+  .login__form__inputWrap { gap: 1rem; margin-bottom: 0.75rem; }
   .login__form input {
     min-height: 46px;
     border-radius: 8px;
-    background: var(--color-base-850);
-    border-color: var(--color-base-700);
+    background: var(--color-surface-raised);
+    border-color: var(--color-border-default);
   }
-
-  .login__form input:hover {
-    border-color: var(--color-base-500);
-  }
-
-  .login__form input:focus-visible {
-    border-color: var(--bizera-mint);
-  }
-
+  .login__form input:hover { border-color: var(--color-text-muted); }
+  .login__form input:focus-visible { border-color: var(--color-focus-ring); }
   .login__form .btn--style-primary {
     width: 100%;
     min-height: 48px;
@@ -216,35 +192,15 @@
     font-weight: 700;
   }
 
-  // Carry the same quiet precision through content editing after sign-in.
-  .template-default .nav {
-    border-right: 1px solid var(--color-base-750);
-  }
-
+  .template-default .nav { border-right: 1px solid var(--color-border-default); }
   .template-default .card,
   .template-default .list-controls,
-  .template-default .render-fields .collapsible {
-    border-radius: 12px;
-  }
-
-  .template-default .btn--style-primary {
-    border-radius: 8px;
-    font-weight: 700;
-  }
+  .template-default .render-fields .collapsible { border-radius: 12px; }
+  .template-default .btn--style-primary { border-radius: 8px; font-weight: 700; }
 
   @media (max-width: 600px) {
-    .template-minimal:has(.login__form) {
-      align-items: flex-start;
-      padding: 1rem;
-    }
-
-    .template-minimal:has(.login__form) .template-minimal__wrap {
-      margin-block: max(1rem, 6vh);
-    }
-
-    .bizera-brand--login img {
-      width: 190px;
-      margin-bottom: 1.8rem;
-    }
+    .template-minimal:has(.login__form) { align-items: flex-start; padding: 1rem; }
+    .template-minimal:has(.login__form) .template-minimal__wrap { margin-block: max(1rem, 6vh); }
+    .bizera-brand--login > img { width: 190px; margin-bottom: 1.8rem; }
   }
 }
