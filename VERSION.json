@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.24.2",
+  "version": "0.24.3",
   "status": "local-preview",
-  "releaseDate": "2026-11-03",
+  "releaseDate": "2026-11-05",
   "changeLevel": "patch",
-  "summary": "Each instance now advertises its own address: the deploy passes APP_URL into the build, so the sitemap, canonicals and og:url follow the instance instead of the live site.",
+  "summary": "The CMS login pairs DK LAO product imagery with BizEra brandkit colours in a responsive left/right layout, while preserving authentication behavior.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

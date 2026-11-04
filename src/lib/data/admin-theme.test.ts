@@ -1,8 +1,6 @@
 /**
- * The CMS admin wears BizEra's corporate identity, as the developer of the DK LAO backend: the navy,
- * mint and text ramp read off bizera.la (2026-11-03), since BizEra publishes no brand kit or logo file.
- * The checks here keep the palette honest — every colour the admin puts text in must stay legible on
- * the surface behind it — and keep the admin wired to the brand components.
+ * Check the copied official BizEra brandkit's light and dark text/action pairs
+ * and the CMS integration. Source: https://bizera.la/bizera_brandkit/
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -11,10 +9,11 @@ import { describe, expect, it } from "vitest";
 
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), "src", ...parts), "utf8").replace(/\r\n/g, "\n");
 const scss = read("app", "(payload)", "custom.scss");
+const tokens = read("app", "(payload)", "bizera-tokens.css");
 const config = read("payload.config.ts");
 
 const variable = (name: string): string => {
-  const found = scss.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i"));
+  const found = tokens.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i"));
   expect(found, name).not.toBeNull();
   return (found as RegExpMatchArray)[1];
 };
@@ -31,36 +30,57 @@ const contrast = (a: string, b: string) => {
 };
 
 describe("BizEra admin theme", () => {
-  it("uses the colours BizEra uses on bizera.la", () => {
-    expect(variable("color-base-900")).toBe("#0d1a26");
-    expect(variable("bizera-mint")).toBe("#64ffda");
-    expect(scss).toContain("Noto Sans Lao");
+  it("uses the official brandkit palette and fonts", () => {
+    expect(variable("color-palette-night")).toBe("#0b1a16");
+    expect(variable("color-palette-mint")).toBe("#69c6b5");
+    expect(variable("color-palette-green")).toBe("#3db389");
+    expect(variable("color-palette-deep")).toBe("#1d7a5a");
+    expect(scss).toContain("--font-bizera-text");
+    expect(scss).toContain("--font-bizera-display");
   });
 
-  it("keeps every text colour legible on the surface behind it", () => {
-    const page = variable("color-base-900");
-    const input = variable("color-base-850");
-    const mint = variable("bizera-mint");
-
-    // Payload's dark ramp: text is base-0, body base-250, the faintest text we use is base-450.
-    for (const [key, behind] of [
-      ["color-base-0", page],
-      ["color-base-250", page],
-      ["color-base-450", page],
-      ["color-base-250", input],
+  it("keeps text and actions legible in both themes", () => {
+    for (const [foreground, background] of [
+      ["ink", "white"],
+      ["pine", "white"],
+      ["slate", "white"],
+      ["white", "deep"],
+      ["white", "ink"], // light primary hover
+      ["night-text", "night"],
+      ["night-soft", "night-raised"],
+      ["night-muted", "night"],
+      ["night-muted", "night-raised"],
+      ["ink", "green"],
+      ["ink", "mint"], // dark primary hover
     ] as const) {
-      expect(contrast(variable(key), behind), `${key} on ${behind}`).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrast(variable(`color-palette-${foreground}`), variable(`color-palette-${background}`)),
+        `${foreground} on ${background}`,
+      ).toBeGreaterThanOrEqual(4.5);
     }
 
-    expect(contrast(mint, page), "mint on the page").toBeGreaterThanOrEqual(4.5);
-    expect(contrast(variable("bizera-ink"), mint), "button text on mint").toBeGreaterThanOrEqual(4.5);
+    for (const [ring, surface] of [["deep", "white"], ["mint", "night"]] as const) {
+      expect(
+        contrast(variable(`color-palette-${ring}`), variable(`color-palette-${surface}`)),
+        `${ring} focus ring on ${surface}`,
+      ).toBeGreaterThanOrEqual(3);
+    }
   });
 
-  it("wires the admin to the brand components", () => {
+  it("keeps Payload's dark editor labels legible on raised surfaces", () => {
+    const darkTheme = scss.match(/:root\[data-theme="dark"\]\s*\{([\s\S]*?)\n  \}/)?.[1];
+    const elevation500Base = darkTheme?.match(/--theme-elevation-500:\s*var\(--color-base-(\d+)\)/)?.[1];
+    expect(elevation500Base).toBeDefined();
+    const label = scss.match(new RegExp(`--color-base-${elevation500Base}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
+    expect(label).toBeDefined();
+    expect(contrast(label as string, variable("color-palette-night-raised"))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("wires the admin to the brand components and offers both themes", () => {
     for (const part of ["graphics", "payload/admin/logo", "payload/admin/icon", "payload/admin/developed-by"]) {
       expect(config).toContain(part);
     }
-    // BizEra's identity is dark; a light admin would not be their identity at all.
-    expect(config).toMatch(/theme:\s*"dark"/);
+    expect(config).not.toMatch(/theme:\s*"dark"/);
+    expect(read("payload", "admin", "logo.tsx")).not.toContain("/images/bizera/");
   });
 });
