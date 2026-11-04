@@ -33,6 +33,7 @@ export default buildConfig({
     theme: "dark",
     components: {
       graphics: { Logo: "/payload/admin/logo", Icon: "/payload/admin/icon" },
+      beforeLogin: ["/payload/admin/login-landmark"],
       afterNavLinks: ["/payload/admin/developed-by"],
     },
   },

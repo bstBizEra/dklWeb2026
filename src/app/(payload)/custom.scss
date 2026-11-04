@@ -104,20 +104,46 @@
 
   .bizera-brand--login {
     display: grid;
-    justify-items: center;
-    gap: calc(var(--base) * 0.6);
+    justify-items: start;
+    gap: 0;
+    text-align: left;
+  }
+
+  .bizera-brand--login img {
+    width: 210px;
+    height: auto;
+    margin-bottom: 2.4rem;
+  }
+
+  .bizera-brand__heading {
+    max-width: 18ch;
+    margin: 0;
+    color: var(--color-base-0);
+    font-size: clamp(1.7rem, 3vw, 2.15rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  .bizera-brand__description {
+    max-width: 43ch;
+    margin: 0.85rem 0 0;
+    color: var(--color-base-250);
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 
   .bizera-brand__line {
-    margin: 0;
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
+    margin: 1.3rem 0 0;
+    font-size: 0.875rem;
+    letter-spacing: 0.01em;
     color: var(--color-base-250);
   }
 
   .bizera-brand__line a,
   .bizera-credit a {
     color: var(--bizera-mint);
+    font-weight: 700;
     text-decoration-color: color-mix(in srgb, var(--bizera-mint) 45%, transparent);
     text-underline-offset: 3px;
 
@@ -135,5 +161,90 @@
     font-size: 0.75rem;
     letter-spacing: 0.06em;
     color: var(--color-base-450);
+  }
+
+  // Give the sign-in flow a deliberate surface without changing Payload's form or auth behavior.
+  .template-minimal:has(.login__form) {
+    min-height: 100vh;
+    padding: clamp(1.25rem, 5vw, 4rem);
+    background:
+      radial-gradient(circle at 9% 13%, rgba(100, 255, 218, 0.06) 0 4px, transparent 5px),
+      radial-gradient(circle at 88% 84%, rgba(100, 255, 218, 0.07) 0 6px, transparent 7px),
+      var(--color-base-950);
+  }
+
+  .template-minimal:has(.login__form) .template-minimal__wrap {
+    width: min(100%, 500px);
+    max-width: none;
+    padding: clamp(1.7rem, 5vw, 3rem);
+    background: var(--color-base-900);
+    border: 1px solid var(--color-base-750);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(1, 7, 13, 0.32);
+  }
+
+  .template-minimal:has(.login__form) .login__brand {
+    justify-content: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  .login__form__inputWrap {
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .login__form input {
+    min-height: 46px;
+    border-radius: 8px;
+    background: var(--color-base-850);
+    border-color: var(--color-base-700);
+  }
+
+  .login__form input:hover {
+    border-color: var(--color-base-500);
+  }
+
+  .login__form input:focus-visible {
+    border-color: var(--bizera-mint);
+  }
+
+  .login__form .btn--style-primary {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 1.25rem;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  // Carry the same quiet precision through content editing after sign-in.
+  .template-default .nav {
+    border-right: 1px solid var(--color-base-750);
+  }
+
+  .template-default .card,
+  .template-default .list-controls,
+  .template-default .render-fields .collapsible {
+    border-radius: 12px;
+  }
+
+  .template-default .btn--style-primary {
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 600px) {
+    .template-minimal:has(.login__form) {
+      align-items: flex-start;
+      padding: 1rem;
+    }
+
+    .template-minimal:has(.login__form) .template-minimal__wrap {
+      margin-block: max(1rem, 6vh);
+    }
+
+    .bizera-brand--login img {
+      width: 190px;
+      margin-bottom: 1.8rem;
+    }
   }
 }

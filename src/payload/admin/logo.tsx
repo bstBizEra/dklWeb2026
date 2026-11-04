@@ -7,8 +7,10 @@ export default function Logo() {
   return (
     <div className="bizera-brand bizera-brand--login">
       <Image src="/images/logo/Logo-H_Text.svg" alt="DK LAO" width={236} height={50} priority />
+      <h1 className="bizera-brand__heading">Welcome to your workspace</h1>
+      <p className="bizera-brand__description">Manage content, enquiries, and the details that keep DK LAO moving.</p>
       <p className="bizera-brand__line">
-        Content management · developed by{" "}
+        A DK LAO workspace by{" "}
         <a href="https://www.bizera.la/" target="_blank" rel="noopener noreferrer">
           BizEra
         </a>

@@ -2,6 +2,12 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [0.24.3] - 2026-11-05
+
+### Patch Changed
+
+- Refined the CMS sign-in with a focused navy panel, stronger heading and form hierarchy, responsive spacing, and BizEra mint interaction states. DK LAO remains the primary mark; BizEra remains credited as the developer. Editor navigation and primary controls inherit the same restrained surface treatment. Authentication and content behavior are unchanged.
+
 ## [0.24.2] - 2026-11-03
 
 ### Patch Changed
