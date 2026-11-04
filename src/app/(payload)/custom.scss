@@ -73,14 +73,14 @@
     --theme-elevation-350: var(--color-base-550);
     --theme-elevation-400: var(--color-base-450);
     --theme-elevation-450: var(--color-base-400);
-    --theme-elevation-500: var(--color-base-500);
-    --theme-elevation-550: var(--color-base-350);
-    --theme-elevation-600: var(--color-base-300);
-    --theme-elevation-650: var(--color-base-250);
-    --theme-elevation-700: var(--color-base-200);
-    --theme-elevation-750: var(--color-base-150);
-    --theme-elevation-800: var(--color-base-100);
-    --theme-elevation-850: var(--color-base-50);
+    --theme-elevation-500: var(--color-base-300);
+    --theme-elevation-550: var(--color-base-250);
+    --theme-elevation-600: var(--color-base-200);
+    --theme-elevation-650: var(--color-base-150);
+    --theme-elevation-700: var(--color-base-100);
+    --theme-elevation-750: var(--color-base-50);
+    --theme-elevation-800: var(--color-base-0);
+    --theme-elevation-850: var(--color-base-0);
     --theme-elevation-900: var(--color-base-0);
     --theme-elevation-950: var(--color-base-0);
     --theme-elevation-1000: var(--color-base-0);
@@ -111,6 +111,8 @@
 
   :focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
   ::selection { background: var(--color-action-bg); color: var(--color-action-fg); }
+  input::placeholder,
+  textarea::placeholder { color: var(--color-text-muted); opacity: 1; }
 
   .bizera-brand--login {
     display: flex;
@@ -158,13 +160,13 @@
     max-width: 38ch;
     margin: 1rem 0 0;
     color: var(--color-text-secondary);
-    font-size: 0.95rem;
+    font-size: 14px;
     line-height: 1.6;
   }
   .bizera-login-intro .bizera-login-intro__credit {
     margin-top: 1.25rem;
     color: var(--color-text-muted);
-    font-size: 0.875rem;
+    font-size: 14px;
   }
   .bizera-login-intro a,
   .bizera-credit a {

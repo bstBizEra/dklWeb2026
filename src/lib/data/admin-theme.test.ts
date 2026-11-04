@@ -67,6 +67,15 @@ describe("BizEra admin theme", () => {
     }
   });
 
+  it("keeps Payload's dark editor labels legible on raised surfaces", () => {
+    const darkTheme = scss.match(/:root\[data-theme="dark"\]\s*\{([\s\S]*?)\n  \}/)?.[1];
+    const elevation500Base = darkTheme?.match(/--theme-elevation-500:\s*var\(--color-base-(\d+)\)/)?.[1];
+    expect(elevation500Base).toBeDefined();
+    const label = scss.match(new RegExp(`--color-base-${elevation500Base}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
+    expect(label).toBeDefined();
+    expect(contrast(label as string, variable("color-palette-night-raised"))).toBeGreaterThanOrEqual(4.5);
+  });
+
   it("wires the admin to the brand components and offers both themes", () => {
     for (const part of ["graphics", "payload/admin/logo", "payload/admin/icon", "payload/admin/developed-by"]) {
       expect(config).toContain(part);
