@@ -2,6 +2,12 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## Unreleased
+
+### Security
+
+- Restricted `preview.dklao.com` to a CI-only HTTP credential while retaining the separate preview deployment and production release gate. Public requests receive an authentication challenge; production remains public.
+
 ## [2.0.1] - 2026-11-05
 
 ### Patch Changed
