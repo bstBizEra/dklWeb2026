@@ -86,7 +86,11 @@ jobs:
         run: |
           # Until the owner finishes docs/deploy-checklist.md section 3a, skip with a notice instead of
           # failing, so main does not turn red. A labelled pull request or a manual run still fails loudly.
-          if [ -n "$SSH_KEY" ] && [ -n "$SSH_KNOWN_HOSTS" ] && [ -n "$SSH_HOST" ] && [ -n "$PREVIEW_HTTP_PASSWORD" ]; then
+          if [ -z "$PREVIEW_HTTP_PASSWORD" ]; then
+            echo "::error::PREVIEW_HTTP_PASSWORD is required for the private preview health check."
+            exit 1
+          fi
+          if [ -n "$SSH_KEY" ] && [ -n "$SSH_KNOWN_HOSTS" ] && [ -n "$SSH_HOST" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
             echo "::notice::Preview deploy skipped: secrets are not set yet (docs/deploy-checklist.md section 3a)."
