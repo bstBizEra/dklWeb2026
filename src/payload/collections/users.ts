@@ -1,8 +1,10 @@
 import type { CollectionConfig } from "payload";
 import { Forbidden } from "payload";
 
+import { createEmailEntryStore, readEntryCookie } from "@/lib/auth/email-entry";
+import type { Queryable } from "@/lib/leads/rate-store";
+
 import { isOwner, ownerOrSelf, roles } from "../access";
-import { mayAccessAdmin } from "./admin-allowlist";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -11,10 +13,14 @@ export const Users: CollectionConfig = {
   auth: { maxLoginAttempts: 20, lockTime: 15 * 60 * 1000 },
   admin: { useAsTitle: "email", defaultColumns: ["email", "name", "role"] },
   // unlock: Payload's default lets any logged-in user unlock any account.
-  access: { admin: ({ req }) => mayAccessAdmin(req), create: isOwner, read: ownerOrSelf, update: ownerOrSelf, delete: isOwner, unlock: isOwner },
+  access: { create: isOwner, read: ownerOrSelf, update: ownerOrSelf, delete: isOwner, unlock: isOwner },
   hooks: {
     beforeLogin: [async ({ req, user }) => {
-      if (!await mayAccessAdmin({ payload: req.payload, user })) throw new Forbidden(req.t);
+      const token = readEntryCookie(req.headers.get("cookie"));
+      const pool = (req.payload.db as unknown as { pool?: Queryable }).pool;
+      if (!token || !pool || !user.email || !await createEmailEntryStore(pool, req.payload.secret).consumeProof(user.email, token)) {
+        throw new Forbidden(req.t);
+      }
       return user;
     }],
     beforeChange: [

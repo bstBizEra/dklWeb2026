@@ -2,6 +2,7 @@ import pg from "pg";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createEmailEntryStore } from "./email-entry";
+import { Users } from "@/payload/collections/users";
 
 const url = process.env.TEST_DATABASE_URL;
 const pool = url ? new pg.Pool({ connectionString: url, max: 10 }) : undefined;
@@ -55,5 +56,22 @@ describe.skipIf(!url)("CMS email entry on PostgreSQL", () => {
     expect(await store!.consumeProof("other@example.com", proofs[0]!.token, now)).toBe(false);
     expect(await store!.consumeProof(email, proofs[0]!.token, now)).toBe(true);
     expect(await store!.consumeProof(email, proofs[0]!.token, now)).toBe(false);
+  });
+
+  it("rejects direct password login without a matching email proof", async () => {
+    const login = Users.hooks?.beforeLogin?.[0];
+    expect(login).toBeTypeOf("function");
+    const req = (cookie = "") => ({
+      payload: { db: { pool }, secret: "test-only-signing-secret-0000000000" },
+      headers: new Headers({ cookie }),
+      t: (value: string) => value,
+    });
+    await expect(login!({ user: { email }, req: req() } as never)).rejects.toThrow();
+    const now = new Date();
+    const code = await store!.issue(email, now);
+    const proof = await store!.verify(email, code!, now);
+    await expect(login!({ user: { email: "other@example.com" }, req: req(`cms-entry=${proof!.token}`) } as never)).rejects.toThrow();
+    await expect(login!({ user: { email }, req: req(`cms-entry=${proof!.token}`) } as never)).resolves.toMatchObject({ email });
+    await expect(login!({ user: { email }, req: req(`cms-entry=${proof!.token}`) } as never)).rejects.toThrow();
   });
 });

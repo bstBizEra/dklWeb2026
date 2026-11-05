@@ -55,6 +55,14 @@ export function createEmailEntryStore(db: Queryable, secret: string) {
       return rows.length > 0;
     },
 
+    async proofEmail(token: string, now = new Date()): Promise<string | null> {
+      if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
+      const { rows } = await db.query(`
+        SELECT email FROM cms_email_entry WHERE proof_hash = $1 AND verified_at IS NOT NULL
+          AND consumed_at IS NULL AND expires_at > $2`, [digest(token), now]);
+      return typeof rows[0]?.email === "string" ? rows[0].email : null;
+    },
+
     async consumeProof(rawEmail: string, token: string, now = new Date()): Promise<boolean> {
       const email = normalizeEntryEmail(rawEmail);
       if (!email || !token) return false;

@@ -53,6 +53,13 @@ describe("authThrottle (in memory)", () => {
     expect((await hit("/api/users/forgot-password"))?.status).toBe(429);
   });
 
+  it("limits email-key requests and verification before they reach the database", async () => {
+    for (let i = 0; i < 3; i++) expect(await hit("/api/cms-entry/request")).toBeNull();
+    expect((await hit("/api/cms-entry/request"))?.status).toBe(429);
+    for (let i = 0; i < 10; i++) expect(await hit("/api/cms-entry/verify")).toBeNull();
+    expect((await hit("/api/cms-entry/verify"))?.status).toBe(429);
+  });
+
   it("caps reset emails at 30 an hour across all addresses, so the lead emails' SMTP quota is safe", async () => {
     for (let i = 0; i < 30; i++) expect(await hit("/api/users/forgot-password", `203.0.113.${i + 1}`)).toBeNull();
 
