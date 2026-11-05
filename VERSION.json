@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "status": "local-preview",
   "releaseDate": "2026-11-05",
-  "changeLevel": "major",
-  "summary": "Existing CMS accounts receive a ten-minute email entrance key before their unchanged email and password login; the DK LAO login uses BizEra colours with English and Lao controls.",
+  "changeLevel": "patch",
+  "summary": "The six-digit CMS key field includes a request-new-key button in English and Lao.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
