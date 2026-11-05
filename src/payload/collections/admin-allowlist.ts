@@ -36,20 +36,19 @@ export const AdminAllowlist: CollectionConfig = {
       return { ...data, email };
     }],
     afterDelete: [async ({ doc, req }) => {
-      const users = await req.payload.find({
+      // Match Payload's all-sessions logout operation: write the auth row directly so
+      // a removed email loses every existing cookie without running user edit hooks.
+      const user = await req.payload.db.findOne({
         collection: "users",
         where: { email: { equals: doc.email } },
-        limit: 1,
-        overrideAccess: true,
         req,
       });
-      const user = users.docs[0];
-      if (user) await req.payload.update({
+      if (user) await req.payload.db.updateOne({
         collection: "users",
         id: user.id,
-        data: { sessions: [] },
-        overrideAccess: true,
+        data: { ...user, sessions: [], updatedAt: null },
         req,
+        returning: false,
       });
       return doc;
     }],

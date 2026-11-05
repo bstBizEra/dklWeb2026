@@ -33,12 +33,12 @@ describe("admin email allowlist", () => {
   });
 
   it("ends active sessions when an email is removed", async () => {
-    const find = vi.fn().mockResolvedValue({ docs: [{ id: 7 }] });
-    const update = vi.fn().mockResolvedValue({});
-    const req = { payload: { find, update } };
+    const findOne = vi.fn().mockResolvedValue({ id: 7, email: "staff@example.com", sessions: [{ id: "old" }] });
+    const updateOne = vi.fn().mockResolvedValue({});
+    const req = { payload: { db: { findOne, updateOne } } };
     await hook("afterDelete")({ doc: { email: "staff@example.com" }, req } as never);
-    expect(update).toHaveBeenCalledWith(expect.objectContaining({
-      collection: "users", id: 7, data: { sessions: [] }, overrideAccess: true,
+    expect(updateOne).toHaveBeenCalledWith(expect.objectContaining({
+      collection: "users", id: 7, data: expect.objectContaining({ sessions: [], updatedAt: null }),
     }));
   });
 });
