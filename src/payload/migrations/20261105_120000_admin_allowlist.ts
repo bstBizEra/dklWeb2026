@@ -17,6 +17,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "admin_allowlist_id" integer;
     ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_admin_allowlist_fk" FOREIGN KEY ("admin_allowlist_id") REFERENCES "public"."admin_allowlist"("id") ON DELETE cascade ON UPDATE no action;
     CREATE INDEX "payload_locked_documents_rels_admin_allowlist_id_idx" ON "payload_locked_documents_rels" USING btree ("admin_allowlist_id");
+    INSERT INTO "admin_allowlist" ("email", "updated_at", "created_at")
+      SELECT lower("email"), now(), now() FROM "users"
+      WHERE "role" = 'advisor' AND lower("email") = 'bizd@dklao.com'
+      ON CONFLICT ("email") DO NOTHING;
     DELETE FROM "users_sessions" WHERE "_parent_id" NOT IN (SELECT "id" FROM "users" WHERE "role" = 'owner');
   `);
   await lockdownPublicSchema(db);
