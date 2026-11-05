@@ -2,7 +2,7 @@
 
 ## Intent
 
-Replace the IP and adviser-managed email allowlist approach with a two-step sign-in that works from any location. An existing CMS user requests a one-time six-digit code at their account email address. The code expires after 10 minutes. Once verified, the user sees the current Payload email/password login. The emailed code does not create a CMS session or change account roles.
+Replace the IP and adviser-managed email allowlist approach with this exact entrance sequence from any location: **enter the existing CMS account email → receive and enter a six-digit email key within 10 minutes → use that same email and the existing password in Payload's login form**. The email key opens the login form; it does not create a CMS session or change account roles. No separate adviser account or allowlist entry is needed for the existing owner to use this flow.
 
 ## Decisions from the owner
 
@@ -14,10 +14,10 @@ Replace the IP and adviser-managed email allowlist approach with a two-step sign
 
 ## Flow
 
-1. An unauthenticated visit to `/admin/login` opens a DK LAO branded access step asking for the CMS account email. The browser stays off the Payload password form until the code is verified.
+1. An unauthenticated visit to `/admin/login` opens a DK LAO branded entrance step with one field: the existing CMS account email. The browser stays off the Payload email/password form until the email key is verified.
 2. The server accepts the email request, returns the same public response whether or not the account exists, and sends the code only for an existing account. Apply per-address, per-email and overall request limits to protect the mailbox and SMTP service.
 3. The user enters the code. Verification is server-side, limits wrong attempts, invalidates the code after use, and sets a short-lived, signed, HTTP-only, Secure, SameSite cookie bound to that account email. A new code supersedes an earlier code.
-4. The user is sent to the existing Payload login form, prefilled with the verified email if supported. They enter the existing password. Payload validates the password and, before issuing a session, checks that the signed entry proof is valid, unexpired, unused, and matches the account email. Consume the proof atomically at successful password login.
+4. The user is sent to the existing Payload login form. They use the **same existing email and password**; no new password is issued or reset. Payload validates the password and, before issuing a session, checks that the signed entry proof is valid, unexpired, unused, and matches the account email. Consume the proof atomically at successful password login.
 5. A valid Payload session opens the dashboard as it does today. The 10-minute window limits completion of a new sign-in; it does not shorten an established Payload session. Logout or a new sign-in requires another email code.
 
 ## Security boundaries
