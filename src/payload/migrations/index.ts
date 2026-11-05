@@ -8,6 +8,7 @@ import * as migration_20261025_094137_card_sections from './20261025_094137_card
 import * as migration_20261026_050606_lao_localization from './20261026_050606_lao_localization';
 import * as migration_20261031_120000_lead_rate_limits from './20261031_120000_lead_rate_limits';
 import * as migration_20261102_080114_lead_photos from './20261102_080114_lead_photos';
+import * as migration_20261105_120000_admin_allowlist from './20261105_120000_admin_allowlist';
 
 export const migrations = [
   {
@@ -59,5 +60,10 @@ export const migrations = [
     up: migration_20261102_080114_lead_photos.up,
     down: migration_20261102_080114_lead_photos.down,
     name: '20261102_080114_lead_photos'
+  },
+  {
+    up: migration_20261105_120000_admin_allowlist.up,
+    down: migration_20261105_120000_admin_allowlist.down,
+    name: '20261105_120000_admin_allowlist',
   },
 ];

@@ -7,6 +7,7 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
 import { Articles } from "./payload/collections/articles";
+import { AdminAllowlist } from "./payload/collections/admin-allowlist";
 import { LeadPhotos } from "./payload/collections/lead-photos";
 import { Leads } from "./payload/collections/leads";
 import { Pages } from "./payload/collections/pages";
@@ -35,7 +36,7 @@ export default buildConfig({
       afterNavLinks: ["/payload/admin/developed-by"],
     },
   },
-  collections: [Users, Pages, Articles, Leads, LeadPhotos],
+  collections: [Users, AdminAllowlist, Pages, Articles, Leads, LeadPhotos],
   globals: [SiteFacts, Navigation],
   editor: lexicalEditor(),
   // English and Lao. Lao pages ask for locale "lo"; a Lao field left empty shows the English text.
