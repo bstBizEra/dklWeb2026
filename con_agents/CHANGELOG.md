@@ -6,7 +6,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 
 ### Security
 
-- Restricted `preview.dklao.com` to a CI-only HTTP credential while retaining the separate preview deployment and production release gate. Public requests receive an authentication challenge; production remains public.
+- Restricted normal access to `preview.dklao.com` at Cloudflare to requests carrying a CI-only HTTP credential while retaining the separate preview deployment and production release gate. Public requests receive 403; production remains public. Direct origin access still needs the matching Apache gate once SSH access is stable.
 
 ## [2.0.1] - 2026-11-05
 
