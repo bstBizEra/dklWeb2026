@@ -16,7 +16,7 @@ export default function EntranceForm() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<{ en: string; lo: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function sendKey() {
@@ -24,13 +24,13 @@ export default function EntranceForm() {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }),
     });
     const result = await response.json() as { message?: string; error?: string };
-    if (!response.ok) { setMessage(language === "lo" ? t.unavailable : result.error ?? t.tryAgain); return; }
-    setStep("code"); setCode(""); setMessage(t.sent);
+    if (!response.ok) { setMessage({ en: result.error ?? copy.en.tryAgain, lo: copy.lo.unavailable }); return; }
+    setStep("code"); setCode(""); setMessage({ en: copy.en.sent, lo: copy.lo.sent });
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(null);
     try {
       if (step === "email") { await sendKey(); return; }
       const response = await fetch("/api/cms-entry/verify", {
@@ -38,16 +38,16 @@ export default function EntranceForm() {
         body: JSON.stringify({ email, code }),
       });
       const result = await response.json() as { message?: string; error?: string; next?: string };
-      if (!response.ok) { setMessage(language === "lo" ? (response.status === 401 ? t.invalid : t.unavailable) : result.error ?? t.tryAgain); return; }
+      if (!response.ok) { setMessage({ en: result.error ?? copy.en.tryAgain, lo: response.status === 401 ? copy.lo.invalid : copy.lo.unavailable }); return; }
       window.location.assign(result.next ?? "/admin/login");
-    } catch { setMessage(t.failed); }
+    } catch { setMessage({ en: copy.en.failed, lo: copy.lo.failed }); }
     finally { setBusy(false); }
   }
 
   async function resend() {
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(null);
     try { await sendKey(); }
-    catch { setMessage(t.failed); }
+    catch { setMessage({ en: copy.en.failed, lo: copy.lo.failed }); }
     finally { setBusy(false); }
   }
 
@@ -66,9 +66,9 @@ export default function EntranceForm() {
           <label htmlFor="entry-email">{t.email}</label>
           <input id="entry-email" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} readOnly={step === "code"} tabIndex={step === "code" ? -1 : undefined} />
           {step === "code" && <><label htmlFor="entry-code">{t.code}</label><div className="cms-entrance__code-field"><input id="entry-code" type="text" inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" maxLength={6} required value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} /><button type="button" disabled={busy} onClick={resend}>{t.resend}</button></div></>}
-          <p className="cms-entrance__message" role="status" aria-live="polite">{message}</p>
+          <p className="cms-entrance__message" role="status" aria-live="polite">{message?.[language] ?? ""}</p>
           <button type="submit" disabled={busy}>{busy ? t.wait : step === "email" ? t.send : t.continue}</button>
-          {step === "code" && <div className="cms-entrance__links"><button type="button" onClick={() => { setStep("email"); setCode(""); setMessage(""); }}>{t.change}</button></div>}
+          {step === "code" && <div className="cms-entrance__links"><button type="button" onClick={() => { setStep("email"); setCode(""); setMessage(null); }}>{t.change}</button></div>}
         </form>
       </div>
     </section>

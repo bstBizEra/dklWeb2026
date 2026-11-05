@@ -6,7 +6,7 @@ All notable changes to DK LAO agent-control rules, architecture, design system, 
 
 ### Patch Changed
 
-- Placed the existing request-new-key action at the end of the six-digit entrance field, with English and Lao labels. The ten-minute email key and password checks remain unchanged.
+- Placed the existing request-new-key action at the end of the six-digit entrance field, with English and Lao labels. The request status now follows the selected language. The ten-minute email key and password checks remain unchanged.
 - Removed the live Apache owner-IP restriction after the owner verified that the email key and existing password opened both dashboard and editor. Payload authentication and role checks remain in force.
 
 ## [2.0.0] - 2026-11-05
