@@ -1,0 +1,33 @@
+.cms-entrance { min-height: 100vh; display: grid; place-items: center; padding: clamp(1rem,3vw,2.5rem); background: linear-gradient(125deg,#69c6b5 0%,#3db389 48%,#1d7a5a 100%); background-size: 135% 135%; animation: cms-gradient-drift 24s ease-in-out infinite alternate; color: var(--color-text-primary); font-family: var(--font-bizera-text),sans-serif; }
+.cms-entrance>* { position:relative; }
+.cms-entrance__shell { width: min(100%,1120px); min-height: min(700px,calc(100vh - 3rem)); display: grid; grid-template-columns: 1.05fr .95fr; overflow: hidden; border-radius: 16px; background: var(--color-surface-page); box-shadow: 0 18px 50px rgba(14,42,34,.12); }
+.cms-entrance__visual { display: flex; flex-direction: column; justify-content: space-between; padding: clamp(2rem,4vw,3.25rem); background: linear-gradient(155deg,rgba(29,122,90,.32),rgba(11,26,22,.46) 50%,rgba(11,26,22,.94)),url('/images/hero/forklift-product-hero.png') center/cover; }
+.cms-entrance__logo { align-self: flex-start; padding: 1rem 1.15rem; border-radius: 10px; background:#ffffff !important; color-scheme:light; forced-color-adjust:none; }
+.cms-entrance__logo img { display:block; width:210px; height:auto; }
+.cms-entrance__slogan { max-width:15ch; margin:0; color:white; font-family:var(--font-bizera-display),sans-serif; font-size:clamp(2rem,3.4vw,3.2rem); line-height:1.12; letter-spacing:-.03em; }
+.cms-entrance[lang="lo"] { font-family:var(--font-lao-admin),var(--font-bizera-text),sans-serif; }
+.cms-entrance[lang="lo"] .cms-entrance__slogan { max-width:22ch; font-family:var(--font-lao-admin),sans-serif; font-size:clamp(1.6rem,2.6vw,2.5rem); line-height:1.45; letter-spacing:0; }
+.cms-entrance[lang="lo"] .cms-entrance__intro h1 { font-family:var(--font-lao-admin),sans-serif; line-height:1.5; letter-spacing:0; }
+.cms-entrance[lang="lo"] .cms-entrance__intro p,.cms-entrance[lang="lo"] form>p { line-height:1.8; }
+.cms-entrance__content { display:flex; flex-direction:column; justify-content:flex-end; padding:2.5rem clamp(2rem,5vw,4rem) 3rem; background-image:linear-gradient(var(--color-surface-page),var(--color-surface-page)),url('/images/pattern/mechanical-line.svg'); background-blend-mode:normal; position:relative; }
+.cms-entrance__content::before { content:""; position:absolute; inset:0; pointer-events:none; background:url('/images/pattern/mechanical-line.svg') center/360px repeat; opacity:.055; }
+.cms-entrance__content>* { position:relative; }
+.cms-entrance .cms-login-controls { align-self:flex-end; margin-bottom:auto; }
+.cms-entrance__intro h1 { max-width:19ch; margin:0; font-family:var(--font-bizera-display),sans-serif; font-size:clamp(1.7rem,2.3vw,2.2rem); line-height:1.2; }
+.cms-entrance__intro p,.cms-entrance form>p { max-width:40ch; color:var(--color-text-secondary); line-height:1.6; }
+.cms-entrance form { margin-top:2rem; }
+.cms-entrance form h2 { margin:0; font-size:1.3rem; }
+.cms-entrance label { display:block; margin:1rem 0 .4rem; font-weight:650; }
+.cms-entrance input { display:block; width:100%; min-height:48px; padding:.7rem .85rem; border:1px solid var(--color-border-default); border-radius:8px; background:var(--color-surface-raised); color:var(--color-text-primary); font:inherit; }
+.cms-entrance input:focus-visible,.cms-entrance button:focus-visible { outline:2px solid var(--color-focus-ring); outline-offset:2px; }
+.cms-entrance__message { min-height:1.5em; margin:.75rem 0; }
+.cms-entrance form>button { width:100%; min-height:48px; border:0; border-radius:8px; background:var(--color-action-bg); color:var(--color-action-fg); font:inherit; font-weight:700; cursor:pointer; }
+.cms-entrance form>button:hover { background:var(--color-palette-ink); }
+.cms-entrance form>button:disabled { opacity:.65; cursor:wait; }
+.cms-entrance__links { display:flex; flex-wrap:wrap; gap:1.25rem; }
+.cms-entrance__links button { margin-top:1rem; padding:0; border:0; background:none; color:var(--color-accent-text); font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+@media(max-width:760px) { .cms-entrance__shell { grid-template-columns:1fr; } .cms-entrance__visual { min-height:250px; padding:1.5rem; } .cms-entrance__slogan { max-width:20ch; font-size:clamp(1.3rem,5vw,1.75rem); } .cms-entrance__content { padding:1.75rem 1.5rem 2rem; } .cms-entrance__logo { padding:.65rem .75rem; } .cms-entrance__logo img { width:166px; } }
+@keyframes cms-gradient-drift { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+@media(prefers-reduced-motion:reduce) { .cms-entrance { animation:none; } }
+:root[data-theme="dark"] .cms-entrance__shell { box-shadow:none; border:1px solid var(--color-palette-night-line); }
+:root[data-theme="dark"] .cms-entrance form>button:hover { background:var(--color-palette-mint); }

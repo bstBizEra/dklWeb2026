@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "status": "local-preview",
   "releaseDate": "2026-11-05",
   "changeLevel": "major",
-  "summary": "Advisers can manage an email allowlist for existing CMS accounts; approved accounts can sign in from any IP while their roles keep existing permissions.",
+  "summary": "Existing CMS accounts receive a ten-minute email entrance key before their unchanged email and password login; the DK LAO login uses BizEra colours with English and Lao controls.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",

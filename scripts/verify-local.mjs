@@ -31,7 +31,7 @@ export const databaseGates = (url) => [
   { name: "Migrations apply", args: ["cms:migrate"], env: { DATABASE_URL: url, PAYLOAD_SECRET: ciSecret } },
   {
     name: "Rate limit store on PostgreSQL",
-    args: ["vitest", "run", "src/lib/leads/rate-store.db.test.ts"],
+    args: ["vitest", "run", "src/lib/leads/rate-store.db.test.ts", "src/lib/auth/email-entry.db.test.ts"],
     env: { TEST_DATABASE_URL: url },
   },
 ];

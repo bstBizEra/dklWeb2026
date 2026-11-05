@@ -68,7 +68,6 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
-    'admin-allowlist': AdminAllowlist;
     pages: Page;
     articles: Article;
     leads: Lead;
@@ -85,7 +84,6 @@ export interface Config {
   };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
-    'admin-allowlist': AdminAllowlistSelect<false> | AdminAllowlistSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
@@ -161,18 +159,6 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
-}
-/**
- * Only existing CMS accounts can be added. An entry permits login from any location; the account's role still controls its permissions.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admin-allowlist".
- */
-export interface AdminAllowlist {
-  id: number;
-  email: string;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -461,10 +447,6 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
-        relationTo: 'admin-allowlist';
-        value: number | AdminAllowlist;
-      } | null)
-    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
@@ -545,15 +527,6 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admin-allowlist_select".
- */
-export interface AdminAllowlistSelect<T extends boolean = true> {
-  email?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

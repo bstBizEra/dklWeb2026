@@ -79,7 +79,7 @@ jobs:
         run: pnpm cms:migrate
       # The shared quote-form rate limit against the migrated database: two server processes share one
       # count, and simultaneous requests cannot slip past the limit (src/lib/leads/rate-store.db.test.ts).
-      - name: Rate limit store on PostgreSQL
+      - name: Auth and rate-limit stores on PostgreSQL
         env:
           TEST_DATABASE_URL: ${{ env.DATABASE_URL }}
-        run: pnpm vitest run src/lib/leads/rate-store.db.test.ts
+        run: pnpm vitest run src/lib/leads/rate-store.db.test.ts src/lib/auth/email-entry.db.test.ts

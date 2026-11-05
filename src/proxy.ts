@@ -8,7 +8,7 @@ import { localeHeader } from "@/lib/i18n/request-locale";
 //   /en, /en/...   308 to the unprefixed address, so English has one URL per page.
 //   anything else  English: rewritten internally to /en/... (the address bar keeps /about).
 // API, admin, the phone app (/app), share images (/og), Next internals and files never reach the site routes.
-const notSite = /^\/(api|admin|app|og|_next)(\/|$)/;
+const notSite = /^\/(api|admin|cms-entry|app|og|_next)(\/|$)/;
 
 // Marks our own rewrite. Under a custom server (server.mjs, used by cPanel Passenger) Next runs the proxy
 // again on the rewritten /en/... path; without the mark that pass would redirect back and loop. A visitor
@@ -23,6 +23,12 @@ function withLocale(request: NextRequest, locale: "en" | "lo"): Headers {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === "/admin/login") {
+    if (!request.cookies.get("cms-entry")?.value) return NextResponse.redirect(new URL("/cms-entry", request.url));
+    const headers = new Headers(request.headers);
+    headers.set("x-dklao-entry-login", "1");
+    return NextResponse.next({ request: { headers } });
+  }
   if (notSite.test(pathname)) return NextResponse.next();
 
   if (pathname === "/en" || pathname.startsWith("/en/")) {

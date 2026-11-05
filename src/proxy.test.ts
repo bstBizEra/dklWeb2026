@@ -55,8 +55,14 @@ describe("locale routing", () => {
   });
 
   it("leaves the API, the admin and Next's own paths alone", () => {
-    for (const path of ["/api/leads/quote", "/admin", "/app", "/og/x", "/_next/static/a.js"]) {
+    for (const path of ["/api/leads/quote", "/admin", "/cms-entry", "/app", "/og/x", "/_next/static/a.js"]) {
       expect(rewriteTarget(proxy(arriving(path, forwarded)))).toBeNull();
     }
+  });
+
+  it("sends a new login to the email entrance", () => {
+    const response = proxy(arriving("/admin/login", forwarded));
+    expect(response.status).toBe(307);
+    expect(new URL(response.headers.get("location")!).pathname).toBe("/cms-entry");
   });
 });

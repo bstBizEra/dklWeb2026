@@ -9,6 +9,7 @@ import * as migration_20261026_050606_lao_localization from './20261026_050606_l
 import * as migration_20261031_120000_lead_rate_limits from './20261031_120000_lead_rate_limits';
 import * as migration_20261102_080114_lead_photos from './20261102_080114_lead_photos';
 import * as migration_20261105_120000_admin_allowlist from './20261105_120000_admin_allowlist';
+import * as migration_20261105_160000_email_entry from './20261105_160000_email_entry';
 
 export const migrations = [
   {
@@ -65,5 +66,10 @@ export const migrations = [
     up: migration_20261105_120000_admin_allowlist.up,
     down: migration_20261105_120000_admin_allowlist.down,
     name: '20261105_120000_admin_allowlist',
+  },
+  {
+    up: migration_20261105_160000_email_entry.up,
+    down: migration_20261105_160000_email_entry.down,
+    name: '20261105_160000_email_entry',
   },
 ];

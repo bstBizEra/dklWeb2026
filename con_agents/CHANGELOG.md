@@ -2,6 +2,13 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [2.0.0] - 2026-11-05
+
+### Major Changed
+
+- Replaced the adviser email allowlist with a six-digit entrance key sent only to existing CMS account emails. Each key expires after ten minutes; verification is single use and bound to the same account email before the existing Payload password login. Account roles, password handling, and active sessions remain under Payload. The Apache IP gate stays in place until the new flow is verified on preview and production.
+- Added a DK LAO branded entrance screen ahead of the Payload login with English and Lao copy, Noto Sans Lao, light and dark controls, a subtle mechanical line pattern, and a reduced-motion-aware BizEra gradient. DK LAO remains the only logo.
+
 ## [1.0.0] - 2026-11-05
 
 ### Major Changed

@@ -19,6 +19,8 @@ const specs: Record<string, Spec> = {
   login: { limit: 10, windowMs: 15 * minute },
   // Each request sends a reset email; the overall cap keeps the SMTP quota for lead emails.
   "forgot-password": { limit: 3, windowMs: 60 * minute, overall: 30 },
+  "entry-request": { limit: 3, windowMs: 10 * minute, overall: 30 },
+  "entry-verify": { limit: 10, windowMs: 10 * minute },
 };
 
 type Rule = { perAddress: AsyncRateLimiter; shared: AsyncRateLimiter; overall?: AsyncRateLimiter };
@@ -57,11 +59,14 @@ export function createAuthThrottle({ db }: { db?: (() => Promise<Queryable>) | n
 
   return async function authThrottle(request: Request): Promise<Response | null> {
     if (request.method !== "POST") return null;
-    const action = new URL(request.url).pathname.match(/^\/api\/users\/(login|forgot-password)\/?$/)?.[1];
+    const path = new URL(request.url).pathname;
+    const action = path.match(/^\/api\/users\/(login|forgot-password)\/?$/)?.[1]
+      ?? path.match(/^\/api\/cms-entry\/(request|verify)\/?$/)?.[1]?.replace(/^/, "entry-");
     if (!action) return null;
 
     const key = clientKey(request);
-    const pool = db === undefined ? (rateStore() === "database" ? cmsPool : null) : db;
+    const entryAction = action.startsWith("entry-");
+    const pool = db === undefined ? (entryAction || rateStore() === "database" ? cmsPool : null) : db;
     let result: RateLimitResult;
 
     if (pool) {
@@ -71,6 +76,7 @@ export function createAuthThrottle({ db }: { db?: (() => Promise<Queryable>) | n
       } catch (error) {
         // A failed setup is retried on the next request instead of being cached.
         database = undefined;
+        if (entryAction) return Response.json({ error: "Entrance key is temporarily unavailable" }, { status: 503 });
         if (Date.now() - lastWarning > 60_000) {
           lastWarning = Date.now();
           console.warn(`[auth] shared rate-limit store failed (${error instanceof Error ? error.name : "error"}); limiting from memory`);

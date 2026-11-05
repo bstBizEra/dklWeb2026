@@ -127,7 +127,9 @@
     align-self: flex-start;
     padding: 1rem 1.15rem;
     border-radius: 10px;
-    background: #ffffff;
+    background: #ffffff !important;
+    color-scheme: light;
+    forced-color-adjust: none;
   }
   .bizera-brand__logo img { display: block; width: 210px; height: auto; }
   .bizera-brand__heading {
@@ -140,6 +142,9 @@
     line-height: 1.12;
     letter-spacing: -0.03em;
   }
+  .bizera-brand__heading[lang="lo"] { max-width:22ch; font-family:var(--font-lao-admin),sans-serif; font-size:clamp(1.6rem,2.6vw,2.5rem); line-height:1.45; letter-spacing:0; }
+  .bizera-login-intro[lang="lo"] { font-family:var(--font-lao-admin),sans-serif; }
+  .bizera-login-intro[lang="lo"] h2 { font-family:var(--font-lao-admin),sans-serif; line-height:1.5; letter-spacing:0; }
   .bizera-login-intro {
     grid-column: 2;
     grid-row: 1;
@@ -147,6 +152,16 @@
     width: 100%;
     padding: 2.5rem clamp(2rem, 5vw, 4rem) 0;
   }
+  .cms-login-controls { display:flex; align-items:center; justify-content:flex-end; gap:.6rem; }
+  .cms-login-controls[lang="lo"] { font-family:var(--font-lao-admin),sans-serif; }
+  .cms-login-controls__group { display:inline-flex; padding:3px; border:1px solid var(--color-border-default); border-radius:10px; background:var(--color-surface-raised); }
+  .cms-login-controls button { min-width:44px; min-height:44px; padding:.5rem .7rem; border:0; border-radius:7px; background:transparent; color:var(--color-text-secondary); font:inherit; font-size:.82rem; font-weight:700; cursor:pointer; }
+  .cms-login-controls button[lang="lo"] { font-family:var(--font-lao-admin),sans-serif; }
+  .cms-login-controls__group button[aria-pressed="true"] { background:var(--color-action-bg); color:var(--color-action-fg); }
+  .cms-login-controls__group button:hover:not([aria-pressed="true"]), .cms-login-controls__theme:hover { background:var(--color-border-default); color:var(--color-text-primary); }
+  .cms-login-controls__theme { display:flex; align-items:center; gap:.45rem; border:1px solid var(--color-border-default) !important; background:var(--color-surface-raised) !important; }
+  .cms-login-controls__theme-mark { display:block; width:15px; height:15px; border:2px solid currentColor; border-radius:50%; box-shadow:inset -5px -2px 0 currentColor; }
+  .cms-login-controls__theme[aria-checked="true"] .cms-login-controls__theme-mark { box-shadow:inset 0 0 0 3px var(--color-surface-raised); background:currentColor; }
   .bizera-login-intro h2 {
     max-width: 19ch;
     margin: 0;
@@ -185,8 +200,13 @@
   .template-minimal:has(.login__form) {
     min-height: 100vh;
     padding: clamp(1.25rem, 3vw, 2.5rem);
-    background: var(--bizera-login-bg);
+    background: linear-gradient(125deg,var(--color-palette-mint),var(--color-palette-green) 48%,var(--color-palette-deep));
+    background-size:170% 170%;
+    animation:cms-gradient-drift 22s ease-in-out infinite alternate;
   }
+  .template-minimal:has(.login__form)::before { content:""; position:fixed; inset:0; pointer-events:none; background:var(--bizera-login-bg); opacity:.70; }
+  .template-minimal:has(.login__form)>.template-minimal__wrap { position:relative; }
+  :root[data-theme="dark"] .template-minimal:has(.login__form)::before { opacity:.76; }
   .template-minimal:has(.login__form) .template-minimal__wrap {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -216,12 +236,15 @@
       url("/images/hero/forklift-product-hero.png") center / cover no-repeat;
   }
   .template-minimal:has(.login__form) .login__form {
+    position:relative;
     grid-column: 2;
     grid-row: 2;
     align-self: start;
     width: 100%;
     padding: 1.75rem clamp(2rem, 5vw, 4rem) 3rem;
   }
+  .template-minimal:has(.login__form) .login__form::before { content:""; position:absolute; inset:0; pointer-events:none; background:url('/images/pattern/mechanical-line.svg') center/360px repeat; opacity:.055; }
+  .template-minimal:has(.login__form) .login__form>* { position:relative; }
   .login__form__inputWrap { gap: 1rem; margin-bottom: 0.75rem; }
   .login__form input {
     min-height: 46px;
@@ -274,4 +297,6 @@
       padding: 1.5rem 1.5rem 2rem;
     }
   }
+  @keyframes cms-gradient-drift { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+  @media (prefers-reduced-motion:reduce) { .template-minimal:has(.login__form) { animation:none; } }
 }
