@@ -82,9 +82,14 @@ jobs:
           SSH_KEY: ${{ secrets.PREVIEW_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.PREVIEW_SSH_KNOWN_HOSTS }}
           SSH_HOST: ${{ secrets.PREVIEW_SSH_HOST }}
+          PREVIEW_HTTP_PASSWORD: ${{ secrets.PREVIEW_HTTP_PASSWORD }}
         run: |
           # Until the owner finishes docs/deploy-checklist.md section 3a, skip with a notice instead of
           # failing, so main does not turn red. A labelled pull request or a manual run still fails loudly.
+          if [ -z "$PREVIEW_HTTP_PASSWORD" ]; then
+            echo "::error::PREVIEW_HTTP_PASSWORD is required for the private preview health check."
+            exit 1
+          fi
           if [ -n "$SSH_KEY" ] && [ -n "$SSH_KNOWN_HOSTS" ] && [ -n "$SSH_HOST" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
@@ -121,11 +126,13 @@ jobs:
             -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 \
             "dklao@${SSH_HOST}" "deploy ${TAG}" < "$RUNNER_TEMP/deploy.bundle"
 
-      - name: Check the public preview
+      - name: Check the private preview
         if: steps.setup.outputs.ready == 'true'
+        env:
+          PREVIEW_HTTP_PASSWORD: ${{ secrets.PREVIEW_HTTP_PASSWORD }}
         run: |
           for attempt in 1 2 3 4 5 6; do
-            page=$(curl -fsS https://preview.dklao.com/ || true)
+            page=$(curl -fsS --user "preview-ci:${PREVIEW_HTTP_PASSWORD}" https://preview.dklao.com/ || true)
             if printf '%s' "$page" | grep -q "favicon.ico?v=${VERSION}"; then
               echo "preview.dklao.com serves ${VERSION} (${TAG})"
               exit 0
