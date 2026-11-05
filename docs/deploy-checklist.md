@@ -579,6 +579,12 @@ Three things in the zone are not about go-live but were found while checking it 
       confirmed from outside. From then on every release ends with "www.dklao.com serves X.Y.Z".
 - [ ] Keep the ngrok preview off once the site is live.
 
+## CMS email access rollout (1.0.0)
+
+The production `/admin` IP rule remains active during the 1.0.0 code deploy and migration. The migration creates `admin_allowlist`, invalidates non-owner sessions, and keeps the owner able to recover access. It adds `bizd@dklao.com` only if that address already belongs to an adviser account. Check that entry after the release is healthy; if it does not exist, the owner signs in from the currently allowed address and adds the correct existing adviser account under **Access → Admin access emails**. The adviser can then add existing editor and adviser emails; no allowlist entry creates an account or changes a role.
+
+Only after that bootstrap, remove the Apache `<LocationMatch>` IP rule for `/admin` and `/api/users` on both apex and `www` virtual hosts, rebuild Apache config, restart it gracefully, and clear nginx cache. Check that an approved account signs in from a different IP, an existing unapproved account receives 403 after valid credentials, and the adviser can add and remove entries. Removing an entry should end that user's sessions. If this check fails, restore the IP rule before rolling back code; the new table can remain until a coordinated database rollback.
+
 ## 8. Rollback
 
 - Site: remove the dklao.com Apache include (rebuild and restart Apache) and restore `~/public_html.before-site`.

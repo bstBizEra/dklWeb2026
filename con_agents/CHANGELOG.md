@@ -2,6 +2,13 @@
 
 All notable changes to DK LAO agent-control rules, architecture, design system, data model, and deployment decisions must be documented here.
 
+## [1.0.0] - 2026-11-05
+
+### Major Changed
+
+- Replaced the CMS owner-IP entry policy with an email allowlist for existing accounts. Owners retain recovery access. Owners and advisers can add or remove non-owner accounts' email addresses in the CMS; adding an email never creates an account or changes its role. Payload checks the allowlist after password validation and on admin access. Removing an entry ends that account's active sessions. The migration conditionally adds the existing `bizd@dklao.com` adviser account and ends existing non-owner sessions so they must sign in again.
+- Deployment must keep the Apache IP restriction until this version and its database migration are healthy, then remove the `/admin` and `/api/users` IP gate together. The application remains responsible for authentication and role permissions.
+
 ## [0.24.3] - 2026-11-05
 
 ### Patch Changed

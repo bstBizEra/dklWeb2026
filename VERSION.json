@@ -1,10 +1,10 @@
 {
   "project": "DK LAO Website 2026",
-  "version": "0.24.3",
+  "version": "1.0.0",
   "status": "local-preview",
   "releaseDate": "2026-11-05",
-  "changeLevel": "patch",
-  "summary": "The CMS login pairs DK LAO product imagery with BizEra brandkit colours in a responsive left/right layout, while preserving authentication behavior.",
+  "changeLevel": "major",
+  "summary": "Advisers can manage an email allowlist for existing CMS accounts; approved accounts can sign in from any IP while their roles keep existing permissions.",
   "sourceOfTruth": {
     "packageVersion": "package.json",
     "currentVersion": "VERSION.json",
